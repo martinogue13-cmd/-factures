@@ -331,8 +331,8 @@ dialog::backdrop{background:var(--backdrop)}
   <div class="brand-wrap">
     <div class="brand-mark" aria-hidden="true">JN</div>
     <div class="brand-copy">
-      <div class="brand-main">Bústia de factures</div>
-      <div class="brand-sub">Joan Nogue · Gestió documental</div>
+      <div class="brand-main" data-i18n="__brand_title__">Bústia de factures</div>
+      <div class="brand-sub" data-i18n="__brand_subtitle__">Joan Nogue · Gestió documental</div>
     </div>
   </div>
   <nav class="tabs" id="tabs" hidden aria-label="Vista"></nav>
@@ -341,7 +341,7 @@ dialog::backdrop{background:var(--backdrop)}
       <span class="lang-globe">◎</span>
       <select id="langSelect" aria-label="Selecciona l’idioma">
         <option value="ca">Català</option>
-        <option value="es">Castellà</option>
+        <option value="es">Español</option>
         <option value="en">English</option>
       </select>
     </label>
@@ -351,10 +351,10 @@ dialog::backdrop{background:var(--backdrop)}
 <main class="wrap" id="view"><p class="sub">Carregant…</p></main>
 <footer class="footer-brand">
   <div class="footer-contact">
-    <strong>Joan Nogué Trabal</strong>
-    <span>Assessor fiscal i comptable</span>
-    <a href="tel:+34646174898">📞 Telèfon: 646 174 898</a>
-    <a href="mailto:jnogue1971@gmail.com">✉️ Correu electrònic: jnogue1971@gmail.com</a>
+    <strong data-i18n="__footer_name__">Joan Nogué Trabal</strong>
+    <span data-i18n="__footer_role__">Assessor fiscal i comptable</span>
+    <a href="tel:+34646174898" data-i18n="__footer_phone__">📞 Telèfon: 646 174 898</a>
+    <a href="mailto:jnogue1971@gmail.com" data-i18n="__footer_email__">✉️ Correu electrònic: jnogue1971@gmail.com</a>
   </div>
 </footer>
 <dialog id="dlg"><div class="dpad" id="dlgBody"></div></dialog>
@@ -416,6 +416,12 @@ if (!['ca','es','en'].includes(CURRENT_LANG)) CURRENT_LANG = 'ca';
 
 const I18N = {
   ca: {
+    '__brand_title__':'Bústia de factures',
+    '__brand_subtitle__':'Joan Nogue · Gestió documental',
+    '__footer_name__':'Joan Nogué Trabal',
+    '__footer_role__':'Assessor fiscal i comptable',
+    '__footer_phone__':'📞 Telèfon: 646 174 898',
+    '__footer_email__':'✉️ Correu electrònic: jnogue1971@gmail.com',
     'Bústia de factures':'Bústia de factures',
     'Joan Nogue · Gestió documental':'Joan Nogue · Gestió documental',
     'Gestió documental i facturació':'Gestió documental i facturació',
@@ -457,6 +463,12 @@ const I18N = {
     'Tancar':'Tancar','Descarregar original':'Descarregar original','Desar canvis':'Desar canvis','Eliminar':'Eliminar','Canvis desats':'Canvis desats',
   },
   es: {
+    '__brand_title__':'Buzón de facturas',
+    '__brand_subtitle__':'Joan Nogue · Gestión documental',
+    '__footer_name__':'Joan Nogué Trabal',
+    '__footer_role__':'Asesor fiscal y contable',
+    '__footer_phone__':'📞 Teléfono: 646 174 898',
+    '__footer_email__':'✉️ Correo electrónico: jnogue1971@gmail.com',
     'Bústia de factures':'Buzón de facturas','Joan Nogue · Gestió documental':'Joan Nogue · Gestión documental','Gestió documental i facturació':'Gestión documental y facturación','Entorn segur per a la gestió de factures':'Entorno seguro para la gestión de facturas','Carregant…':'Cargando…',
     'Gestor':'Gestor','Empresa':'Empresa','Gestió de factures':'Gestión de facturas','Sortir':'Salir','Entra a la teva bústia de factures':'Entra en tu buzón de facturas',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'Un espacio corporativo para recibir, revisar y gestionar las facturas de cada empresa de forma ordenada y segura.',
@@ -470,6 +482,12 @@ const I18N = {
     'Panell de gestió':'Panel de gestión','Bon dia, Joan Nogue':'Buenos días, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Controla clientes, facturas pendientes y exportaciones desde un único espacio.','Panell del gestor':'Panel del gestor','Client':'Cliente','Cercar client, emissor, NIF o núm.':'Buscar cliente, emisor, NIF o n.º','Exportar totes a Excel':'Exportar todo a Excel','Pujada':'Subida','Data':'Fecha','Emissor':'Emisor','NIF emissor':'NIF emisor','Núm. factura':'N.º factura','IVA':'IVA','Cap factura coincideix amb els filtres.':'Ninguna factura coincide con los filtros.','empresa registrada':'empresa registrada','empreses registrades':'empresas registradas','factura':'factura','factures':'facturas','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'La lectura automática ha tardado más de 60 segundos. Comprueba la Edge Function y vuelve a intentarlo.','Pujant el fitxer…':'Subiendo archivo…','Analitzant amb IA…':'Analizando con IA…','Preparant el fitxer…':'Preparando archivo…','Pujada cancel·lada':'Subida cancelada','Desant…':'Guardando…','Factura guardada correctament':'Factura guardada correctamente','Tancar':'Cerrar','Descarregar original':'Descargar original','Desar canvis':'Guardar cambios','Eliminar':'Eliminar','Canvis desats':'Cambios guardados'
   },
   en: {
+    '__brand_title__':'Invoice Inbox',
+    '__brand_subtitle__':'Joan Nogue · Document management',
+    '__footer_name__':'Joan Nogué Trabal',
+    '__footer_role__':'Tax and accounting advisor',
+    '__footer_phone__':'📞 Phone: 646 174 898',
+    '__footer_email__':'✉️ Email: jnogue1971@gmail.com',
     'Bústia de factures':'Invoice Inbox','Joan Nogue · Gestió documental':'Joan Nogue · Document management','Gestió documental i facturació':'Document management and invoicing','Entorn segur per a la gestió de factures':'Secure invoice management environment','Carregant…':'Loading…',
     'Gestor':'Manager','Empresa':'Company','Gestió de factures':'Invoice management','Sortir':'Sign out','Entra a la teva bústia de factures':'Sign in to your invoice inbox',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'A corporate space to receive, review and manage each company’s invoices in an organized and secure way.',
@@ -499,6 +517,13 @@ function trDynamic(text){
 function applyLanguage(root=document){
   document.documentElement.lang=CURRENT_LANG;
   const select=document.querySelector('#langSelect'); if(select) select.value=CURRENT_LANG;
+
+  root.querySelectorAll?.('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    const value=t(key);
+    if(value!==key) el.textContent=value;
+  });
+
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
     const p=node.parentElement; if(!p || ['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
     if(!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
@@ -521,23 +546,10 @@ function setLanguage(lang){
   const titles={ca:'Joan Nogue · Bústia de factures',es:'Joan Nogue · Buzón de facturas',en:'Joan Nogue · Invoice Inbox'};
   if(!['ca','es','en'].includes(lang)) return;
   CURRENT_LANG=lang; localStorage.setItem(LANGUAGE_STORAGE_KEY,lang); document.title=titles[CURRENT_LANG]; applyLanguage(document);
-  if(state.user && state.profile){
-    if(state.profile.role==='manager'){
-      $('#tabs').hidden=false;
-      $('#tabs').setAttribute('aria-hidden','false');
-      state.view==='panel'?managerView():renderCompanyShell();
-    } else {
-      $('#tabs').hidden=true;
-      $('#tabs').innerHTML='';
-      $('#tabs').setAttribute('aria-hidden','true');
-      renderCompanyShell();
-    }
-  }else{
-    $('#tabs').hidden=true;
-    $('#tabs').innerHTML='';
-    $('#tabs').setAttribute('aria-hidden','true');
-    renderLogin();
-  }
+  if(state.user){
+    if(state.profile?.role==='manager') state.view==='panel'?managerView():renderCompanyShell();
+    else renderCompanyShell();
+  }else{ renderLogin(); }
   applyLanguage(document);
 }
 function initLanguage(){
@@ -582,7 +594,6 @@ function renderWho(){
   else w.innerHTML=`<span class="role-chip">Empresa</span><span class="who-name"><strong>${esc(state.profile?.company_name||state.user.email)}</strong><span>Bústia de factures</span></span><button class="btn ghost" data-act="logout">Sortir</button>`;
 }
 function renderCompanyShell(){
-  if(!state.user || !state.profile){ renderLogin(); return; }
   $('#view').innerHTML=`<section id="capture"></section><section id="history"></section>`;
   renderCapture(); renderHistory();
   applyLanguage($('#view'));
@@ -591,7 +602,7 @@ function renderCapture(){
   $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><h1>Registra una factura</h1><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
     <div class="mode-card primary-mode" data-act="aiMode"><h3>Llegir la factura automàticament</h3><p>Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.</p><div class="mode-action"><button class="btn primary" data-act="aiMode">Utilitzar la lectura automàtica</button></div></div>
     <div class="mode-card" data-act="manualMode"><h3>Introduir les dades manualment</h3><p>Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.</p><div class="mode-action"><button class="btn" data-act="manualMode">Introduir dades</button></div></div>
-  </div><p class="meta">Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.</p><input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
+  </div><input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
 }
 function renderManualForm(){
   $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><h1>Entrada manual</h1><p>Introdueix les dades de la factura. El fitxer original és opcional.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades de la factura</h2><p class="sub">Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR'},true)}</div><div style="margin-top:14px"><label class="field"><span>Fitxer original (opcional)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta">Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar factura</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
@@ -654,7 +665,6 @@ function renderHistory(){
   applyLanguage($('#history'));
 }
 function managerView(){
-  if(!state.user || state.profile?.role!=='manager'){ renderLogin(); return; }
   $('#view').innerHTML=`<section class="manager-welcome"><div><div class="eyebrow">Panell de gestió</div><h2>Bon dia, Joan Nogue</h2><p>Controla clients, factures pendents i exportacions des d’un únic espai.</p></div><div class="manager-badge">JN</div></section><div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
   <div class="filters">
     <label class="field"><span>Client</span><select data-f="company" id="fCompany"></select></label>
@@ -960,55 +970,10 @@ async function exportExcel(){
   toast(`${list.length} factures exportades a Excel`);
 }
 async function login(){
-  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value, err=$('#loginErr');
-  err.textContent='';
-  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){
-    state.session=null; state.user=null; state.profile=null;
-    $('#tabs').hidden=true; $('#tabs').innerHTML='';
-    err.textContent='No s’ha pogut iniciar la sessió. Comprova el correu electrònic i la contrasenya.';
-    return;
-  }
-  state.session=data.session;
-  state.user=data.user;
-  await loadProfile();
+  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value, err=$('#loginErr'); const {data,error}=await sb.auth.signInWithPassword({email,password:pass}); if(error){err.textContent=error.message;return} state.session=data.session;state.user=data.user;await loadProfile();
 }
 async function loadProfile(){
-  if(!state.user){ renderLogin(); return; }
-  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single();
-  if(error || !data){
-    // L'usuari pot existir a Authentication però no estar configurat com a empresa/gestor.
-    // En aquest cas no permetem mostrar cap vista protegida i tanquem la sessió.
-    const detail = error?.code === 'PGRST116'
-      ? 'Aquest usuari no està configurat a l’aplicació. Contacta amb el gestor.'
-      : 'No s’ha pogut validar el perfil. Contacta amb el gestor.';
-    await sb.auth.signOut().catch(()=>{});
-    resetSignedOut();
-    const loginErr = $('#loginErr');
-    if(loginErr) loginErr.textContent = detail;
-    return;
-  }
-  if(!['manager','company'].includes(data.role)){
-    await sb.auth.signOut().catch(()=>{});
-    resetSignedOut();
-    const loginErr = $('#loginErr');
-    if(loginErr) loginErr.textContent = 'Aquest usuari no té un perfil vàlid. Contacta amb el gestor.';
-    return;
-  }
-  state.profile=data;
-  renderWho();
-  state.view=data.role==='manager'?'panel':'mine';
-  await loadData();
-  if(data.role==='manager'){
-    $('#tabs').hidden=false;
-    $('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button><button class="tab" data-act="tab" data-v="mine" aria-pressed="false">Les meves factures</button>';
-    managerView();
-  } else {
-    $('#tabs').hidden=true;
-    $('#tabs').innerHTML='';
-    renderCompanyShell();
-  }
-  $('#tabs').hidden = false && data.role==='manager';
+  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single(); if(error){fatal('No s’ha pogut llegir el perfil: '+error.message);return} state.profile=data;renderWho();state.view=data.role==='manager'?'panel':'mine';await loadData(); if(data.role==='manager'){ $('#tabs').hidden=false;$('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button><button class="tab" data-act="tab" data-v="mine" aria-pressed="false">Les meves factures</button>'; managerView(); } else renderCompanyShell();
 }
 function resetSignedOut(){
   state.session=null;
@@ -1023,7 +988,6 @@ function resetSignedOut(){
   $('#dlg')?.close();
   $('#tabs').hidden=true;
   $('#tabs').innerHTML='';
-  $('#tabs').setAttribute('aria-hidden','true');
   renderWho();
   renderLogin();
 }
@@ -1047,19 +1011,8 @@ async function logout(){
 }
 
 async function init(){
-  $('#tabs').hidden=true;
-  $('#tabs').innerHTML='';
-  $('#tabs').setAttribute('aria-hidden','true');
-  sb=getClient();
-  const {data}=await sb.auth.getSession();
-  if(data.session){
-    state.session=data.session;
-    state.user=data.session.user;
-    await loadProfile();
-  } else {
-    renderLogin();
-  }
-  sb.auth.onAuthStateChange((event)=>{
+  sb=getClient(); const {data}=await sb.auth.getSession(); if(data.session){state.session=data.session;state.user=data.session.user;await loadProfile()} else renderLogin();
+  sb.auth.onAuthStateChange((event,session)=>{
     if(event==='SIGNED_OUT'){
       resetSignedOut();
     }
