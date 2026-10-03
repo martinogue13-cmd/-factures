@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bústia de factures — Veuresió operativa</title>
+<title>Bústia de factures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -191,7 +191,7 @@ dialog::backdrop{background:var(--backdrop)}
 "use strict";
 const SUPABASE_URL = "https://tyoorwfiuawjkvsktxoc.supabase.co";
 const EXTRACT_INVOICE_URL = SUPABASE_URL + "/functions/v1/extract-invoice";
-let SUPABASE_PUBLISHABLE_KEY = localStorage.getItem("buzon_supabase_publishable_key") || "";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SOq2AMoRp8lAoYQ4HsnmMg_-2QuKq6d";
 let sb = null;
 const $ = (s, r=document) => r.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -249,7 +249,7 @@ function renderLogin(){
         <label class="field"><span>Contrasenya</span><input id="loginPass" type="password" autocomplete="current-password"></label>
       </div>
       <p class="err" id="loginErr" role="alert"></p>
-      <div class="actions"><button class="btn primary" data-act="login">Entrar</button><button class="btn" data-act="setup">Canviar clau</button></div>
+      <div class="actions"><button class="btn primary" data-act="login">Entrar</button></div>
     </div></section>`;
 }
 function renderWho(){
@@ -659,7 +659,6 @@ async function logout(){
 }
 
 async function init(){
-  if(!SUPABASE_PUBLISHABLE_KEY){renderSetup();return}
   sb=getClient(); const {data}=await sb.auth.getSession(); if(data.session){state.session=data.session;state.user=data.session.user;await loadProfile()} else renderLogin();
   sb.auth.onAuthStateChange((event,session)=>{
     if(event==='SIGNED_OUT'){
@@ -671,9 +670,7 @@ async function init(){
 document.addEventListener('click', async e=>{
   const el=e.target.closest('[data-act]'); if(!el)return; const a=el.dataset.act;
   try{
-    if(a==='connect'){const k=$('#pubKey').value.trim();if(!k){$('#setupErr').textContent='Enganxa la Clau publicable.';return}SUPABASE_PUBLISHABLE_KEY=k;localStorage.setItem('buzon_supabase_publishable_key',k);sb=getClient();renderLogin();toast('Connexió preparada')}
-    else if(a==='setup'){renderSetup()}
-    else if(a==='login') await login();
+    if(a==='login') await login();
     else if(a==='logout') await logout();
     else if(a==='pick' || a==='aiMode') $('#filePick').click();
     else if(a==='manualMode') renderManualForm();
