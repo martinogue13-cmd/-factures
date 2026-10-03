@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bústia de factures — Veuresió operativa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --paper:#f2f4f7; --surface:#ffffff; --ink:#14213d; --ink2:#55627a; --line:#d8dee8;
+  --brand:#0d5c63; --brand-ink:#ffffff; --mark:#ffe58a;
+  --warn:#8a5200; --warn-bg:#fff1d6; --ok:#0b6b45; --ok-bg:#d9f2e6; --bad:#a32a2a; --bad-bg:#fde3e1;
+  --backdrop:rgba(20,33,61,.45);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f141d; --surface:#171e2b; --ink:#e8edf5; --ink2:#9aa7bd; --line:#2a3446;
+    --brand:#4fb7bd; --brand-ink:#06232a; --mark:#6b5a12;
+    --warn:#f1c36b; --warn-bg:#3a2d0f; --ok:#6fd6a4; --ok-bg:#12372a; --bad:#ff9b94; --bad-bg:#431a19;
+    --backdrop:rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f141d; --surface:#171e2b; --ink:#e8edf5; --ink2:#9aa7bd; --line:#2a3446;
+  --brand:#4fb7bd; --brand-ink:#06232a; --mark:#6b5a12;
+  --warn:#f1c36b; --warn-bg:#3a2d0f; --ok:#6fd6a4; --ok-bg:#12372a; --bad:#ff9b94; --bad-bg:#431a19;
+  --backdrop:rgba(0,0,0,.6);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1120px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:1.15rem}
+.brand svg{width:24px;height:24px;color:var(--brand)}
+.tabs{display:flex;gap:4px;background:var(--paper);padding:3px;border-radius:11px;border:1px solid var(--line)}
+.tab{border:0;background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:500;color:var(--ink2)}
+.tab[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+
+.who{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--ink2)}
+.who b{color:var(--ink);font-weight:600}
+.who .btn{min-height:36px;padding:6px 12px}
+.login{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;max-width:920px;margin:18px auto 0;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:32px}
+.login h1{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.1;font-weight:700;margin-bottom:10px}
+.login p{color:var(--ink2);margin:0 0 16px}
+.login .receipt{max-width:150px;margin:8px 0 0}
+.login .fields{grid-template-columns:1fr}
+.fname{color:var(--ink2);font-size:.88rem;margin:8px 0 0;overflow-wrap:anywhere}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 72px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:500;min-height:44px}
+.btn:hover{border-color:var(--ink2)}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.55;cursor:default}
+.row-actions{display:flex;flex-wrap:wrap;gap:10px}
+
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:30px}
+.hero h1{font-size:clamp(1.7rem,4.2vw,2.5rem);line-height:1.08;font-weight:700;margin-bottom:10px}
+.hero p{margin:0 0 20px;color:var(--ink2);max-width:46ch}
+.hero.drag{border-color:var(--brand);box-shadow:0 0 0 3px var(--mark)}
+.receipt{width:100%;max-width:220px;justify-self:center;color:var(--ink)}
+.notice{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:.95rem}
+.notice.bad{background:var(--bad-bg);color:var(--bad)}
+
+.work{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.imgwrap{position:relative;border-radius:12px;overflow:hidden;background:var(--paper);border:1px solid var(--line);min-height:120px;display:grid;place-items:center;color:var(--ink2)}
+.imgwrap img{display:block;width:100%;max-height:72vh;object-fit:contain}
+.scan{position:absolute;left:0;right:0;top:0;height:3px;background:var(--brand);box-shadow:0 0 22px 8px var(--mark);animation:sweep 1.7s ease-in-out infinite alternate}
+@keyframes sweep{to{top:calc(100% - 3px)}}
+.work h2{font-size:1.35rem;margin-bottom:4px}
+.sub{color:var(--ink2);margin:0 0 14px;font-size:.95rem}
+.skeleton{display:grid;gap:12px;margin:18px 0}
+.skeleton i{display:block;height:44px;border-radius:8px;background:var(--paper);border:1px solid var(--line)}
+.skeleton i:nth-child(odd){width:100%}.skeleton i:nth-child(even){width:70%}
+
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.field{display:block}
+.field.wide{grid-column:1/-1}
+.field>span{display:block;font-size:.82rem;font-weight:500;color:var(--ink2);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background-color:var(--surface);min-height:44px}
+.field textarea{min-height:76px;resize:vertical}
+.field input[readonly],.field select[disabled]{background-color:var(--paper)}
+.field.ai input{background-image:linear-gradient(to top,var(--mark) 0 40%,transparent 40%);background-repeat:no-repeat;background-size:100% 100%}
+.field.miss input{border-color:var(--warn);background-color:var(--warn-bg)}
+.field.miss em{font-style:normal;color:var(--warn);font-size:.78rem}
+.fresh .field{animation:rise .4s ease-out both;animation-delay:calc(var(--i)*70ms)}
+.fresh .field.ai input{animation:mark .7s ease-out both;animation-delay:calc(var(--i)*70ms + 200ms)}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}}
+@keyframes mark{from{background-size:0% 100%}}
+.err{color:var(--bad);margin:10px 0 0;min-height:1.4em;font-size:.95rem}
+.warn-sum{color:var(--warn);font-size:.9rem;margin:10px 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:30px 0 12px;flex-wrap:wrap}
+.section-head h2{font-size:1.4rem}
+.section-head span{color:var(--ink2);font-size:.95rem}
+.list{list-style:none;margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.list li+li{border-top:1px solid var(--line)}
+.item{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;text-align:left;background:transparent;border:0;padding:14px 16px;cursor:pointer}
+.item:hover{background:var(--paper)}
+.item b{display:block;font-weight:600}
+.item small{color:var(--ink2);font-size:.88rem}
+.item .amt{text-align:right;white-space:nowrap}
+.item .amt strong{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.empty{padding:28px 18px;color:var(--ink2);background:var(--surface);border:1px dashed var(--line);border-radius:14px}
+.chip{display:inline-block;font-size:.78rem;font-weight:600;padding:2px 9px;border-radius:999px}
+.chip.pendiente{background:var(--warn-bg);color:var(--warn)}
+.chip.revisada{background:var(--ok-bg);color:var(--ok)}
+
+
+.mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.mode-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.mode-card:hover{transform:translateY(-1px);border-color:var(--brand);box-shadow:0 8px 20px rgba(20,33,61,.08)}
+.mode-card h3{font-size:1.1rem;margin:0 0 6px}
+.mode-card p{margin:0;color:var(--ink2);font-size:.92rem}
+.mode-card .mode-action{margin-top:12px}
+@media (max-width:760px){.mode-grid{grid-template-columns:1fr}}
+.history-filters{margin-top:10px;margin-bottom:16px}.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.filters .field{min-width:150px;flex:1 1 150px}
+.filters .field.grow{flex:2 1 220px}
+.summary{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:baseline;margin:16px 2px}
+.summary div{font-size:.9rem;color:var(--ink2)}
+.summary strong{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.4rem;color:var(--ink);font-variant-numeric:tabular-nums}
+.linkbtn{background:none;border:0;padding:0;color:var(--brand);text-decoration:underline;cursor:pointer}
+.bar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;margin:20px 0 4px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:980px}
+th{text-align:left;font-weight:600;font-size:.84rem;color:var(--ink2);padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--paper)}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td small{display:block;color:var(--ink2)}
+
+dialog{border:0;border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(980px,calc(100vw - 20px));max-height:calc(100vh - 20px);overflow:auto}
+dialog::backdrop{background:var(--backdrop)}
+.dpad{padding:20px}
+.dhead{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}
+.dhead h2{font-size:1.4rem}
+.dgrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:22px}
+.meta{color:var(--ink2);font-size:.88rem;margin:14px 0 0}
+
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:12px;max-width:min(92vw,520px);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+#toast.bad{background:var(--bad);color:#fff}
+
+@media (max-width:760px){
+  .login{grid-template-columns:1fr;padding:22px}
+  .hero{grid-template-columns:1fr;padding:22px}
+  .receipt{display:none}
+  .work,.dgrid{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr 1fr}
+}
+@media (max-width:420px){.fields{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){
+  .scan{animation:none;top:50%}
+  .fresh .field,.fresh .field.ai input{animation:none}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 3h14v18l-2.33-1.6L14.33 21 12 19.4 9.67 21 7.33 19.4 5 21z"/><path d="M9 8h6M9 12h6"/></svg>
+    <span>Bústia de factures</span>
+  </div>
+  <nav class="tabs" id="tabs" hidden aria-label="Vista"></nav>
+  <div class="who" id="who"></div>
+</div></header>
+<main class="wrap" id="view"><p class="sub">Carregant…</p></main>
+<dialog id="dlg"><div class="dpad" id="dlgBody"></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+const SUPABASE_URL = "https://tyoorwfiuawjkvsktxoc.supabase.co";
+const EXTRACT_INVOICE_URL = SUPABASE_URL + "/functions/v1/extract-invoice";
+let SUPABASE_PUBLISHABLE_KEY = localStorage.getItem("buzon_supabase_publishable_key") || "";
+let sb = null;
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function normalizeCurrency(cur){
+  const c=String(cur ?? '').trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(c) ? c : 'EUR';
+}
+const money = (n, cur='EUR') => {
+  if(n == null || n === '') return '—';
+  const code=normalizeCurrency(cur);
+  try { return new Intl.NumberFormat('ca-ES',{style:'currency',currency:code}).format(Number(n)); }
+  catch { return `${Number(n).toLocaleString('ca-ES',{minimumFractionDigits:2,maximumFractionDigits:2})} ${code}`; }
+};
+const fmtDate = s => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); return m ? `${m[3]}/${m[2]}/${m[1]}` : 'sin fecha'; };
+const fmtStamp = s => { const d=new Date(s); return isNaN(d)?'':d.toLocaleString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
+const statusChip = s => `<span class="chip ${s==='revisada'?'revisada':'pendiente'}">${s==='revisada'?'Revisada':'Pendent'}</span>`;
+const RECEIPT = `<svg class="receipt" viewBox="0 0 200 250" fill="none" aria-hidden="true"><path d="M20 8h160v222l-16-10-16 10-16-10-16 10-16-10-16 10-16-10-16 10-16-10-16 10V8z" fill="var(--paper)" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><rect x="38" y="44" width="92" height="14" rx="2" fill="var(--mark)"/><rect x="38" y="76" width="70" height="14" rx="2" fill="var(--mark)"/><path d="M40 52h86M40 84h64M40 118h120M40 142h120M40 166h80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="38" y="186" width="124" height="16" rx="2" fill="var(--mark)"/><path d="M42 194h112" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>`;
+const safeName = n => (n||'factura').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'_').slice(0,120) || 'factura';
+const isPdf = f => f?.type === 'application/pdf' || /\.pdf$/i.test(f?.name||'');
+let state = {session:null,user:null,profile:null,companies:[],invoices:[],view:'mine',filters:{company:'',status:'',from:'',to:'',q:''},historyFilters:{status:'',from:'',to:'',q:''},current:null,pendingFile:null};
+let toastTimer;
+function toast(msg,bad=false){const t=$('#toast');t.textContent=msg;t.className='on'+(bad?' bad':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3500)}
+function fatal(msg){$('#view').innerHTML=`<div class="notice bad">${esc(msg)}</div>`}
+function parseConfig(){
+  const key = prompt('Enganxa la teva Clau publicable de Supabase (sb_publishable_...). Només es desa en aquest navegador.');
+  if(!key) return false;
+  SUPABASE_PUBLISHABLE_KEY=key.trim(); localStorage.setItem('buzon_supabase_publishable_key', SUPABASE_PUBLISHABLE_KEY); return true;
+}
+function getClient(){
+  if(!SUPABASE_PUBLISHABLE_KEY){
+    return null;
+  }
+  if(!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  return sb;
+}
+function renderSetup(){
+  $('#view').innerHTML=`<section class="login">
+    <div><h1>Connecta la teva bústia</h1><p>Aquesta versió utilitza Supabase per a l’accés, la base de dades, l’aïllament per empresa i l’emmagatzematge segur dels originals.</p>${RECEIPT}</div>
+    <div>
+      <div class="notice">URL del projecte: <b>${esc(SUPABASE_URL)}</b><br><span class="meta">IA: <b>${esc(EXTRACT_INVOICE_URL)}</b></span></div>
+      <div class="fields"><label class="field"><span>Clau publicable</span><input id="pubKey" type="password" autocomplete="off" placeholder="sb_publishable_..."></label></div>
+      <div class="actions"><button class="btn primary" data-act="connect">Connectar</button></div>
+      <p class="meta">No hi posis cap Secret key.</p>
+      <p class="err" id="setupErr" role="alert"></p>
+    </div></section>`;
+  if(SUPABASE_PUBLISHABLE_KEY) $('#pubKey').value=SUPABASE_PUBLISHABLE_KEY;
+}
+function renderLogin(){
+  $('#tabs').hidden=true;
+  $('#view').innerHTML=`<section class="login">
+    <div><h1>Entra a la teva bústia de factures</h1><p>L’empresa i el gestor accedeixen amb el seu compte de Supabase. Cada empresa només veu les seves pròpies factures.</p>${RECEIPT}</div>
+    <div>
+      <div class="fields">
+        <label class="field"><span>Correu electrònic</span><input id="loginEmail" type="email" autocomplete="email"></label>
+        <label class="field"><span>Contrasenya</span><input id="loginPass" type="password" autocomplete="current-password"></label>
+      </div>
+      <p class="err" id="loginErr" role="alert"></p>
+      <div class="actions"><button class="btn primary" data-act="login">Entrar</button><button class="btn" data-act="setup">Canviar clau</button></div>
+    </div></section>`;
+}
+function renderWho(){
+  const w=$('#who'); if(!state.user) {w.innerHTML=''; return;}
+  w.innerHTML=`<span><b>${esc(state.profile?.company_name||state.user.email)}</b></span><button class="btn ghost" data-act="logout">Sortir</button>`;
+}
+function renderCompanyShell(){
+  $('#view').innerHTML=`<section id="capture"></section><section id="history"></section>`;
+  renderCapture(); renderHistory();
+}
+function renderCapture(){
+  $('#capture').innerHTML=`<section class="hero"><div><h1>Registra una factura</h1><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
+    <div class="mode-card" data-act="aiMode"><h3>Llegir la factura automàticament</h3><p>Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.</p><div class="mode-action"><button class="btn primary" data-act="aiMode">Utilitzar la lectura automàtica</button></div></div>
+    <div class="mode-card" data-act="manualMode"><h3>Introduir les dades manualment</h3><p>Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.</p><div class="mode-action"><button class="btn" data-act="manualMode">Introduir dades</button></div></div>
+  </div><p class="meta">Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.</p><input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
+}
+function renderManualForm(){
+  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><h1>Entrada manual</h1><p>Introdueix les dades de la factura. El fitxer original és opcional.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades de la factura</h2><p class="sub">Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR'},true)}</div><div style="margin-top:14px"><label class="field"><span>Fitxer original (opcional)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta">Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar factura</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+}
+async function saveManual(){
+  const form=$('#manualForm'), err=$('#manualErr');
+  const d=readFields(form);
+  if(!d.supplier_name){err.textContent='Indica l’empresa emissora.';return;}
+  const file=$('#manualFile')?.files?.[0]||null;
+  const btn=$('[data-act="saveManual"]'); btn.disabled=true; btn.textContent='Desant…';
+  if(file && file.size>25*1024*1024){err.textContent='El fitxer supera el límit de 25 MB.';btn.disabled=false;btn.textContent='Desar factura';return;}
+  const baseRec={company_id:state.profile.company_id,...d,status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
+  const {data:ins,error}=await sb.from('invoices').insert(baseRec).select().single();
+  if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar factura';return;}
+  if(file){
+    const finalPath=`${state.profile.company_id}/${ins.id}/${safeName(file.name)}`;
+    const {error:up}=await sb.storage.from('invoices').upload(finalPath,file,{upsert:false});
+    if(up){await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar el fitxer original: '+up.message;btn.disabled=false;btn.textContent='Desar factura';return;}
+    const {error:patch}=await sb.from('invoices').update({file_path:finalPath}).eq('id',ins.id);
+    if(patch){await sb.storage.from('invoices').remove([finalPath]).catch(()=>{});await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar la ruta del fitxer: '+patch.message;btn.disabled=false;btn.textContent='Desar factura';return;}
+  }
+  toast('Factura guardada correctament'); state.pendingFile=null; state.view='mine'; await loadData(); renderCompanyShell();
+}
+function filteredCompanyHistory(){
+  const f=state.historyFilters, q=(f.q||'').trim().toLowerCase();
+  return state.invoices.filter(x=>{
+    if(f.status && (x.status||'pendiente')!==f.status) return false;
+    const d=x.invoice_date || (x.created_at||'').slice(0,10);
+    if(f.from && d<f.from) return false;
+    if(f.to && d>f.to) return false;
+    if(q){
+      const hay=`${x.supplier_name||''} ${x.supplier_tax_id||''} ${x.invoice_number||''} ${x.concept||''}`.toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+}
+function syncCompanyHistoryFilters(){
+  document.querySelectorAll('[data-hf]').forEach(el=>{el.value=state.historyFilters[el.dataset.hf]||''});
+}
+let historyFilterTimer;
+function scheduleHistoryRender(){
+  clearTimeout(historyFilterTimer);
+  historyFilterTimer=setTimeout(()=>renderHistory(),120);
+}
+function renderHistory(){
+  const box=$('#history'); if(!box) return;
+  const list=filteredCompanyHistory();
+  const total=state.invoices.length;
+  const head=`<div class="section-head"><h2>Historial de factures</h2><span>${list.length} de ${total}</span></div>
+    <div class="filters history-filters">
+      <label class="field grow"><span>Cercar emissor, NIF, número o concepte</span><input type="search" data-hf="q" autocomplete="off" placeholder="Escriu per cercar…"></label>
+      <label class="field"><span>Estat</span><select data-hf="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
+      <label class="field"><span>Des de</span><input type="date" data-hf="from"></label>
+      <label class="field"><span>Fins a</span><input type="date" data-hf="to"></label>
+    </div>`;
+  if(!list.length){box.innerHTML=head+`<div class="empty">No hi ha cap factura que coincideixi amb els filtres.</div>`;syncCompanyHistoryFilters();return;}
+  box.innerHTML=head+`<ul class="list">${list.map(x=>`<li><button class="item" data-act="open" data-id="${esc(x.id)}"><span><b>${esc(x.supplier_name||'Sense nom')}</b><small>${x.invoice_number?'Núm. '+esc(x.invoice_number)+', ':''}${fmtDate(x.invoice_date)}${x.file_type==='application/pdf'?' (PDF)':''}</small></span><span class="amt"><strong>${money(x.total,x.currency)}</strong>${statusChip(x.status)}</span></button></li>`).join('')}</ul>`;
+  syncCompanyHistoryFilters();
+}
+function managerView(){
+  $('#view').innerHTML=`<div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
+  <div class="filters">
+    <label class="field"><span>Client</span><select data-f="company" id="fCompany"></select></label>
+    <label class="field"><span>Estat</span><select data-f="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
+    <label class="field"><span>Des de</span><input type="date" data-f="from"></label>
+    <label class="field"><span>Fins a</span><input type="date" data-f="to"></label>
+    <label class="field grow"><span>Cercar client, emissor, NIF o núm.</span><input type="search" data-f="q"></label>
+  </div>
+  <div id="summary" class="summary"></div>
+  <div class="bar"><span class="sub" id="countTxt" style="margin:0"></span><div class="row-actions"><button class="btn primary" data-act="export">Exportar totes a Excel</button></div></div>
+  <div id="tbl"></div>`;
+  syncFilters(); renderManagerTable();
+}
+function syncFilters(){
+  const c=$('#fCompany'); if(!c) return;
+  c.innerHTML='<option value="">Tots</option>'+state.companies.map(x=>`<option value="${x.id}" ${state.filters.company===x.id?'selected':''}>${esc(x.name)}${x.tax_id?' — '+esc(x.tax_id):''}</option>`).join('');
+  document.querySelectorAll('[data-f]').forEach(el=>{el.value=state.filters[el.dataset.f]||''});
+  $('#clientCount').textContent=`${state.companies.length} ${state.companies.length===1?'empresa registrada':'empreses registrades'}`;
+}
+function filteredInvoices(){
+  const f=state.filters,q=f.q.trim().toLowerCase();
+  return state.invoices.filter(x=>{
+    if(f.company && x.company_id!==f.company) return false;
+    if(f.status && (x.status||'pendiente')!==f.status) return false;
+    const d=x.invoice_date || (x.created_at||'').slice(0,10);
+    if(f.from&&d<f.from) return false; if(f.to&&d>f.to) return false;
+    if(q){const company=state.companies.find(c=>c.id===x.company_id);const hay=`${company?.name||''} ${company?.tax_id||''} ${x.supplier_name||''} ${x.supplier_tax_id||''} ${x.invoice_number||''} ${x.concept||''}`.toLowerCase(); if(!hay.includes(q)) return false;}
+    return true;
+  }).sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+}
+function renderManagerTable(){
+  const list=filteredInvoices(); const eur=list.filter(x=>(x.currency||'EUR')==='EUR'); const sum=k=>eur.reduce((a,x)=>a+Number(x[k]||0),0); const pend=state.invoices.filter(x=>(x.status||'pendiente')==='pendiente').length;
+  $('#summary').innerHTML=`<div>Base imposable<strong>${money(sum('base'))}</strong></div><div>IVA<strong>${money(sum('vat_amount'))}</strong></div><div>Total<strong>${money(sum('total'))}</strong></div><div>Pendents de revisar<strong>${pend}</strong></div>`;
+  $('#countTxt').textContent=`${list.length} ${list.length===1?'factura':'factures'}`+(eur.length<list.length?' (sumes només EUR)':'');
+  if(!list.length){$('#tbl').innerHTML='<div class="empty">Cap factura coincideix amb els filtres.</div>';return}
+  $('#tbl').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Pujada</th><th>Client</th><th>Data</th><th>Emissor</th><th>NIF emissor</th><th>Núm. factura</th><th class="n">Base</th><th class="n">IVA</th><th class="n">Total</th><th>Estat</th><th></th></tr></thead><tbody>${list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return `<tr><td>${esc(fmtStamp(x.created_at))}</td><td><b>${esc(c?.name||x.company_id)}</b><small>${esc(c?.tax_id||'')}</small></td><td>${fmtDate(x.invoice_date)}</td><td>${esc(x.supplier_name||'Sense nom')}<small>${esc(x.concept||'')}</small></td><td>${esc(x.supplier_tax_id||'')}</td><td>${esc(x.invoice_number||'')}${x.file_type==='application/pdf'?'<small>PDF</small>':''}</td><td class="n">${x.base==null?'':money(x.base,x.currency)}</td><td class="n">${x.vat_amount==null?'':money(x.vat_amount,x.currency)}</td><td class="n"><b>${money(x.total,x.currency)}</b></td><td>${statusChip(x.status)}</td><td><button class="btn ghost" data-act="open" data-id="${x.id}">Veure</button></td></tr>`}).join('')}</tbody></table></div>`;
+}
+function currencyField(v={},editable=true){
+  const code=normalizeCurrency(v.currency||'EUR');
+  const opts=[['EUR','EUR — Euro'],['USD','USD — Dòlar nord-americà'],['GBP','GBP — Lliura esterlina'],['CHF','CHF — Franc suís'],['CAD','CAD — Dòlar canadenc'],['AUD','AUD — Dòlar australià'],['JPY','JPY — Ien japonès']];
+  return `<label class="field"><span>Moneda</span><select data-k="currency" ${editable?'':'disabled'}>${opts.map(([c,l])=>`<option value="${c}" ${code===c?'selected':''}>${l}</option>`).join('')}</select></label>`;
+}
+function fieldsHTML(v={},editable=true){
+  const f=(k,l,t='text',wide=false)=>`<label class="field ${wide?'wide':''}"><span>${l}</span><input type="${t}" data-k="${k}" value="${esc(v[k] ?? '')}" ${editable?'':'readonly'}></label>`;
+  return f('supplier_name','Empresa emissora','text',true)+f('supplier_tax_id','NIF / CIF de l’emissor')+f('invoice_number','Núm. de factura')+f('invoice_date','Data de la factura','date')+currencyField(v,editable)+f('base','Base imposable','number')+f('vat_rate','IVA (%)','number')+f('vat_amount','Quota d’IVA','number')+f('total','Total','number')+f('concept','Concepte','text',true);
+}
+function readFields(root){const o={};root.querySelectorAll('[data-k]').forEach(x=>{o[x.dataset.k]=x.value.trim()||null});o.currency=normalizeCurrency(o.currency);['base','vat_rate','vat_amount','total'].forEach(k=>{if(o[k]!=null){const n=Number(String(o[k]).replace(',','.'));o[k]=Number.isFinite(n)?n:null}});return o}
+function uploadProgressHtml(stage, detail, percent) {
+  return `<section class="work"><div><div class="imgwrap" id="previewBox"><div style="text-align:center;padding:36px 18px"><div class="scan" style="position:relative;top:auto;left:auto;right:auto;animation:none;margin:0 auto 18px;width:70%;height:4px"></div><b>${esc(stage)}</b><p class="sub" style="margin:8px 0 0">${esc(detail)}</p></div></div></div><div><h2>${esc(stage)}</h2><p class="sub">${esc(detail)}</p><div style="margin:18px 0 8px;height:10px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden"><div style="height:100%;width:${Math.max(5,Math.min(100,percent))}%;background:var(--brand);transition:width .3s ease"></div></div><p class="meta">El procés pot trigar uns segons. Si supera els 60 segons, mostrarem l’error.</p><div class="actions"><button class="btn" data-act="cancelUpload">Cancel·lar</button></div></div></section>`;
+}
+
+async function renderUploadReview(file, src, values={}, message='', bad=false){
+  $('#view').innerHTML=`<section class="work"><div><div class="imgwrap" id="previewBox">${isPdf(file)?'PDF carregat':`<img src="${esc(src)}" alt="Vista previa">`}</div><p class="fname">${esc(file.name)}</p></div><div><h2>Revisar factura</h2><p class="sub">Les dades detectades apareixen a continuació. Revisa-les i corregeix-les abans de desar-les.</p>${message?`<div class="notice ${bad?'bad':''}">${esc(message)}</div>`:''}<div class="fields" id="uploadForm">${fieldsHTML(values,true)}</div><p class="err" id="uploadErr"></p><div class="actions"><button class="btn primary" data-act="saveUpload">Desar factura</button><button class="btn" data-act="cancelUpload">Cancel·lar</button><button class="btn" data-act="manualFromAI">Passar a entrada manual</button></div><p class="meta">El PDF/la imatge original es desarà dins l’espai d’emmagatzematge d’aquesta empresa.</p></div></section>`;
+}
+function dataUrlFromFile(file){
+  return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file);});
+}
+function withTimeout(promise, ms, message){
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject)=>{ timer=setTimeout(()=>reject(new Error(message)), ms); })
+  ]).finally(()=>clearTimeout(timer));
+}
+async function extractInvoiceFromStorage(invoiceId){
+  const result=await withTimeout(
+    sb.functions.invoke('extract-invoice',{body:{invoice_id:invoiceId}}),
+    60000,
+    'La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.'
+  );
+  const {data,error}=result;
+  if(error) throw new Error(error.message||'No s’ha pogut executar la lectura automàtica.');
+  if(!data?.ok) throw new Error(data?.error||'No s’ha pogut completar la lectura automàtica.');
+  const raw=data.data||{};
+  return {
+    esFactura: raw.esFactura !== false,
+    values:{
+      supplier_name: raw.empresa ?? null,
+      supplier_tax_id: raw.nif ?? null,
+      invoice_number: raw.numeroFactura ?? null,
+      invoice_date: raw.fecha ?? null,
+      currency: normalizeCurrency(raw.moneda),
+      base: raw.baseImponible ?? null,
+      vat_rate: raw.tipoIva ?? null,
+      vat_amount: raw.cuotaIva ?? null,
+      total: raw.total ?? null,
+      concept: raw.concepto ?? null
+    },
+    warnings:Array.isArray(raw.avisos)?raw.avisos.filter(Boolean):[]
+  };
+}
+function uploadIsActive(opId){
+  return !!(opId && state.pendingFile && state.pendingFile.opId===opId);
+}
+
+async function openUpload(file){
+  if(!file) return;
+  const maxBytes=15*1024*1024;
+  if(file.size>maxBytes){
+    renderUploadReview(file,'',{currency:'EUR'},'El fitxer supera el límit de 15 MB per a la lectura automàtica. Prova amb un fitxer més petit.',true);
+    return;
+  }
+
+  const draftId=crypto.randomUUID();
+  state.pendingFile={file,src:'',path:'',values:{currency:'EUR'},draftId,tempInvoiceId:null,opId:draftId};
+  $('#view').innerHTML=uploadProgressHtml('Preparant el fitxer…','Preparant el PDF o la imatge per pujar-la de manera segura.',10);
+  const src=isPdf(file) ? '' : await dataUrlFromFile(file);
+  if(!uploadIsActive(draftId)) return;
+  const path=`${state.profile.company_id}/_draft/${draftId}-${safeName(file.name)}`;
+  state.pendingFile.src=src;
+  state.pendingFile.path=path;
+
+  $('#view').innerHTML=uploadProgressHtml('1/2 · Pujant el fitxer…','Desant temporalment l’original a l’emmagatzematge privat de la teva empresa.',35);
+  const {error:up}=await withTimeout(
+    sb.storage.from('invoices').upload(path,file,{upsert:false}),
+    30000,
+    'La subida ha tardado más de 30 segundos. Comprueba tu conexión y vuelve a intentarlo.'
+  ).catch(error=>({error}));
+  if(up){
+    if(!uploadIsActive(draftId)) return;
+    state.pendingFile=null;
+    await renderUploadReview(file,src,{currency:'EUR'},'No s’ha pogut pujar temporalment el fitxer: '+up.message,true);
+    return;
+  }
+  if(!uploadIsActive(draftId)){
+    await sb.storage.from('invoices').remove([path]).catch(()=>{});
+    return;
+  }
+
+  const {data:tmp,error:tmpErr}=await sb.from('invoices').insert({
+    company_id:state.profile.company_id,
+    status:'pendiente',
+    file_path:path,
+    file_name:file.name,
+    file_type:file.type||null
+  }).select('id').single();
+  if(tmpErr){
+    await sb.storage.from('invoices').remove([path]).catch(()=>{});
+    if(uploadIsActive(draftId)){
+      state.pendingFile=null;
+      await renderUploadReview(file,src,{currency:'EUR'},'No s’ha pogut preparar la factura per a la lectura automàtica: '+tmpErr.message,true);
+    }
+    return;
+  }
+  if(!uploadIsActive(draftId)){
+    await sb.from('invoices').delete().eq('id',tmp.id).catch(()=>{});
+    await sb.storage.from('invoices').remove([path]).catch(()=>{});
+    return;
+  }
+  state.pendingFile.tempInvoiceId=tmp.id;
+
+  try{
+    if(!uploadIsActive(draftId)){
+      await sb.from('invoices').delete().eq('id',tmp.id).catch(()=>{});
+      await sb.storage.from('invoices').remove([path]).catch(()=>{});
+      return;
+    }
+    $('#view').innerHTML=uploadProgressHtml('2/2 · Analitzant amb IA…','La Edge Function està llegint el document i extraient-ne les dades de la factura.',70);
+    const data=await extractInvoiceFromStorage(tmp.id);
+    if(!uploadIsActive(draftId)){
+      await sb.from('invoices').delete().eq('id',tmp.id).catch(()=>{});
+      await sb.storage.from('invoices').remove([path]).catch(()=>{});
+      return;
+    }
+    await sb.from('invoices').delete().eq('id',tmp.id);
+    if(!uploadIsActive(draftId)) return;
+    state.pendingFile.tempInvoiceId=null;
+    state.pendingFile.values=data.values;
+    const warnings=[...data.warnings];
+    if(!data.esFactura){
+      warnings.unshift('El document no sembla una factura, tiquet o rebut. Comprova que has seleccionat el fitxer correcte.');
+    }
+    await renderUploadReview(file,src,state.pendingFile.values,warnings.length?('Lectura automàtica completada amb avisos: '+warnings.join(' · ')):'Lectura automàtica completada. Revisa les dades abans de desar-les.',warnings.length>0);
+  }catch(e){
+    await sb.from('invoices').delete().eq('id',tmp.id).catch(()=>{});
+    await sb.storage.from('invoices').remove([path]).catch(()=>{});
+    if(!uploadIsActive(draftId)) return;
+    state.pendingFile.tempInvoiceId=null;
+    await renderUploadReview(file,src,state.pendingFile.values,'No s’ha pogut completar la lectura automàtica: '+(e.message||'error desconocido')+' Pots tornar enrere i triar «Introduir les dades manualment».',true);
+  }
+}
+async function cancelPendingUpload(){
+  const p=state.pendingFile;
+  // Cancelación inmediata: volvemos a la pantalla de elección sin esperar a la IA.
+  state.pendingFile=null;
+  state.historyFilters={status:'',from:'',to:'',q:''};
+  state.view='mine';
+  renderCompanyShell();
+  toast('Pujada cancel·lada');
+
+  // Limpieza en segundo plano del archivo/registro temporal.
+  if(p?.tempInvoiceId){
+    await sb.from('invoices').delete().eq('id',p.tempInvoiceId).catch(()=>{});
+  }
+  if(p?.path){
+    await sb.storage.from('invoices').remove([p.path]).catch(()=>{});
+  }
+  await loadData().catch(()=>{});
+}
+async function saveUpload(){
+  const p=state.pendingFile; if(!p?.path)return;
+  const d=readFields($('#uploadForm')),err=$('#uploadErr');
+  if(!d.supplier_name){err.textContent='Indica l’empresa emissora.';return;}
+  const btn=$('[data-act="saveUpload"]');btn.disabled=true;btn.textContent='Desant…';
+  const {data:ins,error}=await sb.from('invoices').insert({company_id:state.profile.company_id,...d,status:'pendiente',file_name:p.file.name,file_type:p.file.type||null}).select().single();
+  if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar factura';return}
+  const finalPath=`${state.profile.company_id}/${ins.id}/${safeName(p.file.name)}`;
+  const {error:mv}=await sb.storage.from('invoices').move(p.path,finalPath);
+  if(mv){await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut finalitzar el fitxer: '+mv.message;btn.disabled=false;btn.textContent='Desar factura';return}
+  const {error:patch}=await sb.from('invoices').update({file_path:finalPath}).eq('id',ins.id);
+  if(patch){await sb.storage.from('invoices').remove([finalPath]).catch(()=>{});await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar la ruta del fitxer: '+patch.message;btn.disabled=false;btn.textContent='Desar factura';return}
+  state.pendingFile=null; toast('Factura guardada correctament'); state.view='mine'; await loadData(); renderCompanyShell();
+}
+async function openDetail(id){
+  const inv=state.invoices.find(x=>x.id===id); if(!inv)return; state.current=inv;
+  const manager=state.profile.role==='manager', own=manager||inv.company_id===state.profile.company_id;
+  const hasFile=!!inv.file_path;
+  const preview=hasFile?'Carregant…':'Sense fitxer original adjunt';
+  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>${esc(inv.supplier_name||'Factura')}</h2>${statusChip(inv.status)}</div><button class="btn ghost" data-act="close">Tancar</button></div><div class="dgrid"><div><div class="imgwrap" id="detailPreview">${preview}</div><p class="fname">${esc(inv.file_name||'')}</p></div><div><div id="detailForm" class="fields">${fieldsHTML(inv,own)}</div>${manager?`<div class="fields" style="margin-top:14px"><label class="field"><span>Estat</span><select id="detailStatus"><option value="pendiente" ${inv.status==='pendiente'?'selected':''}>Pendent</option><option value="revisada" ${inv.status==='revisada'?'selected':''}>Revisada</option></select></label><label class="field wide"><span>Nota del gestor</span><textarea id="detailNote">${esc(inv.note||'')}</textarea></label></div>`:(inv.note?`<div class="notice" style="margin-top:14px"><b>Nota del gestor:</b> ${esc(inv.note)}</div>`:'')}<p class="err" id="detailErr"></p><div class="actions">${own?'<button class="btn primary" data-act="saveDetail">Desar canvis</button>':''}${hasFile?'<button class="btn" data-act="download">Descarregar original</button>':''}${own?'<button class="btn danger" data-act="delete">Eliminar</button>':''}</div><p class="meta">Pujada el ${esc(fmtStamp(inv.created_at))}${hasFile?'':' · Sense fitxer original adjunt'}</p></div></div>`;
+  $('#dlg').showModal();
+  if(!hasFile)return;
+  const {data:signed,error}=await sb.storage.from('invoices').createSignedUrl(inv.file_path,300); const p=$('#detailPreview'); if(signed?.signedUrl){if(inv.file_type==='application/pdf'){p.innerHTML=`<iframe src="${esc(signed.signedUrl)}" style="width:100%;height:68vh;border:0" title="PDF"></iframe>`}else p.innerHTML=`<img src="${esc(signed.signedUrl)}" alt="Factura">`}else p.textContent='Vista prèvia no disponible'; if(error) $('#detailErr').textContent=error.message;
+}
+async function saveDetail(){
+  const inv=state.current, err=$('#detailErr'), v=readFields($('#detailForm')); const patch={...v};
+  if(state.profile.role==='manager'){patch.status=$('#detailStatus').value;patch.note=$('#detailNote').value.trim()||null}
+  const {error}=await sb.from('invoices').update(patch).eq('id',inv.id); if(error){err.textContent=error.message;return} toast('Canvis desats');$('#dlg').close();await loadData();
+}
+async function deleteCurrent(){
+  const inv=state.current; if(!inv)return; if(!confirm('Vols eliminar aquesta factura i el seu fitxer original?'))return;
+  if(inv.file_path){const {error:s}=await sb.storage.from('invoices').remove([inv.file_path]); if(s){toast(s.message,true);return}}
+  const {error}=await sb.from('invoices').delete().eq('id',inv.id); if(error){toast(error.message,true);return} toast('Factura eliminada');$('#dlg').close();await loadData();
+}
+async function downloadCurrent(){
+  const inv=state.current; if(!inv?.file_path){toast('Aquesta factura no té cap fitxer original adjunt.',true);return} const {data,error}=await sb.storage.from('invoices').createSignedUrl(inv.file_path,60); if(error){toast(error.message,true);return} const a=document.createElement('a');a.href=data.signedUrl;a.download=inv.file_name||'factura';a.target='_blank';a.click();
+}
+async function loadAllRows(table, pageSize=1000){
+  const all=[];
+  for(let from=0;;from+=pageSize){
+    const to=from+pageSize-1;
+    const r=await sb.from(table).select('*').order('created_at',{ascending:false}).range(from,to);
+    if(r.error) return {data:[],error:r.error};
+    const batch=r.data||[];
+    all.push(...batch);
+    if(batch.length<pageSize) break;
+  }
+  return {data:all,error:null};
+}
+async function loadData(){
+  if(!state.user)return;
+  if(state.profile.role==='manager'){
+    const [companiesResult,invoicesResult]=await Promise.all([
+      sb.from('companies').select('*').order('name'),
+      loadAllRows('invoices',1000)
+    ]);
+    if(companiesResult.error){toast(companiesResult.error.message,true);return}
+    if(invoicesResult.error){toast(invoicesResult.error.message,true);return}
+    state.companies=companiesResult.data||[];
+    state.invoices=(invoicesResult.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency)}));
+    if(state.view==='panel')managerView();
+  }else{
+    const {data,isError}=await fetchCompanyInvoices(); if(isError)return; state.invoices=data||[]; if(state.view==='mine')renderHistory();
+  }
+}
+async function fetchCompanyInvoices(){const r=await sb.from('invoices').select('*').order('created_at',{ascending:false}).limit(500); if(r.error){toast(r.error.message,true);return {data:[],isError:true}} return {data:(r.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency)})),isError:false}}
+async function exportExcel(){
+  // L'export del gestor ignora tots els filtres: sempre exporta totes les factures visibles del gestor.
+  const list=state.invoices.slice().sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+  if(!list.length){toast('No hi ha factures per exportar',true);return}
+  const head=['Client','NIF client','Pujada el','Data factura','Emissor','NIF emissor','Núm. factura','Concepte','Base imposable','IVA (%)','Quota IVA','Total','Moneda','Estat','Nota del gestor','Fitxer','ID factura'];
+  const rows=list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return[c?.name||'',c?.tax_id||'',new Date(x.created_at),x.invoice_date?new Date(x.invoice_date):null,x.supplier_name||'',x.supplier_tax_id||'',x.invoice_number||'',x.concept||'',x.base??null,x.vat_rate??null,x.vat_amount??null,x.total??null,x.currency||'EUR',x.status==='revisada'?'Revisada':'Pendent',x.note||'',x.file_name||'',x.id]});
+  const ws=XLSX.utils.aoa_to_sheet([head,...rows],{cellDates:true});
+  const last=rows.length+1;
+  ws['!cols']=[24,14,19,14,28,16,18,32,16,9,14,14,10,12,34,28,38].map(w=>({wch:w}));
+  ws['!autofilter']={ref:`A1:${XLSX.utils.encode_col(head.length-1)}${last}`};
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Factures');
+
+  const byClient=new Map();
+  for(const x of list){
+    const c=state.companies.find(c=>c.id===x.company_id);
+    const key=x.company_id;
+    if(!byClient.has(key)) byClient.set(key,{name:c?.name||key,tax:c?.tax_id||'',count:0,base:0,iva:0,total:0,currencies:new Set()});
+    const o=byClient.get(key);
+    o.count++;
+    o.base+=Number(x.base||0);
+    o.iva+=Number(x.vat_amount||0);
+    o.total+=Number(x.total||0);
+    o.currencies.add(x.currency||'EUR');
+  }
+  const summaryHead=['Client','NIF client','Nº factures','Base imposable','Quota IVA','Total','Monedes'];
+  const summaryRows=[...byClient.values()].map(o=>[o.name,o.tax,o.count,Number(o.base.toFixed(2)),Number(o.iva.toFixed(2)),Number(o.total.toFixed(2)),[...o.currencies].join(', ')]);
+  const ws2=XLSX.utils.aoa_to_sheet([summaryHead,...summaryRows]);
+  ws2['!cols']=[30,16,14,18,16,16,18].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws2,'Resum per client');
+
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array',cellDates:true});
+  const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=`factures_totes_${new Date().toISOString().slice(0,10)}.xlsx`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast(`${list.length} factures exportades a Excel`);
+}
+async function login(){
+  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value, err=$('#loginErr'); const {data,error}=await sb.auth.signInWithPassword({email,password:pass}); if(error){err.textContent=error.message;return} state.session=data.session;state.user=data.user;await loadProfile();
+}
+async function loadProfile(){
+  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single(); if(error){fatal('No s’ha pogut llegir el perfil: '+error.message);return} state.profile=data;renderWho();state.view=data.role==='manager'?'panel':'mine';await loadData(); if(data.role==='manager'){ $('#tabs').hidden=false;$('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button><button class="tab" data-act="tab" data-v="mine" aria-pressed="false">Les meves factures</button>'; managerView(); } else renderCompanyShell();
+}
+function resetSignedOut(){
+  state.session=null;
+  state.user=null;
+  state.profile=null;
+  state.invoices=[];
+  state.companies=[];
+  state.current=null;
+  state.pendingFile=null;
+  state.historyFilters={status:'',from:'',to:'',q:''};
+  state.view='mine';
+  $('#dlg')?.close();
+  $('#tabs').hidden=true;
+  renderWho();
+  renderLogin();
+}
+
+async function logout(){
+  if(!sb) return;
+  const {error}=await sb.auth.signOut();
+  if(error){toast(error.message,true);return;}
+  // El listener de SIGNED_OUT llama a resetSignedOut().
+}
+
+async function init(){
+  if(!SUPABASE_PUBLISHABLE_KEY){renderSetup();return}
+  sb=getClient(); const {data}=await sb.auth.getSession(); if(data.session){state.session=data.session;state.user=data.session.user;await loadProfile()} else renderLogin();
+  sb.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_OUT'){
+      resetSignedOut();
+    }
+  });
+}
+
+document.addEventListener('click', async e=>{
+  const el=e.target.closest('[data-act]'); if(!el)return; const a=el.dataset.act;
+  try{
+    if(a==='connect'){const k=$('#pubKey').value.trim();if(!k){$('#setupErr').textContent='Enganxa la Clau publicable.';return}SUPABASE_PUBLISHABLE_KEY=k;localStorage.setItem('buzon_supabase_publishable_key',k);sb=getClient();renderLogin();toast('Connexió preparada')}
+    else if(a==='setup'){renderSetup()}
+    else if(a==='login') await login();
+    else if(a==='logout') await logout();
+    else if(a==='pick' || a==='aiMode') $('#filePick').click();
+    else if(a==='manualMode') renderManualForm();
+    else if(a==='backCapture') renderCompanyShell();
+    else if(a==='manualFromAI') renderManualForm();
+    else if(a==='saveManual') await saveManual();
+    else if(a==='saveUpload') await saveUpload();
+    else if(a==='cancelUpload') await cancelPendingUpload();
+    else if(a==='open') await openDetail(el.dataset.id);
+    else if(a==='close') $('#dlg').close();
+    else if(a==='saveDetail') await saveDetail();
+    else if(a==='delete') await deleteCurrent();
+    else if(a==='download') await downloadCurrent();
+    else if(a==='export') exportExcel();
+    else if(a==='tab'){state.view=el.dataset.v;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===state.view)));state.view==='panel'?managerView():renderCompanyShell();}
+  }catch(ex){toast(ex.message||'Error inesperat',true)}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='filePick'){const f=e.target.files?.[0];e.target.value='';if(f)openUpload(f)}
+  if(e.target.matches('[data-f]')){state.filters[e.target.dataset.f]=e.target.value;renderManagerTable();}
+  if(e.target.matches('[data-hf]')){state.historyFilters[e.target.dataset.hf]=e.target.value;renderHistory();}
+});
+document.addEventListener('input',e=>{
+  if(e.target.matches('[data-f]')){state.filters[e.target.dataset.f]=e.target.value;renderManagerTable();}
+  if(e.target.matches('[data-hf]')){state.historyFilters[e.target.dataset.hf]=e.target.value;scheduleHistoryRender();}
+});
+init().catch(e=>fatal(e.message||'No s’ha pogut iniciar l’aplicació'));
+</script>
+</body>
+</html>
