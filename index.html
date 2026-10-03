@@ -521,10 +521,23 @@ function setLanguage(lang){
   const titles={ca:'Joan Nogue · Bústia de factures',es:'Joan Nogue · Buzón de facturas',en:'Joan Nogue · Invoice Inbox'};
   if(!['ca','es','en'].includes(lang)) return;
   CURRENT_LANG=lang; localStorage.setItem(LANGUAGE_STORAGE_KEY,lang); document.title=titles[CURRENT_LANG]; applyLanguage(document);
-  if(state.user){
-    if(state.profile?.role==='manager') state.view==='panel'?managerView():renderCompanyShell();
-    else renderCompanyShell();
-  }else{ renderLogin(); }
+  if(state.user && state.profile){
+    if(state.profile.role==='manager'){
+      $('#tabs').hidden=false;
+      $('#tabs').setAttribute('aria-hidden','false');
+      state.view==='panel'?managerView():renderCompanyShell();
+    } else {
+      $('#tabs').hidden=true;
+      $('#tabs').innerHTML='';
+      $('#tabs').setAttribute('aria-hidden','true');
+      renderCompanyShell();
+    }
+  }else{
+    $('#tabs').hidden=true;
+    $('#tabs').innerHTML='';
+    $('#tabs').setAttribute('aria-hidden','true');
+    renderLogin();
+  }
   applyLanguage(document);
 }
 function initLanguage(){
@@ -569,6 +582,7 @@ function renderWho(){
   else w.innerHTML=`<span class="role-chip">Empresa</span><span class="who-name"><strong>${esc(state.profile?.company_name||state.user.email)}</strong><span>Bústia de factures</span></span><button class="btn ghost" data-act="logout">Sortir</button>`;
 }
 function renderCompanyShell(){
+  if(!state.user || !state.profile){ renderLogin(); return; }
   $('#view').innerHTML=`<section id="capture"></section><section id="history"></section>`;
   renderCapture(); renderHistory();
   applyLanguage($('#view'));
@@ -640,6 +654,7 @@ function renderHistory(){
   applyLanguage($('#history'));
 }
 function managerView(){
+  if(!state.user || state.profile?.role!=='manager'){ renderLogin(); return; }
   $('#view').innerHTML=`<section class="manager-welcome"><div><div class="eyebrow">Panell de gestió</div><h2>Bon dia, Joan Nogue</h2><p>Controla clients, factures pendents i exportacions des d’un únic espai.</p></div><div class="manager-badge">JN</div></section><div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
   <div class="filters">
     <label class="field"><span>Client</span><select data-f="company" id="fCompany"></select></label>
@@ -945,10 +960,55 @@ async function exportExcel(){
   toast(`${list.length} factures exportades a Excel`);
 }
 async function login(){
-  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value, err=$('#loginErr'); const {data,error}=await sb.auth.signInWithPassword({email,password:pass}); if(error){err.textContent=error.message;return} state.session=data.session;state.user=data.user;await loadProfile();
+  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value, err=$('#loginErr');
+  err.textContent='';
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){
+    state.session=null; state.user=null; state.profile=null;
+    $('#tabs').hidden=true; $('#tabs').innerHTML='';
+    err.textContent='No s’ha pogut iniciar la sessió. Comprova el correu electrònic i la contrasenya.';
+    return;
+  }
+  state.session=data.session;
+  state.user=data.user;
+  await loadProfile();
 }
 async function loadProfile(){
-  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single(); if(error){fatal('No s’ha pogut llegir el perfil: '+error.message);return} state.profile=data;renderWho();state.view=data.role==='manager'?'panel':'mine';await loadData(); if(data.role==='manager'){ $('#tabs').hidden=false;$('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button><button class="tab" data-act="tab" data-v="mine" aria-pressed="false">Les meves factures</button>'; managerView(); } else renderCompanyShell();
+  if(!state.user){ renderLogin(); return; }
+  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single();
+  if(error || !data){
+    // L'usuari pot existir a Authentication però no estar configurat com a empresa/gestor.
+    // En aquest cas no permetem mostrar cap vista protegida i tanquem la sessió.
+    const detail = error?.code === 'PGRST116'
+      ? 'Aquest usuari no està configurat a l’aplicació. Contacta amb el gestor.'
+      : 'No s’ha pogut validar el perfil. Contacta amb el gestor.';
+    await sb.auth.signOut().catch(()=>{});
+    resetSignedOut();
+    const loginErr = $('#loginErr');
+    if(loginErr) loginErr.textContent = detail;
+    return;
+  }
+  if(!['manager','company'].includes(data.role)){
+    await sb.auth.signOut().catch(()=>{});
+    resetSignedOut();
+    const loginErr = $('#loginErr');
+    if(loginErr) loginErr.textContent = 'Aquest usuari no té un perfil vàlid. Contacta amb el gestor.';
+    return;
+  }
+  state.profile=data;
+  renderWho();
+  state.view=data.role==='manager'?'panel':'mine';
+  await loadData();
+  if(data.role==='manager'){
+    $('#tabs').hidden=false;
+    $('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button><button class="tab" data-act="tab" data-v="mine" aria-pressed="false">Les meves factures</button>';
+    managerView();
+  } else {
+    $('#tabs').hidden=true;
+    $('#tabs').innerHTML='';
+    renderCompanyShell();
+  }
+  $('#tabs').hidden = false && data.role==='manager';
 }
 function resetSignedOut(){
   state.session=null;
@@ -963,6 +1023,7 @@ function resetSignedOut(){
   $('#dlg')?.close();
   $('#tabs').hidden=true;
   $('#tabs').innerHTML='';
+  $('#tabs').setAttribute('aria-hidden','true');
   renderWho();
   renderLogin();
 }
@@ -986,8 +1047,19 @@ async function logout(){
 }
 
 async function init(){
-  sb=getClient(); const {data}=await sb.auth.getSession(); if(data.session){state.session=data.session;state.user=data.session.user;await loadProfile()} else renderLogin();
-  sb.auth.onAuthStateChange((event,session)=>{
+  $('#tabs').hidden=true;
+  $('#tabs').innerHTML='';
+  $('#tabs').setAttribute('aria-hidden','true');
+  sb=getClient();
+  const {data}=await sb.auth.getSession();
+  if(data.session){
+    state.session=data.session;
+    state.user=data.session.user;
+    await loadProfile();
+  } else {
+    renderLogin();
+  }
+  sb.auth.onAuthStateChange((event)=>{
     if(event==='SIGNED_OUT'){
       resetSignedOut();
     }
