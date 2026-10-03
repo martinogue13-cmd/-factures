@@ -653,9 +653,20 @@ function resetSignedOut(){
 
 async function logout(){
   if(!sb) return;
+  const btn=document.querySelector('[data-act="logout"]');
+  if(btn){btn.disabled=true;btn.textContent='Sortint…';}
+
   const {error}=await sb.auth.signOut();
-  if(error){toast(error.message,true);return;}
-  // El listener de SIGNED_OUT llama a resetSignedOut().
+  if(error){
+    if(btn){btn.disabled=false;btn.textContent='Sortir';}
+    toast(error.message,true);
+    return;
+  }
+
+  // No depenem únicament de l'esdeveniment SIGNED_OUT:
+  // tanquem la sessió i retornem immediatament a la pantalla d'accés.
+  resetSignedOut();
+  window.scrollTo({top:0,behavior:'instant'});
 }
 
 async function init(){
