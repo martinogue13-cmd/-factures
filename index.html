@@ -63,8 +63,12 @@ html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
 .manager-welcome h2{font-size:1.25rem}
 .manager-welcome p{margin:4px 0 0;color:#d8ecee;font-size:.9rem}
 .manager-badge{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);font-weight:700;letter-spacing:.04em}
-.footer-brand{max-width:1120px;margin:10px auto 0;padding:0 16px 28px;color:var(--ink2);font-size:.78rem;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.footer-brand strong{color:var(--ink)}
+.footer-brand{max-width:1120px;margin:8px auto 0;padding:0 16px 26px;color:var(--ink2);font-size:.76rem}
+.footer-contact{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;opacity:.92}
+.footer-contact strong{color:var(--ink);font-weight:600}
+.footer-contact span{color:var(--ink2)}
+.footer-contact a{color:var(--ink2);text-decoration:none}
+.footer-contact a:hover{color:var(--brand);text-decoration:underline}
 @media (max-width:760px){.brand-sub{display:none}.top-in{padding:10px 14px}.who-name{display:none}.role-chip{display:none}.manager-welcome{align-items:flex-start}}
 
 *,*::before,*::after{box-sizing:inherit}
@@ -206,6 +210,116 @@ dialog::backdrop{background:var(--backdrop)}
   .fields{grid-template-columns:1fr 1fr}
 }
 @media (max-width:420px){.fields{grid-template-columns:1fr}}
+
+/* ---------- Responsive mobile ---------- */
+@media (max-width:900px){
+  .top-in{padding:10px 14px}
+  .wrap{padding:16px 14px 56px}
+  .login{max-width:100%;gap:22px;padding:24px}
+  .hero{padding:24px}
+  .work{gap:16px;padding:16px}
+  .dgrid{gap:16px}
+}
+
+@media (max-width:760px){
+  .top-in{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:
+      "brand actions"
+      "tabs tabs";
+    align-items:center;
+    gap:8px 10px;
+    min-height:auto;
+  }
+  .brand-wrap{grid-area:brand;min-width:0;gap:9px}
+  .brand-mark{width:38px;height:38px;border-radius:10px;font-size:.9rem}
+  .brand-main{font-size:1rem}
+  .brand-sub{display:none}
+  .header-actions{grid-area:actions;min-width:0;justify-content:flex-end;gap:7px}
+  .tabs{grid-area:tabs;width:100%;overflow-x:auto;justify-content:stretch}
+  .tab{flex:1 0 auto;min-width:0;padding:8px 10px;font-size:.86rem;white-space:nowrap}
+  .lang-switch{padding:3px 6px;gap:4px}
+  .lang-switch select{font-size:.82rem;padding:3px 0}
+  .lang-globe{font-size:.9rem}
+  .who{gap:6px}
+  .who-name{display:none}
+  .role-chip{display:none}
+  .who .btn{min-height:38px;padding:7px 10px}
+
+  .wrap{padding:14px 12px 46px}
+  .login{grid-template-columns:1fr;padding:20px;margin-top:10px;border-radius:15px;gap:14px}
+  .login h1{max-width:none;font-size:clamp(1.6rem,8vw,2rem)}
+  .login .receipt{display:none}
+  .hero{grid-template-columns:1fr;padding:20px;border-radius:15px;gap:12px}
+  .hero .receipt{display:none}
+  .work{grid-template-columns:1fr;border-radius:15px;padding:14px}
+  .work .imgwrap{min-height:180px}
+  .dgrid{grid-template-columns:1fr}
+  .fields{grid-template-columns:1fr}
+  .field.wide{grid-column:auto}
+  .mode-grid{grid-template-columns:1fr;gap:12px}
+  .mode-card{padding:16px}
+  .mode-card .mode-action .btn{width:100%}
+
+  .section-head{margin:24px 0 10px;align-items:flex-start}
+  .section-head h2{font-size:1.25rem}
+  .history-filters{margin-top:8px}
+  .filters{display:grid;grid-template-columns:1fr;gap:10px;padding:12px}
+  .filters .field,.filters .field.grow{min-width:0;width:100%;flex:none}
+  .filters .field input,.filters .field select{width:100%}
+  .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+  .summary strong{font-size:1.15rem}
+  .bar{align-items:stretch;gap:8px}
+  .bar .row-actions,.bar .row-actions .btn{width:100%}
+
+  .list{border-radius:12px}
+  .item{padding:13px 12px;align-items:flex-start}
+  .item .amt{min-width:78px}
+  .item .amt strong{font-size:1rem}
+
+  .tablewrap{border-radius:12px;-webkit-overflow-scrolling:touch}
+  table{min-width:900px}
+  th{padding:9px 10px}
+  td{padding:9px 10px}
+
+  dialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);border-radius:14px}
+  .dpad{padding:14px}
+  .dhead{align-items:center}
+  .dhead h2{font-size:1.2rem}
+  .dgrid .imgwrap{min-height:180px}
+  .actions{gap:8px}
+  .actions .btn{flex:1 1 100%;width:100%}
+
+  .footer-brand{padding:0 12px 18px;text-align:center;font-size:.74rem}
+  .footer-contact{flex-direction:column;align-items:center;gap:5px}
+}
+
+@media (max-width:480px){
+  .top-in{grid-template-columns:minmax(0,1fr) auto}
+  .brand-main{font-size:.94rem}
+  .header-actions{gap:5px}
+  .lang-switch{max-width:106px}
+  .lang-switch select{max-width:74px;text-overflow:ellipsis}
+  .who .btn{padding:7px 9px}
+  .login,.hero{padding:16px}
+  .wrap{padding-left:10px;padding-right:10px}
+  .summary{grid-template-columns:1fr;gap:9px}
+  .item{gap:8px}
+  .item .amt{min-width:70px}
+  .chip{font-size:.72rem;padding:2px 7px}
+}
+
+@media (max-width:360px){
+  .brand-mark{width:34px;height:34px;font-size:.78rem}
+  .brand-main{font-size:.88rem}
+  .lang-switch{max-width:94px}
+  .lang-switch select{max-width:64px;font-size:.76rem}
+  .who .btn{min-height:34px;font-size:.82rem;padding:6px 8px}
+  .top-in{gap:6px}
+  .tab{font-size:.8rem;padding:7px 8px}
+}
+
 @media (prefers-reduced-motion:reduce){
   .scan{animation:none;top:50%}
   .fresh .field,.fresh .field.ai input{animation:none}
@@ -235,7 +349,14 @@ dialog::backdrop{background:var(--backdrop)}
   </div>
 </div></header>
 <main class="wrap" id="view"><p class="sub">Carregant…</p></main>
-<footer class="footer-brand"><span><strong>Joan Nogue</strong> · Gestió documental i facturació</span><span>Entorn segur per a la gestió de factures</span></footer>
+<footer class="footer-brand">
+  <div class="footer-contact">
+    <strong>Joan Nogué Trabal</strong>
+    <span>Assessor fiscal i comptable</span>
+    <a href="tel:+34646174898">📞 Telèfon: 646 174 898</a>
+    <a href="mailto:jnogue1971@gmail.com">✉️ Correu electrònic: jnogue1971@gmail.com</a>
+  </div>
+</footer>
 <dialog id="dlg"><div class="dpad" id="dlgBody"></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 
