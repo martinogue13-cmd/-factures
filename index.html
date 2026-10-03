@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bústia de factures</title>
+<title id="pageTitle">Joan Nogue · Bústia de factures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -35,6 +35,38 @@
   --backdrop:rgba(0,0,0,.6);
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
+/* Identitat corporativa Joan Nogue */
+:root{--brand:#0b5961;--brand-dark:#083d43;--brand-soft:#e9f4f4;--ink:#10243a;--ink2:#617083}
+.top{box-shadow:0 2px 16px rgba(16,36,58,.05)}
+.top-in{min-height:72px;padding:12px 20px}
+.brand-wrap{display:flex;align-items:center;gap:12px;min-width:240px}
+.brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,var(--brand),var(--brand-dark));color:#fff;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;letter-spacing:.04em;box-shadow:0 7px 16px rgba(11,89,97,.18)}
+.brand-copy{display:flex;flex-direction:column;gap:1px}
+.brand-main{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:1.08rem;line-height:1.1}
+.brand-sub{font-size:.74rem;color:var(--ink2);letter-spacing:.02em}
+.who{gap:10px}
+.who-name{display:flex;flex-direction:column;gap:0;line-height:1.15}
+.who-name strong{font-size:.92rem;color:var(--ink)}
+.who-name span{font-size:.74rem;color:var(--ink2)}
+.role-chip{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand-dark);font-size:.72rem;font-weight:700}
+.login{position:relative;overflow:hidden;box-shadow:0 18px 50px rgba(16,36,58,.07)}
+.login::before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--brand-dark),var(--brand),#75b6b9)}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;font-weight:700;color:var(--brand);margin-bottom:8px}
+.login h1{max-width:12ch}
+.hero{box-shadow:0 14px 34px rgba(16,36,58,.045)}
+.hero .corporate-label{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand-dark);font-size:.75rem;font-weight:700;margin-bottom:10px}
+.mode-card{box-shadow:0 8px 20px rgba(16,36,58,.035)}
+.mode-card.primary-mode{border-color:rgba(11,89,97,.26);background:linear-gradient(180deg,#f9ffff,#fff)}
+.section-head{margin-top:34px}
+.manager-welcome{display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(135deg,#0b5961,#083d43);color:#fff;border-radius:16px;padding:18px 20px;margin:0 0 18px;box-shadow:0 14px 34px rgba(11,89,97,.16)}
+.manager-welcome .eyebrow{color:#bfe1e3;margin-bottom:3px}
+.manager-welcome h2{font-size:1.25rem}
+.manager-welcome p{margin:4px 0 0;color:#d8ecee;font-size:.9rem}
+.manager-badge{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);font-weight:700;letter-spacing:.04em}
+.footer-brand{max-width:1120px;margin:10px auto 0;padding:0 16px 28px;color:var(--ink2);font-size:.78rem;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.footer-brand strong{color:var(--ink)}
+@media (max-width:760px){.brand-sub{display:none}.top-in{padding:10px 14px}.who-name{display:none}.role-chip{display:none}.manager-welcome{align-items:flex-start}}
+
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 "Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
 h1,h2,h3{font-family:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
@@ -49,7 +81,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .tabs[hidden]{display:none !important}
 .tab{border:0;background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:500;color:var(--ink2)}
 .tab[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.tabs[hidden]{display:none !important}
 
+.header-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lang-switch{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:4px 8px;color:var(--ink2)}
+.lang-globe{font-size:.95rem;line-height:1}
+.lang-switch select{border:0;background:transparent;color:var(--ink);font:inherit;font-size:.88rem;cursor:pointer;padding:4px 2px;outline:none}
+.lang-switch select:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
 .who{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--ink2)}
 .who b{color:var(--ink);font-weight:600}
 .who .btn{min-height:36px;padding:6px 12px}
@@ -176,14 +214,28 @@ dialog::backdrop{background:var(--backdrop)}
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="brand">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 3h14v18l-2.33-1.6L14.33 21 12 19.4 9.67 21 7.33 19.4 5 21z"/><path d="M9 8h6M9 12h6"/></svg>
-    <span>Bústia de factures</span>
+  <div class="brand-wrap">
+    <div class="brand-mark" aria-hidden="true">JN</div>
+    <div class="brand-copy">
+      <div class="brand-main">Bústia de factures</div>
+      <div class="brand-sub">Joan Nogue · Gestió documental</div>
+    </div>
   </div>
   <nav class="tabs" id="tabs" hidden aria-label="Vista"></nav>
-  <div class="who" id="who"></div>
+  <div class="header-actions">
+    <label class="lang-switch" aria-label="Idioma">
+      <span class="lang-globe">◎</span>
+      <select id="langSelect" aria-label="Selecciona l’idioma">
+        <option value="ca">Català</option>
+        <option value="es">Castellà</option>
+        <option value="en">English</option>
+      </select>
+    </label>
+    <div class="who" id="who"></div>
+  </div>
 </div></header>
 <main class="wrap" id="view"><p class="sub">Carregant…</p></main>
+<footer class="footer-brand"><span><strong>Joan Nogue</strong> · Gestió documental i facturació</span><span>Entorn segur per a la gestió de factures</span></footer>
 <dialog id="dlg"><div class="dpad" id="dlgBody"></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -195,6 +247,15 @@ const EXTRACT_INVOICE_URL = SUPABASE_URL + "/functions/v1/extract-invoice";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_SOq2AMoRp8lAoYQ4HsnmMg_-2QuKq6d";
 let sb = null;
 const $ = (s, r=document) => r.querySelector(s);
+
+const _langObserver = new MutationObserver((mutations)=>{
+  if(CURRENT_LANG==='ca') return;
+  for(const m of mutations){
+    if(m.type==='childList' && m.target) applyLanguage(m.target);
+  }
+});
+_langObserver.observe(document.body,{subtree:true,childList:true});
+
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function normalizeCurrency(cur){
   const c=String(cur ?? '').trim().toUpperCase();
@@ -228,6 +289,130 @@ function getClient(){
   if(!sb) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   return sb;
 }
+const LANGUAGE_STORAGE_KEY = 'buzon_language';
+let CURRENT_LANG = localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'ca';
+if (!['ca','es','en'].includes(CURRENT_LANG)) CURRENT_LANG = 'ca';
+
+const I18N = {
+  ca: {
+    'Bústia de factures':'Bústia de factures',
+    'Joan Nogue · Gestió documental':'Joan Nogue · Gestió documental',
+    'Gestió documental i facturació':'Gestió documental i facturació',
+    'Entorn segur per a la gestió de factures':'Entorn segur per a la gestió de factures',
+    'Carregant…':'Carregant…',
+    'Gestor':'Gestor', 'Empresa':'Empresa', 'Gestió de factures':'Gestió de factures', 'Sortir':'Sortir',
+    'Entra a la teva bústia de factures':'Entra a la teva bústia de factures',
+    'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.',
+    'Correu electrònic':'Correu electrònic','Contrasenya':'Contrasenya','Entrar':'Entrar',
+    'Bústia corporativa · Joan Nogue':'Bústia corporativa · Joan Nogue',
+    'Registra una factura':'Registra una factura',
+    'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.',
+    'Llegir la factura automàticament':'Llegir la factura automàticament',
+    'Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.',
+    'Utilitzar la lectura automàtica':'Utilitzar la lectura automàtica',
+    'Introduir les dades manualment':'Introduir les dades manualment',
+    'Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.',
+    'Introduir dades':'Introduir dades',
+    'Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.',
+    'Historial de factures':'Historial de factures','Cercar emissor, NIF, número o concepte':'Cercar emissor, NIF, número o concepte','Escriu per cercar…':'Escriu per cercar…',
+    'Estat':'Estat','Tots':'Tots','Pendent':'Pendent','Revisada':'Revisada','Des de':'Des de','Fins a':'Fins a',
+    'No hi ha cap factura que coincideixi amb els filtres.':'No hi ha cap factura que coincideixi amb els filtres.',
+    'Sense nom':'Sense nom','Núm.':'Núm.','Entrada manual':'Entrada manual',
+    'Introdueix les dades de la factura. El fitxer original és opcional.':'Introdueix les dades de la factura. El fitxer original és opcional.',
+    'Tornar':'Tornar','Dades de la factura':'Dades de la factura',
+    'Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.':'Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.',
+    'Fitxer original (opcional)':'Fitxer original (opcional)','Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.':'Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.',
+    'Desar factura':'Desar factura','Cancel·lar':'Cancel·lar','Empresa emissora.':'Empresa emissora.',
+    'Moneda':'Moneda','Base imposable':'Base imposable','IVA (%)':'IVA (%)','Quota de l’IVA':'Quota de l’IVA','Total':'Total','Concepte':'Concepte',
+    'Panell de gestió':'Panell de gestió','Bon dia, Joan Nogue':'Bon dia, Joan Nogue',
+    'Controla clients, factures pendents i exportacions des d’un únic espai.':'Controla clients, factures pendents i exportacions des d’un únic espai.',
+    'Panell del gestor':'Panell del gestor','Client':'Client','Cercar client, emissor, NIF o núm.':'Cercar client, emissor, NIF o núm.',
+    'Exportar totes a Excel':'Exportar totes a Excel','Pujada':'Pujada','Data':'Data','Emissor':'Emissor','NIF emissor':'NIF emissor','Núm. factura':'Núm. factura',
+    'IVA':'IVA','Estat':'Estat','Cap factura coincideix amb els filtres.':'Cap factura coincideix amb els filtres.',
+    'empresa registrada':'empresa registrada','empreses registrades':'empreses registrades','factura':'factura','factures':'factures',
+    'La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.',
+    'Pujant el fitxer…':'Pujant el fitxer…','Analitzant amb IA…':'Analitzant amb IA…','Preparant el fitxer…':'Preparant el fitxer…',
+    'Cancel·lar':'Cancel·lar','Pujada cancel·lada':'Pujada cancel·lada','Desant…':'Desant…','Factura guardada correctament':'Factura guardada correctament',
+    'Tancar':'Tancar','Descarregar original':'Descarregar original','Desar canvis':'Desar canvis','Eliminar':'Eliminar','Canvis desats':'Canvis desats',
+  },
+  es: {
+    'Bústia de factures':'Buzón de facturas','Joan Nogue · Gestió documental':'Joan Nogue · Gestión documental','Gestió documental i facturació':'Gestión documental y facturación','Entorn segur per a la gestió de factures':'Entorno seguro para la gestión de facturas','Carregant…':'Cargando…',
+    'Gestor':'Gestor','Empresa':'Empresa','Gestió de factures':'Gestión de facturas','Sortir':'Salir','Entra a la teva bústia de factures':'Entra en tu buzón de facturas',
+    'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'Un espacio corporativo para recibir, revisar y gestionar las facturas de cada empresa de forma ordenada y segura.',
+    'Correu electrònic':'Correo electrónico','Contrasenya':'Contraseña','Entrar':'Entrar','Bústia corporativa · Joan Nogue':'Buzón corporativo · Joan Nogue','Registra una factura':'Registra una factura',
+    'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Elige cómo quieres registrarla: con lectura automática mediante IA o introduciendo los datos manualmente.',
+    'Llegir la factura automàticament':'Leer la factura automáticamente','Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Sube un PDF, JPG o PNG y la IA intentará extraer el emisor, NIF, número, fecha, base, IVA y total.',
+    'Utilitzar la lectura automàtica':'Usar lectura automática','Introduir les dades manualment':'Introducir los datos manualmente','Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Rellena los datos tú mismo. Puedes adjuntar el PDF o la imagen original opcionalmente.',
+    'Introduir dades':'Introducir datos','Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Ambas opciones guardan la factura en el mismo historial y respetan el aislamiento de tu empresa.',
+    'Historial de factures':'Historial de facturas','Cercar emissor, NIF, número o concepte':'Buscar emisor, NIF, número o concepto','Escriu per cercar…':'Escribe para buscar…','Estat':'Estado','Tots':'Todos','Pendent':'Pendiente','Revisada':'Revisada','Des de':'Desde','Fins a':'Hasta',
+    'No hi ha cap factura que coincideixi amb els filtres.':'No hay ninguna factura que coincida con los filtros.','Sense nom':'Sin nombre','Núm.':'N.º','Entrada manual':'Entrada manual','Introdueix les dades de la factura. El fitxer original és opcional.':'Introduce los datos de la factura. El archivo original es opcional.','Tornar':'Volver','Dades de la factura':'Datos de la factura','Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.':'Los campos se guardarán como factura pendiente para que el gestor pueda revisarla.','Fitxer original (opcional)':'Archivo original (opcional)','Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.':'Si adjuntas un archivo, se guardará con la factura pero no se enviará a la IA.','Desar factura':'Guardar factura','Cancel·lar':'Cancelar','Empresa emissora.':'Empresa emisora.','Moneda':'Moneda','Base imposable':'Base imponible','IVA (%)':'IVA (%)','Quota de l’IVA':'Cuota de IVA','Total':'Total','Concepte':'Concepto',
+    'Panell de gestió':'Panel de gestión','Bon dia, Joan Nogue':'Buenos días, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Controla clientes, facturas pendientes y exportaciones desde un único espacio.','Panell del gestor':'Panel del gestor','Client':'Cliente','Cercar client, emissor, NIF o núm.':'Buscar cliente, emisor, NIF o n.º','Exportar totes a Excel':'Exportar todo a Excel','Pujada':'Subida','Data':'Fecha','Emissor':'Emisor','NIF emissor':'NIF emisor','Núm. factura':'N.º factura','IVA':'IVA','Cap factura coincideix amb els filtres.':'Ninguna factura coincide con los filtros.','empresa registrada':'empresa registrada','empreses registrades':'empresas registradas','factura':'factura','factures':'facturas','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'La lectura automática ha tardado más de 60 segundos. Comprueba la Edge Function y vuelve a intentarlo.','Pujant el fitxer…':'Subiendo archivo…','Analitzant amb IA…':'Analizando con IA…','Preparant el fitxer…':'Preparando archivo…','Pujada cancel·lada':'Subida cancelada','Desant…':'Guardando…','Factura guardada correctament':'Factura guardada correctamente','Tancar':'Cerrar','Descarregar original':'Descargar original','Desar canvis':'Guardar cambios','Eliminar':'Eliminar','Canvis desats':'Cambios guardados'
+  },
+  en: {
+    'Bústia de factures':'Invoice Inbox','Joan Nogue · Gestió documental':'Joan Nogue · Document management','Gestió documental i facturació':'Document management and invoicing','Entorn segur per a la gestió de factures':'Secure invoice management environment','Carregant…':'Loading…',
+    'Gestor':'Manager','Empresa':'Company','Gestió de factures':'Invoice management','Sortir':'Sign out','Entra a la teva bústia de factures':'Sign in to your invoice inbox',
+    'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'A corporate space to receive, review and manage each company’s invoices in an organized and secure way.',
+    'Correu electrònic':'Email','Contrasenya':'Password','Entrar':'Sign in','Bústia corporativa · Joan Nogue':'Corporate inbox · Joan Nogue','Registra una factura':'Register an invoice',
+    'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Choose how you want to register it: with AI-powered automatic reading or by entering the data manually.',
+    'Llegir la factura automàticament':'Read invoice automatically','Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Upload a PDF, JPG or PNG and AI will try to extract the issuer, tax ID, number, date, taxable base, VAT and total.',
+    'Utilitzar la lectura automàtica':'Use automatic reading','Introduir les dades manualment':'Enter data manually','Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Fill in the fields yourself. You can optionally attach the original PDF or image.','Introduir dades':'Enter data','Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Both options save the invoice in the same history and respect your company’s data isolation.',
+    'Historial de factures':'Invoice history','Cercar emissor, NIF, número o concepte':'Search issuer, tax ID, number or concept','Escriu per cercar…':'Type to search…','Estat':'Status','Tots':'All','Pendent':'Pending','Revisada':'Reviewed','Des de':'From','Fins a':'To',
+    'No hi ha cap factura que coincideixi amb els filtres.':'No invoices match the selected filters.','Sense nom':'Unnamed','Núm.':'No.','Entrada manual':'Manual entry','Introdueix les dades de la factura. El fitxer original és opcional.':'Enter the invoice data. The original file is optional.','Tornar':'Back','Dades de la factura':'Invoice data','Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.':'The fields will be saved as a pending invoice for the manager to review.','Fitxer original (opcional)':'Original file (optional)','Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.':'If you attach a file, it will be saved with the invoice but will not be sent to AI.','Desar factura':'Save invoice','Cancel·lar':'Cancel','Empresa emissora.':'Issuer company.','Moneda':'Currency','Base imposable':'Taxable base','IVA (%)':'VAT (%)','Quota de l’IVA':'VAT amount','Total':'Total','Concepte':'Concept',
+    'Panell de gestió':'Management dashboard','Bon dia, Joan Nogue':'Good morning, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Manage clients, pending invoices and exports from one place.','Panell del gestor':'Manager dashboard','Client':'Client','Cercar client, emissor, NIF o núm.':'Search client, issuer, tax ID or number','Exportar totes a Excel':'Export all to Excel','Pujada':'Uploaded','Data':'Date','Emissor':'Issuer','NIF emissor':'Issuer tax ID','Núm. factura':'Invoice no.','IVA':'VAT','Cap factura coincideix amb els filtres.':'No invoices match the filters.','empresa registrada':'registered company','empreses registrades':'registered companies','factura':'invoice','factures':'invoices','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'Automatic reading took longer than 60 seconds. Check the Edge Function and try again.','Pujant el fitxer…':'Uploading file…','Analitzant amb IA…':'Analyzing with AI…','Preparant el fitxer…':'Preparing file…','Pujada cancel·lada':'Upload canceled','Desant…':'Saving…','Factura guardada correctament':'Invoice saved successfully','Tancar':'Close','Descarregar original':'Download original','Desar canvis':'Save changes','Eliminar':'Delete','Canvis desats':'Changes saved'
+  }
+};
+function t(text){
+  return (I18N[CURRENT_LANG] && I18N[CURRENT_LANG][text]) || text;
+}
+function trDynamic(text){
+  let s=text;
+  if(CURRENT_LANG==='ca') return s;
+  const n1=s.match(/^(\d+) de (\d+)$/); if(n1) return `${n1[1]} of ${n1[2]}`;
+  const n2=s.match(/^(\d+) (factura|factures)$/); if(n2){const n=Number(n2[1]); return CURRENT_LANG==='es'?`${n} ${n===1?'factura':'facturas'}`:`${n} ${n===1?'invoice':'invoices'}`;}
+  const n3=s.match(/^(\d+) (empresa registrada|empreses registrades)$/); if(n3){const n=Number(n3[1]); return CURRENT_LANG==='es'?`${n} ${n===1?'empresa registrada':'empresas registradas'}`:`${n} ${n===1?'registered company':'registered companies'}`;}
+  const p=s.match(/^Pujada el (.+?)( · Sense fitxer original adjunt)?$/); if(p){return CURRENT_LANG==='es'?`Subida el ${p[1]}${p[2]?' · Sin archivo original adjunto':''}`:`Uploaded ${p[1]}${p[2]?' · No original file attached':''}`;}
+  const ex=s.match(/^(\d+) factures exportades a Excel$/); if(ex){return CURRENT_LANG==='es'?`${ex[1]} facturas exportadas a Excel`:`${ex[1]} invoices exported to Excel`;}
+  const f=s.match(/^Factures$/); if(f) return CURRENT_LANG==='es'?'Facturas':'Invoices';
+  return t(s);
+}
+function applyLanguage(root=document){
+  document.documentElement.lang=CURRENT_LANG;
+  const select=document.querySelector('#langSelect'); if(select) select.value=CURRENT_LANG;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
+    const p=node.parentElement; if(!p || ['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+    if(!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+    return NodeFilter.FILTER_ACCEPT;
+  }});
+  const nodes=[]; let n; while((n=walker.nextNode())) nodes.push(n);
+  for(const node of nodes){
+    const raw=node.nodeValue;
+    const lead=raw.match(/^\s*/)?.[0]||''; const trail=raw.match(/\s*$/)?.[0]||''; const core=raw.trim();
+    const translated=trDynamic(core);
+    if(translated!==core) node.nodeValue=lead+translated+trail;
+  }
+  root.querySelectorAll?.('input[placeholder],select[aria-label],button[title],a[title]').forEach(el=>{
+    if(el.placeholder) el.placeholder=trDynamic(el.placeholder);
+    if(el.getAttribute('aria-label')) el.setAttribute('aria-label',trDynamic(el.getAttribute('aria-label')));
+    if(el.title) el.title=trDynamic(el.title);
+  });
+}
+function setLanguage(lang){
+  const titles={ca:'Joan Nogue · Bústia de factures',es:'Joan Nogue · Buzón de facturas',en:'Joan Nogue · Invoice Inbox'};
+  if(!['ca','es','en'].includes(lang)) return;
+  CURRENT_LANG=lang; localStorage.setItem(LANGUAGE_STORAGE_KEY,lang); document.title=titles[CURRENT_LANG]; applyLanguage(document);
+  if(state.user){
+    if(state.profile?.role==='manager') state.view==='panel'?managerView():renderCompanyShell();
+    else renderCompanyShell();
+  }else{ renderLogin(); }
+  applyLanguage(document);
+}
+function initLanguage(){
+  document.documentElement.lang=CURRENT_LANG;
+  document.title=(CURRENT_LANG==='es'?'Joan Nogue · Buzón de facturas':CURRENT_LANG==='en'?'Joan Nogue · Invoice Inbox':'Joan Nogue · Bústia de factures');
+  const select=document.querySelector('#langSelect'); if(select) select.value=CURRENT_LANG;
+  applyLanguage(document);
+}
+
 function renderSetup(){
   $('#view').innerHTML=`<section class="login">
     <div><h1>Connecta la teva bústia</h1><p>Aquesta versió utilitza Supabase per a l’accés, la base de dades, l’aïllament per empresa i l’emmagatzematge segur dels originals.</p>${RECEIPT}</div>
@@ -239,12 +424,13 @@ function renderSetup(){
       <p class="err" id="setupErr" role="alert"></p>
     </div></section>`;
   if(SUPABASE_PUBLISHABLE_KEY) $('#pubKey').value=SUPABASE_PUBLISHABLE_KEY;
+  applyLanguage($('#view'));
 }
 function renderLogin(){
   $('#tabs').hidden=true;
   $('#tabs').innerHTML='';
   $('#view').innerHTML=`<section class="login">
-    <div><h1>Entra a la teva bústia de factures</h1><p>L’empresa i el gestor accedeixen amb el seu compte de Supabase. Cada empresa només veu les seves pròpies factures.</p>${RECEIPT}</div>
+    <div><div class="eyebrow">Joan Nogue · Gestió documental</div><h1>Entra a la teva bústia de factures</h1><p>Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.</p>${RECEIPT}</div>
     <div>
       <div class="fields">
         <label class="field"><span>Correu electrònic</span><input id="loginEmail" type="email" autocomplete="email"></label>
@@ -253,18 +439,22 @@ function renderLogin(){
       <p class="err" id="loginErr" role="alert"></p>
       <div class="actions"><button class="btn primary" data-act="login">Entrar</button></div>
     </div></section>`;
+  applyLanguage($('#view'));
 }
 function renderWho(){
-  const w=$('#who'); if(!state.user) {w.innerHTML=''; return;}
-  w.innerHTML=`<span><b>${esc(state.profile?.company_name||state.user.email)}</b></span><button class="btn ghost" data-act="logout">Sortir</button>`;
+  const w=$('#who');
+  if(!state.user){w.innerHTML='';return;}
+  if(state.profile?.role==='manager') w.innerHTML=`<span class="role-chip">Gestor</span><span class="who-name"><strong>Joan Nogue</strong><span>Gestió de factures</span></span><button class="btn ghost" data-act="logout">Sortir</button>`;
+  else w.innerHTML=`<span class="role-chip">Empresa</span><span class="who-name"><strong>${esc(state.profile?.company_name||state.user.email)}</strong><span>Bústia de factures</span></span><button class="btn ghost" data-act="logout">Sortir</button>`;
 }
 function renderCompanyShell(){
   $('#view').innerHTML=`<section id="capture"></section><section id="history"></section>`;
   renderCapture(); renderHistory();
+  applyLanguage($('#view'));
 }
 function renderCapture(){
-  $('#capture').innerHTML=`<section class="hero"><div><h1>Registra una factura</h1><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
-    <div class="mode-card" data-act="aiMode"><h3>Llegir la factura automàticament</h3><p>Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.</p><div class="mode-action"><button class="btn primary" data-act="aiMode">Utilitzar la lectura automàtica</button></div></div>
+  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><h1>Registra una factura</h1><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
+    <div class="mode-card primary-mode" data-act="aiMode"><h3>Llegir la factura automàticament</h3><p>Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.</p><div class="mode-action"><button class="btn primary" data-act="aiMode">Utilitzar la lectura automàtica</button></div></div>
     <div class="mode-card" data-act="manualMode"><h3>Introduir les dades manualment</h3><p>Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.</p><div class="mode-action"><button class="btn" data-act="manualMode">Introduir dades</button></div></div>
   </div><p class="meta">Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.</p><input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
 }
@@ -326,9 +516,10 @@ function renderHistory(){
   if(!list.length){box.innerHTML=head+`<div class="empty">No hi ha cap factura que coincideixi amb els filtres.</div>`;syncCompanyHistoryFilters();return;}
   box.innerHTML=head+`<ul class="list">${list.map(x=>`<li><button class="item" data-act="open" data-id="${esc(x.id)}"><span><b>${esc(x.supplier_name||'Sense nom')}</b><small>${x.invoice_number?'Núm. '+esc(x.invoice_number)+', ':''}${fmtDate(x.invoice_date)}${x.file_type==='application/pdf'?' (PDF)':''}</small></span><span class="amt"><strong>${money(x.total,x.currency)}</strong>${statusChip(x.status)}</span></button></li>`).join('')}</ul>`;
   syncCompanyHistoryFilters();
+  applyLanguage($('#history'));
 }
 function managerView(){
-  $('#view').innerHTML=`<div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
+  $('#view').innerHTML=`<section class="manager-welcome"><div><div class="eyebrow">Panell de gestió</div><h2>Bon dia, Joan Nogue</h2><p>Controla clients, factures pendents i exportacions des d’un únic espai.</p></div><div class="manager-badge">JN</div></section><div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
   <div class="filters">
     <label class="field"><span>Client</span><select data-f="company" id="fCompany"></select></label>
     <label class="field"><span>Estat</span><select data-f="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
@@ -340,6 +531,7 @@ function managerView(){
   <div class="bar"><span class="sub" id="countTxt" style="margin:0"></span><div class="row-actions"><button class="btn primary" data-act="export">Exportar totes a Excel</button></div></div>
   <div id="tbl"></div>`;
   syncFilters(); renderManagerTable();
+  applyLanguage($('#view'));
 }
 function syncFilters(){
   const c=$('#fCompany'); if(!c) return;
@@ -681,6 +873,10 @@ async function init(){
   });
 }
 
+document.addEventListener('change',e=>{
+  if(e.target.id==='langSelect'){ setLanguage(e.target.value); return; }
+});
+
 document.addEventListener('click', async e=>{
   const el=e.target.closest('[data-act]'); if(!el)return; const a=el.dataset.act;
   try{
@@ -711,7 +907,8 @@ document.addEventListener('input',e=>{
   if(e.target.matches('[data-f]')){state.filters[e.target.dataset.f]=e.target.value;renderManagerTable();}
   if(e.target.matches('[data-hf]')){state.historyFilters[e.target.dataset.hf]=e.target.value;scheduleHistoryRender();}
 });
-init().catch(e=>fatal(e.message||'No s’ha pogut iniciar l’aplicació'));
+initLanguage();
+init().catch(e=>fatal(e.message||'No s’ha pogut iniciar l’aplicació')).finally(()=>applyLanguage(document));
 </script>
 </body>
 </html>
