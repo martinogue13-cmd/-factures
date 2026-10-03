@@ -46,6 +46,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:1.15rem}
 .brand svg{width:24px;height:24px;color:var(--brand)}
 .tabs{display:flex;gap:4px;background:var(--paper);padding:3px;border-radius:11px;border:1px solid var(--line)}
+.tabs[hidden]{display:none !important}
 .tab{border:0;background:transparent;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:500;color:var(--ink2)}
 .tab[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
 
@@ -241,6 +242,7 @@ function renderSetup(){
 }
 function renderLogin(){
   $('#tabs').hidden=true;
+  $('#tabs').innerHTML='';
   $('#view').innerHTML=`<section class="login">
     <div><h1>Entra a la teva bústia de factures</h1><p>L’empresa i el gestor accedeixen amb el seu compte de Supabase. Cada empresa només veu les seves pròpies factures.</p>${RECEIPT}</div>
     <div>
@@ -647,6 +649,7 @@ function resetSignedOut(){
   state.view='mine';
   $('#dlg')?.close();
   $('#tabs').hidden=true;
+  $('#tabs').innerHTML='';
   renderWho();
   renderLogin();
 }
