@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 <style>
@@ -167,6 +168,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 
 .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.type-required-select select:invalid{border-color:var(--warn)}
 .mode-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
 .mode-card:hover{transform:translateY(-1px);border-color:var(--brand);box-shadow:0 8px 20px rgba(20,33,61,.08)}
 .mode-card h3{font-size:1.1rem;margin:0 0 6px}
@@ -190,6 +192,36 @@ tbody tr:hover td{background:var(--paper)}
 tbody tr:last-child td{border-bottom:0}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 td small{display:block;color:var(--ink2)}
+
+
+.expense-card{margin-top:16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px}
+.expense-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.expense-head h3{font-size:1.05rem}
+.expense-head p{margin:3px 0 0;color:var(--ink2);font-size:.88rem}
+.expense-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.expense-row{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:8px;align-items:center}
+.expense-row label{font-size:.83rem;color:var(--ink2)}
+.expense-row input{width:100%;min-height:40px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-align:right}
+.expense-total{display:flex;justify-content:flex-end;align-items:center;gap:12px;border-top:1px solid var(--line);margin-top:12px;padding-top:12px;font-weight:600}
+.expense-total strong{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.12rem}
+.pnl{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.pnl-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.pnl-head h2{font-size:1.35rem}
+.pnl-head p{margin:3px 0 0;color:var(--ink2);font-size:.9rem}
+.pnl-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pnl-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--paper)}
+.pnl-card span{display:block;color:var(--ink2);font-size:.83rem}
+.pnl-card strong{display:block;margin-top:3px;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:1.35rem}
+.pnl-card.result strong{color:var(--ok)}
+.pnl-card.result.negative strong{color:var(--bad)}
+.pnl-meta{margin-top:10px;color:var(--ink2);font-size:.8rem}
+.pnl-table{margin-top:14px;border:1px solid var(--line);border-radius:12px;overflow:auto}
+.pnl-table table{min-width:720px}
+@media (max-width:760px){
+  .expense-grid{grid-template-columns:1fr}
+  .expense-row{grid-template-columns:minmax(0,1fr) 112px}
+  .pnl-cards{grid-template-columns:1fr}
+}
 
 dialog{border:0;border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(980px,calc(100vw - 20px));max-height:calc(100vh - 20px);overflow:auto}
 dialog::backdrop{background:var(--backdrop)}
@@ -325,6 +357,34 @@ dialog::backdrop{background:var(--backdrop)}
   .scan{animation:none;top:50%}
   .fresh .field,.fresh .field.ai input{animation:none}
 }
+
+.vision-note{margin-top:10px;color:var(--ink2);font-size:.9rem}
+.bulk-upload{max-width:860px;margin:0 auto}
+.bulk-upload .hero{display:block;text-align:left}
+.bulk-drop{border:2px dashed var(--line);border-radius:16px;padding:28px;text-align:center;background:var(--paper);margin-top:18px}
+.bulk-drop input[type=file]{display:block;width:100%;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.bulk-list{margin-top:16px}
+.bulk-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.bulk-row + .bulk-row{margin-top:8px}
+.bulk-row small{color:var(--ink2)}
+.bulk-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.manager-mode-card{margin-top:10px}
+.manager-company-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:14px 0 24px}
+.manager-company-card{display:flex;flex-direction:column;gap:14px;padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 10px 28px rgba(16,36,58,.045);text-align:left}
+.manager-company-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.manager-company-name{font-size:1.08rem;font-weight:700}
+.manager-company-meta{color:var(--ink2);font-size:.86rem;margin-top:3px}
+.manager-mode-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:.72rem;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+.manager-mode-badge.manual{background:rgba(11,89,97,.10);color:var(--brand-dark)}
+.manager-mode-badge.bulk{background:rgba(209,158,22,.12);color:#7a5a00}
+.manager-company-guide{padding:14px 16px;border-radius:14px;background:var(--paper);border:1px solid var(--line);color:var(--ink2);font-size:.9rem}
+.manager-company-guide strong{display:block;color:var(--ink);margin-bottom:4px}
+.manager-company-guide ul{margin:8px 0 0;padding-left:18px}
+.manager-company-guide li{margin:4px 0}
+.manager-selected-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:12px 0 8px;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.manager-selected-head .title{font-size:1.05rem;font-weight:700}
+.manager-selected-head .meta{margin-top:4px;color:var(--ink2);font-size:.86rem}
+@media (max-width:760px){.bulk-drop{padding:18px}.bulk-row{align-items:flex-start;flex-direction:column}.bulk-actions .btn{width:100%}.manager-company-grid{grid-template-columns:1fr}.manager-selected-head{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 <body>
@@ -392,13 +452,48 @@ const money = (n, cur='EUR') => {
 const fmtDate = s => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); return m ? `${m[3]}/${m[2]}/${m[1]}` : 'sin fecha'; };
 const fmtStamp = s => { const d=new Date(s); return isNaN(d)?'':d.toLocaleString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
 const statusChip = s => `<span class="chip ${s==='revisada'?'revisada':'pendiente'}">${s==='revisada'?'Revisada':'Pendent'}</span>`;
-const normalizeInvoiceType = v => v==='emitida' ? 'emitida' : 'recibida';
-const invoiceTypeLabel = v => normalizeInvoiceType(v)==='emitida' ? 'Factura emesa' : 'Factura rebuda';
-const invoiceTypeChip = v => `<span class="chip invoice-type ${normalizeInvoiceType(v)==='emitida'?'emitida':'recibida'}">${invoiceTypeLabel(v)}</span>`;
+const EXPENSE_CATEGORIES = [
+  ["compra_existencias","Compra d'existències"],
+  ["variacion_existencias","Variació d'existències (disminució d'existències finals)"],
+  ["otros_consumos_explotacion","Altres consums d'explotació"],
+  ["sueldos_salarios","Sous i salaris"],
+  ["ss_empresa","Seguretat Social a càrrec de l'empresa"],
+  ["ss_titular","Seguretat Social titular de l'activitat"],
+  ["reta_ingresar","Regularització quotes RETA si resulta a ingressar"],
+  ["reta_devolver","Regularització quotes RETA si resulta a retornar"],
+  ["mutualidades_titular","Aportacions mutualitats titular de l'activitat"],
+  ["indemnizaciones","Indemnitzacions"],
+  ["dietas_viajes","Dietes i assignacions per viatges del personal empleat"],
+  ["prevision_social","Aportacions sistemes previsió social imputades"],
+  ["otros_gastos_personal","Altres despeses de personal"],
+  ["manutencion_contribuyente","Manutenció del contribuent (art. 30.2.5.c L.I.)"],
+  ["arrendamientos_canones","Arrendaments i cànons"],
+  ["reparaciones_conservacion","Reparacions i conservació"],
+  ["gastos_suministro","Despeses per subministrament"],
+  ["otros_suministros","Altres subministraments"],
+  ["servicios_profesionales","Serveis de professionals independents"],
+  ["primas_seguros","Primes d'assegurances"],
+  ["otros_servicios_exteriores","Altres serveis exteriors"],
+  ["gastos_financieros","Despeses financeres"],
+  ["iva_soportado","IVA suportat (recàrrec equiv. i/o compensació)"],
+  ["otros_tributos","Altres tributs fiscalment deduïbles"],
+  ["amortizacion_material","Dotacions de l'exercici. amortització immobilitzat material"],
+  ["amortizacion_inmaterial","Dotacions de l'exercici. amortització immobilitzat immaterial"],
+  ["perdidas_insolvencias","Pèrdues per insolvències de deutors"],
+  ["mecenazgo_colab","Incentius mecenatge. Conv. col·laboració activ. interès general"],
+  ["mecenazgo_interes_general","Incentius mecenatge. Despeses activ. interès general"],
+  ["otros_conceptos_deducibles","Altres conceptes deduïbles (excepte provisions)"],
+  ["provisiones_deducibles","Provisions fiscalment deduïbles"]
+];
+const normalizeInvoiceType = v => v==='emitida' ? 'emitida' : (v==='recibida' ? 'recibida' : null);
+const normalizeRecordType = v => v==='gasto' ? 'gasto' : 'factura';
+const entryLabel = (recordType, invoiceType) => recordType==='gasto' ? 'Despesa' : (invoiceType==='emitida' ? 'Factura emesa' : 'Factura rebuda');
+const invoiceTypeLabel = v => v==='emitida' ? 'Factura emesa' : (v==='recibida' ? 'Factura rebuda' : 'Despesa');
+const invoiceTypeChip = (invoiceType, recordType='factura') => `<span class="chip invoice-type ${recordType==='gasto'?'gasto':(invoiceType==='emitida'?'emitida':'recibida')}">${entryLabel(recordType,invoiceType)}</span>`;
 const RECEIPT = `<svg class="receipt" viewBox="0 0 200 250" fill="none" aria-hidden="true"><path d="M20 8h160v222l-16-10-16 10-16-10-16 10-16-10-16 10-16-10-16 10-16-10-16 10V8z" fill="var(--paper)" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><rect x="38" y="44" width="92" height="14" rx="2" fill="var(--mark)"/><rect x="38" y="76" width="70" height="14" rx="2" fill="var(--mark)"/><path d="M40 52h86M40 84h64M40 118h120M40 142h120M40 166h80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="38" y="186" width="124" height="16" rx="2" fill="var(--mark)"/><path d="M42 194h112" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>`;
 const safeName = n => (n||'factura').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'_').slice(0,120) || 'factura';
 const isPdf = f => f?.type === 'application/pdf' || /\.pdf$/i.test(f?.name||'');
-let state = {session:null,user:null,profile:null,companies:[],invoices:[],view:'mine',filters:{company:'',type:'',status:'',from:'',to:'',q:''},historyFilters:{status:'',type:'',from:'',to:'',q:''},current:null,pendingFile:null};
+let state = {session:null,user:null,profile:null,companies:[],invoices:[],view:'mine',filters:{company:'',type:'',status:'',from:'',to:'',q:''},historyFilters:{status:'',type:'',from:'',to:'',q:''},pnlFilters:{from:'',to:''},current:null,pendingFile:null,newEntryType:''};
 let toastTimer;
 function toast(msg,bad=false){const t=$('#toast');t.textContent=msg;t.className='on'+(bad?' bad':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3500)}
 function fatal(msg){$('#view').innerHTML=`<div class="notice bad">${esc(msg)}</div>`}
@@ -420,6 +515,31 @@ if (!['ca','es','en'].includes(CURRENT_LANG)) CURRENT_LANG = 'ca';
 
 const I18N = {
   ca: {
+    'Pujant documents…':'Pujant documents…','documents disponibles':'documents disponibles',
+    'documents pujats':'documents pujats','Documents pujats correctament':'Documents pujats correctament','documents descarregats en ZIP':'documents descarregats en ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Les factures rebudes i emeses requereixen un fitxer PDF o imatge.','El fitxer supera el límit de 25 MB.':'El fitxer supera el límit de 25 MB.','No s’han pogut pujar els documents.':'No s’han pogut pujar els documents.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'El client només puja documents. Tu els descarregues i els portes a la carpeta local.','Càrrega de documents':'Càrrega de documents',
+    'Visió de gestió manual':'Visió de gestió manual',
+    'Visió de càrrega de documents':'Visió de càrrega de documents',
+    'Selecciona què vols registrar abans de continuar.':'Selecciona què vols registrar abans de continuar.',
+    'Tipus de registre':'Tipus de registre',
+    'Factura rebuda':'Factura rebuda','Factura emesa':'Factura emesa','Despesa':'Despesa',
+    'Introduir les dades':'Introduir les dades',
+    'Fitxer de factura (obligatori)':'Fitxer de factura (obligatori)',
+    'Fitxer de justificant (opcional)':'Fitxer de justificant (opcional)',
+    'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.':'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.',
+    'La despesa pot guardar-se sense adjunt.':'La despesa pot guardar-se sense adjunt.',
+    'Càrrega massiva de documents':'Càrrega massiva de documents',
+    'Arrossega o selecciona diversos PDF o imatges':'Arrossega o selecciona diversos PDF o imatges',
+    'Selecciona fitxers':'Selecciona fitxers',
+    'Pujar documents':'Pujar documents',
+    'Documents preparats':'Documents preparats',
+    'No es processen ni es classifiquen automàticament.':'No es processen ni es classifiquen automàticament.',
+    'Documents disponibles':'Documents disponibles',
+    'Descarregar tots en ZIP':'Descarregar tots en ZIP',
+    'Descarregar':'Descarregar',
+    'No hi ha documents per descarregar.':'No hi ha documents per descarregar.',
+    'Només documents, sense OCR ni comptabilització.':'Només documents, sense OCR ni comptabilització.',
+    'Registra un document':'Registra un document','Despesa':'Despesa','Total despeses computables':'Total despeses computables',
+    'Gasto':'Despesa','Tipus de registre':'Tipus de registre','Selecciona una opció':'Selecciona una opció','Selecciona què vols registrar abans de continuar.':'Selecciona què vols registrar abans de continuar.','Selecciona si és una factura rebuda o emesa.':'Selecciona si és una factura rebuda o emesa.','Dades del registre':'Dades del registre','Desglossament de despeses fiscalment deduïbles':'Desglossament de despeses fiscalment deduïbles','Total despeses computables':'Total despeses computables','Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.':'Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.','Ingressos':'Ingressos','Despeses computables':'Despeses computables','Resultat':'Resultat','Pèrdues i guanys':'Pèrdues i guanys','Resum de factures emeses, factures rebudes i despeses.':'Resum de factures emeses, factures rebudes i despeses.','Categoria de despesa':'Categoria de despesa','Encara no hi ha despeses classificades en el període seleccionat.':'Encara no hi ha despeses classificades en el període seleccionat.','Els camps es guardaran com a pendent perquè el gestor els pugui revisar.':'Els camps es guardaran com a pendent perquè el gestor els pugui revisar.','Proveïdor / beneficiari':'Proveïdor / beneficiari','Registre guardat correctament':'Registre guardat correctament','No hi ha factures per exportar':'No hi ha registres per exportar','registres':'registres','exportats a Excel':'exportats a Excel',
     '__brand_title__':'Bústia de factures',
     '__brand_subtitle__':'Joan Nogue · Gestió documental',
     '__footer_name__':'Joan Nogué Trabal',
@@ -434,12 +554,14 @@ const I18N = {
     'Gestor':'Gestor', 'Empresa':'Empresa', 'Gestió de factures':'Gestió de factures', 'Sortir':'Sortir',
     'Entra a la teva bústia de factures':'Entra a la teva bústia de factures',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.',
-    'Correu electrònic':'Correu electrònic','Contrasenya':'Contrasenya','Entrar':'Entrar',
+    'Correu electrònic':'Correu electrònic','Contrasenya':'Contrasenya','Entrar':'Entrar','Introdueix el correu electrònic i la contrasenya.':'Introdueix el correu electrònic i la contrasenya.','No s’ha pogut iniciar la sessió.':'No s’ha pogut iniciar la sessió.',
     'Bústia corporativa · Joan Nogue':'Bústia corporativa · Joan Nogue',
     'Registra una factura':'Registra una factura',
     'Tipus de factura':'Tipus de factura',
     'Factura rebuda':'Factura rebuda',
     'Factura emesa':'Factura emesa',
+    'Selecciona el tipus de factura':'Selecciona el tipus de factura',
+    'Has de seleccionar si és una factura rebuda o emesa abans de continuar.':'Has de seleccionar si és una factura rebuda o emesa abans de continuar.',
     'Tria si és una factura rebuda de proveïdors o una factura emesa per la teva empresa.':'Tria si és una factura rebuda de proveïdors o una factura emesa per la teva empresa.',
     'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.',
     'Llegir la factura automàticament':'Llegir la factura automàticament',
@@ -471,6 +593,62 @@ const I18N = {
     'Tancar':'Tancar','Descarregar original':'Descarregar original','Desar canvis':'Desar canvis','Eliminar':'Eliminar','Canvis desats':'Canvis desats',
   },
   es: {
+    'Pujant documents…':'Subiendo documentos…','documents disponibles':'documentos disponibles',
+    'documents pujats':'documentos subidos','Documents pujats correctament':'Documentos subidos correctamente','documents descarregats en ZIP':'documentos descargados en ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Las facturas recibidas y emitidas requieren un archivo PDF o imagen.','El fitxer supera el límit de 25 MB.':'El archivo supera el límite de 25 MB.','No s’han pogut pujar els documents.':'No se han podido subir los documentos.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'El cliente solo sube documentos. Tú los descargas y los llevas a la carpeta local.','Càrrega de documents':'Carga de documentos',
+    'Visió de gestió manual':'Visión de gestión manual',
+    'Visió de càrrega de documents':'Visión de carga de documentos',
+    'Selecciona què vols registrar abans de continuar.':'Selecciona qué quieres registrar antes de continuar.',
+    'Tipus de registre':'Tipo de registro',
+    'Factura rebuda':'Factura recibida','Factura emesa':'Factura emitida','Despesa':'Gasto',
+    'Introduir les dades':'Introducir los datos',
+    'Fitxer de factura (obligatori)':'Archivo de factura (obligatorio)',
+    'Fitxer de justificant (opcional)':'Archivo de justificante (opcional)',
+    'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.':'Para las facturas recibidas y emitidas debes adjuntar un PDF o una imagen.',
+    'La despesa pot guardar-se sense adjunt.':'El gasto puede guardarse sin archivo adjunto.',
+    'Càrrega massiva de documents':'Carga masiva de documentos',
+    'Arrossega o selecciona diversos PDF o imatges':'Arrastra o selecciona varios PDF o imágenes',
+    'Selecciona fitxers':'Seleccionar archivos',
+    'Pujar documents':'Subir documentos',
+    'Documents preparats':'Documentos preparados',
+    'No es processen ni es classifiquen automàticament.':'No se procesan ni se clasifican automáticamente.',
+    'Documents disponibles':'Documentos disponibles',
+    'Descarregar tots en ZIP':'Descargar todos en ZIP',
+    'Descarregar':'Descargar',
+    'No hi ha documents per descarregar.':'No hay documentos para descargar.',
+    'Només documents, sense OCR ni comptabilització.':'Solo documentos, sin OCR ni contabilización.',
+    'Registra un document':'Registra un documento','Despesa':'Gasto','Total despeses computables':'Total gastos computables',
+    "Compra d'existències":"Compra de existencias",
+    "Variació d'existències (disminució d'existències finals)":"Variación de existencias (disminución existencias finales)",
+    "Altres consums d'explotació":"Otros consumos de explotación",
+    "Sous i salaris":"Sueldos y salarios",
+    "Seguretat Social a càrrec de l'empresa":"Seguridad Social a cargo de la empresa",
+    "Seguretat Social titular de l'activitat":"Seguridad Social titular de la actividad",
+    "Regularització quotes RETA si resulta a ingressar":"Regularización cuotas RETA si resulta a ingresar",
+    "Regularització quotes RETA si resulta a retornar":"Regularización cuotas RETA si resulta a devolver",
+    "Aportacions mutualitats titular de l'activitat":"Aportaciones mutualidades titular de la actividad",
+    "Indemnitzacions":"Indemnizaciones",
+    "Dietes i assignacions per viatges del personal empleat":"Dietas y asignaciones por viajes del personal empleado",
+    "Aportacions sistemes previsió social imputades":"Aportaciones sistemas previsión social imputadas",
+    "Altres despeses de personal":"Otros gastos de personal",
+    "Manutenció del contribuent (art. 30.2.5.c L.I.)":"Manutención del contribuyente (art. 30.2.5.c L.I.)",
+    "Arrendaments i cànons":"Arrendamientos y cánones",
+    "Reparacions i conservació":"Reparaciones y conservación",
+    "Despeses per subministrament":"Gastos por suministro",
+    "Altres subministraments":"Otros suministros",
+    "Serveis de professionals independents":"Servicios de profesionales independientes",
+    "Primes d'assegurances":"Primas de seguros",
+    "Altres serveis exteriors":"Otros servicios exteriores",
+    "Despeses financeres":"Gastos financieros",
+    "IVA suportat (recàrrec equiv. i/o compensació)":"IVA soportado (recargo equiv. y/o compensación)",
+    "Altres tributs fiscalment deduïbles":"Otros tributos fiscalmente deducibles",
+    "Dotacions de l'exercici. amortització immobilitzat material":"Dotaciones del ejercicio. amortización inmovilizado material",
+    "Dotacions de l'exercici. amortització immobilitzat immaterial":"Dotaciones del ejercicio. amortización inmovilizado inmaterial",
+    "Pèrdues per insolvències de deutors":"Pérdidas por insolvencias de deudores",
+    "Incentius mecenatge. Conv. col·laboració activ. interès general":"Incentivos mecenazgo. Conv. colaboración activ. interés general",
+    "Incentius mecenatge. Despeses activ. interès general":"Incentivos mecenazgo. Gastos actividad interés general",
+    "Altres conceptes deduïbles (excepte provisions)":"Otros conceptos deducibles (excepto provisiones)",
+    "Provisions fiscalment deduïbles":"Provisiones fiscalmente deducibles",
+    'Gasto':'Gasto','Tipus de registre':'Tipo de registro','Selecciona una opció':'Selecciona una opción','Selecciona què vols registrar abans de continuar.':'Selecciona qué quieres registrar antes de continuar.','Selecciona si és una factura rebuda o emesa.':'Selecciona si es una factura recibida o emitida.','Dades del registre':'Datos del registro','Desglossament de despeses fiscalment deduïbles':'Desglose de gastos fiscalmente deducibles','Total despeses computables':'Total despeses computables','Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.':'Para una factura recibida o una despesa debes introducir al menos un importe en el desglose de gastos.','Ingressos':'Ingresos','Despeses computables':'Gastos computables','Resultat':'Resultado','Pèrdues i guanys':'Pérdidas y ganancias','Resum de factures emeses, factures rebudes i despeses.':'Resumen de facturas emitidas, facturas recibidas y gastos.','Categoria de despesa':'Categoría de gasto','Encara no hi ha despeses classificades en el període seleccionat.':'Todavía no hay gastos clasificados en el periodo seleccionado.','Els camps es guardaran com a pendent perquè el gestor els pugui revisar.':'Los datos se guardarán como pendientes para que el gestor pueda revisarlos.','Proveïdor / beneficiari':'Proveedor / beneficiario','Registre guardat correctament':'Registro guardado correctamente','No hi ha factures per exportar':'No hay registros para exportar','registres':'registros','exportats a Excel':'exportados a Excel',
     '__brand_title__':'Buzón de facturas',
     '__brand_subtitle__':'Joan Nogue · Gestión documental',
     '__footer_name__':'Joan Nogué Trabal',
@@ -480,7 +658,7 @@ const I18N = {
     'Bústia de factures':'Buzón de facturas','Joan Nogue · Gestió documental':'Joan Nogue · Gestión documental','Gestió documental i facturació':'Gestión documental y facturación','Entorn segur per a la gestió de factures':'Entorno seguro para la gestión de facturas','Carregant…':'Cargando…',
     'Gestor':'Gestor','Empresa':'Empresa','Gestió de factures':'Gestión de facturas','Sortir':'Salir','Entra a la teva bústia de factures':'Entra en tu buzón de facturas',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'Un espacio corporativo para recibir, revisar y gestionar las facturas de cada empresa de forma ordenada y segura.',
-    'Correu electrònic':'Correo electrónico','Contrasenya':'Contraseña','Entrar':'Entrar','Bústia corporativa · Joan Nogue':'Buzón corporativo · Joan Nogue','Registra una factura':'Registra una factura',
+    'Correu electrònic':'Correo electrónico','Contrasenya':'Contraseña','Entrar':'Entrar','Introdueix el correu electrònic i la contrasenya.':'Introduce el correo electrónico y la contraseña.','No s’ha pogut iniciar la sessió.':'No se ha podido iniciar sesión.','Bústia corporativa · Joan Nogue':'Buzón corporativo · Joan Nogue','Registra una factura':'Registra una factura',
     'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Elige cómo quieres registrarla: con lectura automática mediante IA o introduciendo los datos manualmente.',
     'Llegir la factura automàticament':'Leer la factura automáticamente','Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Sube un PDF, JPG o PNG y la IA intentará extraer el emisor, NIF, número, fecha, base, IVA y total.',
     'Utilitzar la lectura automàtica':'Usar lectura automática','Introduir les dades manualment':'Introducir los datos manualmente','Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Rellena los datos tú mismo. Puedes adjuntar el PDF o la imagen original opcionalmente.',
@@ -490,6 +668,62 @@ const I18N = {
     'Panell de gestió':'Panel de gestión','Tipus':'Tipo','Tots els tipus':'Todos los tipos','Factura rebuda':'Factura recibida','Factura emesa':'Factura emitida','Bon dia, Joan Nogue':'Buenos días, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Controla clientes, facturas pendientes y exportaciones desde un único espacio.','Panell del gestor':'Panel del gestor','Client':'Cliente','Cercar client, emissor, NIF o núm.':'Buscar cliente, emisor, NIF o n.º','Exportar totes a Excel':'Exportar todo a Excel','Pujada':'Subida','Data':'Fecha','Emissor':'Emisor','NIF emissor':'NIF emisor','Núm. factura':'N.º factura','IVA':'IVA','Cap factura coincideix amb els filtres.':'Ninguna factura coincide con los filtros.','empresa registrada':'empresa registrada','empreses registrades':'empresas registradas','factura':'factura','factures':'facturas','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'La lectura automática ha tardado más de 60 segundos. Comprueba la Edge Function y vuelve a intentarlo.','Pujant el fitxer…':'Subiendo archivo…','Analitzant amb IA…':'Analizando con IA…','Preparant el fitxer…':'Preparando archivo…','Pujada cancel·lada':'Subida cancelada','Desant…':'Guardando…','Factura guardada correctament':'Factura guardada correctamente','Tancar':'Cerrar','Descarregar original':'Descargar original','Desar canvis':'Guardar cambios','Eliminar':'Eliminar','Canvis desats':'Cambios guardados'
   },
   en: {
+    'Pujant documents…':'Uploading documents…','documents disponibles':'available documents',
+    'documents pujats':'documents uploaded','Documents pujats correctament':'Documents uploaded successfully','documents descarregats en ZIP':'documents downloaded as ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Received and issued invoices require a PDF or image file.','El fitxer supera el límit de 25 MB.':'The file exceeds the 25 MB limit.','No s’han pogut pujar els documents.':'The documents could not be uploaded.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'The client only uploads documents. You download them and move them to the local folder.','Càrrega de documents':'Document upload',
+    'Visió de gestió manual':'Manual management view',
+    'Visió de càrrega de documents':'Document upload view',
+    'Selecciona què vols registrar abans de continuar.':'Select what you want to record before continuing.',
+    'Tipus de registre':'Record type',
+    'Factura rebuda':'Received invoice','Factura emesa':'Issued invoice','Despesa':'Expense',
+    'Introduir les dades':'Enter the data',
+    'Fitxer de factura (obligatori)':'Invoice file (required)',
+    'Fitxer de justificant (opcional)':'Receipt file (optional)',
+    'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.':'For received and issued invoices you must attach a PDF or image.',
+    'La despesa pot guardar-se sense adjunt.':'An expense can be saved without an attachment.',
+    'Càrrega massiva de documents':'Bulk document upload',
+    'Arrossega o selecciona diversos PDF o imatges':'Drag or select multiple PDFs or images',
+    'Selecciona fitxers':'Select files',
+    'Pujar documents':'Upload documents',
+    'Documents preparats':'Documents ready',
+    'No es processen ni es classifiquen automàticament.':'They are not OCR-processed or classified automatically.',
+    'Documents disponibles':'Available documents',
+    'Descarregar tots en ZIP':'Download all as ZIP',
+    'Descarregar':'Download',
+    'No hi ha documents per descarregar.':'No documents to download.',
+    'Només documents, sense OCR ni comptabilització.':'Documents only, with no OCR or accounting.',
+    'Registra un document':'Register a document','Despesa':'Expense','Total despeses computables':'Total deductible expenses',
+    "Compra d'existències":"Purchases of stock",
+    "Variació d'existències (disminució d'existències finals)":"Inventory variation (decrease in final inventory)",
+    "Altres consums d'explotació":"Other operating consumption",
+    "Sous i salaris":"Wages and salaries",
+    "Seguretat Social a càrrec de l'empresa":"Employer social security",
+    "Seguretat Social titular de l'activitat":"Owner social security",
+    "Regularització quotes RETA si resulta a ingressar":"RETA adjustment payable",
+    "Regularització quotes RETA si resulta a retornar":"RETA adjustment refundable",
+    "Aportacions mutualitats titular de l'activitat":"Owner mutual fund contributions",
+    "Indemnitzacions":"Compensation",
+    "Dietes i assignacions per viatges del personal empleat":"Employee travel allowances",
+    "Aportacions sistemes previsió social imputades":"Attributed social welfare contributions",
+    "Altres despeses de personal":"Other staff expenses",
+    "Manutenció del contribuent (art. 30.2.5.c L.I.)":"Taxpayer meals (art. 30.2.5.c L.I.)",
+    "Arrendaments i cànons":"Rentals and leases",
+    "Reparacions i conservació":"Repairs and maintenance",
+    "Despeses per subministrament":"Utilities",
+    "Altres subministraments":"Other supplies",
+    "Serveis de professionals independents":"Independent professional services",
+    "Primes d'assegurances":"Insurance premiums",
+    "Altres serveis exteriors":"Other external services",
+    "Despeses financeres":"Financial expenses",
+    "IVA suportat (recàrrec equiv. i/o compensació)":"Input VAT (equivalent surcharge/compensation)",
+    "Altres tributs fiscalment deduïbles":"Other deductible taxes",
+    "Dotacions de l'exercici. amortització immobilitzat material":"Depreciation of tangible fixed assets",
+    "Dotacions de l'exercici. amortització immobilitzat immaterial":"Depreciation of intangible fixed assets",
+    "Pèrdues per insolvències de deutors":"Bad debt losses",
+    "Incentius mecenatge. Conv. col·laboració activ. interès general":"Sponsorship/charity collaboration",
+    "Incentius mecenatge. Despeses activ. interès general":"Sponsorship/charity general-interest expenses",
+    "Altres conceptes deduïbles (excepte provisions)":"Other deductible items (excluding provisions)",
+    "Provisions fiscalment deduïbles":"Tax-deductible provisions",
+    'Gasto':'Expense','Tipus de registre':'Record type','Selecciona una opció':'Select an option','Selecciona què vols registrar abans de continuar.':'Select what you want to record before continuing.','Selecciona si és una factura rebuda o emesa.':'Select whether it is a received or issued invoice.','Dades del registre':'Record data','Desglossament de despeses fiscalment deduïbles':'Tax-deductible expense breakdown','Total despeses computables':'Total deductible expenses','Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.':'For a received invoice or expense, enter at least one amount in the expense breakdown.','Ingressos':'Income','Despeses computables':'Deductible expenses','Resultat':'Result','Pèrdues i guanys':'Profit and loss','Resum de factures emeses, factures rebudes i despeses.':'Summary of issued invoices, received invoices and expenses.','Categoria de despesa':'Expense category','Encara no hi ha despeses classificades en el període seleccionat.':'There are no classified expenses in the selected period yet.','Els camps es guardaran com a pendent perquè el gestor els pugui revisar.':'The data will be saved as pending for the manager to review.','Proveïdor / beneficiari':'Supplier / beneficiary','Registre guardat correctament':'Record saved successfully','No hi ha factures per exportar':'No records to export','registres':'records','exportats a Excel':'exported to Excel',
     '__brand_title__':'Invoice Inbox',
     '__brand_subtitle__':'Joan Nogue · Document management',
     '__footer_name__':'Joan Nogué Trabal',
@@ -499,7 +733,7 @@ const I18N = {
     'Bústia de factures':'Invoice Inbox','Joan Nogue · Gestió documental':'Joan Nogue · Document management','Gestió documental i facturació':'Document management and invoicing','Entorn segur per a la gestió de factures':'Secure invoice management environment','Carregant…':'Loading…',
     'Gestor':'Manager','Empresa':'Company','Gestió de factures':'Invoice management','Sortir':'Sign out','Entra a la teva bústia de factures':'Sign in to your invoice inbox',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'A corporate space to receive, review and manage each company’s invoices in an organized and secure way.',
-    'Correu electrònic':'Email','Contrasenya':'Password','Entrar':'Sign in','Bústia corporativa · Joan Nogue':'Corporate inbox · Joan Nogue','Registra una factura':'Register an invoice',
+    'Correu electrònic':'Email','Contrasenya':'Password','Entrar':'Sign in','Introdueix el correu electrònic i la contrasenya.':'Enter your email and password.','No s’ha pogut iniciar la sessió.':'Unable to sign in.','Bústia corporativa · Joan Nogue':'Corporate inbox · Joan Nogue','Registra una factura':'Register an invoice',
     'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Choose how you want to register it: with AI-powered automatic reading or by entering the data manually.',
     'Llegir la factura automàticament':'Read invoice automatically','Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Upload a PDF, JPG or PNG and AI will try to extract the issuer, tax ID, number, date, taxable base, VAT and total.',
     'Utilitzar la lectura automàtica':'Use automatic reading','Introduir les dades manualment':'Enter data manually','Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Fill in the fields yourself. You can optionally attach the original PDF or image.','Introduir dades':'Enter data','Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Both options save the invoice in the same history and respect your company’s data isolation.',
@@ -508,7 +742,8 @@ const I18N = {
     'Panell de gestió':'Management dashboard','Tipus':'Type','Tots els tipus':'All types','Factura rebuda':'Received invoice','Factura emesa':'Issued invoice','Bon dia, Joan Nogue':'Good morning, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Manage clients, pending invoices and exports from one place.','Panell del gestor':'Manager dashboard','Client':'Client','Cercar client, emissor, NIF o núm.':'Search client, issuer, tax ID or number','Exportar totes a Excel':'Export all to Excel','Pujada':'Uploaded','Data':'Date','Emissor':'Issuer','NIF emissor':'Issuer tax ID','Núm. factura':'Invoice no.','IVA':'VAT','Cap factura coincideix amb els filtres.':'No invoices match the filters.','empresa registrada':'registered company','empreses registrades':'registered companies','factura':'invoice','factures':'invoices','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'Automatic reading took longer than 60 seconds. Check the Edge Function and try again.','Pujant el fitxer…':'Uploading file…','Analitzant amb IA…':'Analyzing with AI…','Preparant el fitxer…':'Preparing file…','Pujada cancel·lada':'Upload canceled','Desant…':'Saving…','Factura guardada correctament':'Invoice saved successfully','Tancar':'Close','Descarregar original':'Download original','Desar canvis':'Save changes','Eliminar':'Delete','Canvis desats':'Changes saved'
   }
 };
-function t(text){
+
+Object.assign(I18N.ca,{  'Selecciona una empresa':'Selecciona una empresa','Gestió manual':'Gestió manual','Càrrega documental':'Càrrega documental','Visió 1 · Gestió manual':'Visió 1 · Gestió manual','Visió 2 · Càrrega documental':'Visió 2 · Càrrega documental','Visió 1 · Gestió manual i comptable':'Visió 1 · Gestió manual i comptable','Gestionar empresa':'Gestionar empresa','Canviar d’empresa':'Canviar d’empresa','Com l’has de gestionar':'Com l’has de gestionar','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.','Descarrega els documents.':'Descarrega els documents.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Utilitza el ZIP per portar-los a la teva carpeta local.','No hi ha Pèrdues i Guanys ni revisió de camps.':'No hi ha Pèrdues i Guanys ni revisió de camps.','Aquesta empresa treballa amb informació comptable detallada.':'Aquesta empresa treballa amb informació comptable detallada.','Revisa i corregeix les factures i despeses.':'Revisa i corregeix les factures i despeses.','Consulta el detall de cada registre.':'Consulta el detall de cada registre.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Utilitza Pèrdues i Guanys per veure el resultat econòmic.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.','Documents per descarregar':'Documents per descarregar'});Object.assign(I18N.es,{  'Selecciona una empresa':'Selecciona una empresa','Gestió manual':'Gestión manual','Càrrega documental':'Carga documental','Visió 1 · Gestió manual':'Visión 1 · Gestión manual','Visió 2 · Càrrega documental':'Visión 2 · Carga documental','Visió 1 · Gestió manual i comptable':'Visión 1 · Gestión manual y contable','Gestionar empresa':'Gestionar empresa','Canviar d’empresa':'Cambiar de empresa','Com l’has de gestionar':'Cómo debes gestionarla','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'Esta empresa solo te entrega documentos. No es necesario clasificarlos ni revisar datos contables.','Descarrega els documents.':'Descarga los documentos.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Usa el ZIP para llevarlos a tu carpeta local.','No hi ha Pèrdues i Guanys ni revisió de camps.':'No hay Pérdidas y Ganancias ni revisión de campos.','Aquesta empresa treballa amb informació comptable detallada.':'Esta empresa se gestiona con información contable detallada.','Revisa i corregeix les factures i despeses.':'Revisa y corrige las facturas y gastos.','Consulta el detall de cada registre.':'Consulta el detalle de cada registro.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Usa Pérdidas y Ganancias para ver el resultado económico.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'Esta empresa se gestiona solo como repositorio documental: descarga los archivos y llévalos a tu carpeta local.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'Esta empresa se gestiona con detalle: revisión de registros, filtros, exportación y Pérdidas y Ganancias.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'El cliente solo sube documentos. Tú simplemente los descargas y los llevas a tu carpeta local.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Selecciona una empresa y la plataforma te mostrará exactamente cómo debes gestionarla.','Documents per descarregar':'Documentos para descargar'});Object.assign(I18N.en,{  'Selecciona una empresa':'Select a company','Gestió manual':'Manual management','Càrrega documental':'Document upload','Visió 1 · Gestió manual':'View 1 · Manual management','Visió 2 · Càrrega documental':'View 2 · Document upload','Visió 1 · Gestió manual i comptable':'View 1 · Manual accounting management','Gestionar empresa':'Manage company','Canviar d’empresa':'Change company','Com l’has de gestionar':'How you should manage it','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'This company only provides documents. No accounting classification or field review is needed.','Descarrega els documents.':'Download the documents.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Use the ZIP to move them to your local folder.','No hi ha Pèrdues i Guanys ni revisió de camps.':'There is no Profit & Loss or field review.','Aquesta empresa treballa amb informació comptable detallada.':'This company is managed with detailed accounting information.','Revisa i corregeix les factures i despeses.':'Review and correct invoices and expenses.','Consulta el detall de cada registre.':'Open each record in detail.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Use Profit & Loss to review the economic result.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'This company is managed only as a document repository: download the files and move them to your local folder.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'This company is managed in detail: review records, filters, exports and Profit & Loss.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'The client only uploads documents. You simply download them and move them to your local folder.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Select a company and the platform will show you exactly how to manage it.','Documents per descarregar':'Documents to download'});function t(text){
   return (I18N[CURRENT_LANG] && I18N[CURRENT_LANG][text]) || text;
 }
 function trDynamic(text){
@@ -602,43 +837,82 @@ function renderWho(){
   else w.innerHTML=`<span class="role-chip">Empresa</span><span class="who-name"><strong>${esc(state.profile?.company_name||state.user.email)}</strong><span>Bústia de factures</span></span><button class="btn ghost" data-act="logout">Sortir</button>`;
 }
 function renderCompanyShell(){
-  $('#view').innerHTML=`<section id="capture"></section><section id="history"></section>`;
-  renderCapture(); renderHistory();
-  applyLanguage($('#view'));
+  if(state.appMode==='bulk'){
+    $('#view').innerHTML=`<section id="bulkCompany"></section>`;
+    renderBulkCompany();
+  }else{
+    $('#view').innerHTML=`<section id="capture"></section><section id="pnl"></section><section id="history"></section>`;
+    renderCapture(); renderProfitLossCompany(); renderHistory();
+    applyLanguage($('#view'));
+  }
 }
 function renderCapture(){
-  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><h1>Registra una factura</h1><p>Tria si és una factura rebuda de proveïdors o una factura emesa per la teva empresa.</p><label class="field" style="margin:14px 0 18px;max-width:520px"><span>Tipus de factura</span><select id="invoiceTypePick"><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option></select></label><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
-    <div class="mode-card primary-mode" data-act="aiMode"><h3>Llegir la factura automàticament</h3><p>Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.</p><div class="mode-action"><button class="btn primary" data-act="aiMode">Utilitzar la lectura automàtica</button></div></div>
-    <div class="mode-card" data-act="manualMode"><h3>Introduir les dades manualment</h3><p>Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.</p><div class="mode-action"><button class="btn" data-act="manualMode">Introduir dades</button></div></div>
-  </div><input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
+  const selected=state.newEntryType||'';
+  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de gestió manual</div><h1>Registra un document</h1><p>Selecciona el tipus de registre i introdueix les dades manualment.</p>
+    <label class="field entry-kind" style="margin:14px 0 18px;max-width:520px"><span>Tipus de registre <b aria-hidden="true">*</b></span><select id="invoiceTypePick" required>
+      <option value="">Selecciona una opció</option>
+      <option value="recibida" ${selected==='recibida'?'selected':''}>Factura rebuda</option>
+      <option value="emitida" ${selected==='emitida'?'selected':''}>Factura emesa</option>
+      <option value="gasto" ${selected==='gasto'?'selected':''}>Despesa</option>
+    </select></label>
+    <div class="mode-grid" style="grid-template-columns:1fr"><div class="mode-card primary-mode"><h3>Introduir les dades manualment</h3><p>Les factures rebudes i emeses requereixen l’adjunt original. Les despeses poden guardar-se amb o sense adjunt.</p><div class="mode-action"><button class="btn primary" data-act="manualMode">Introduir les dades</button></div></div></div>
+    <input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
+  $('#invoiceTypePick')?.addEventListener('change',e=>{state.newEntryType=e.target.value;});
+  applyLanguage($('#capture'));
+}
+function renderBulkCompany(){
+  const box=$('#bulkCompany'); if(!box)return;
+  box.innerHTML=`<section class="hero bulk-upload"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de càrrega de documents</div><h1>Càrrega massiva de documents</h1><p>Selecciona diversos PDF o imatges i puja’ls en una sola operació. No es processen ni es classifiquen automàticament.</p>
+    <div class="bulk-drop"><label class="field"><span>Fitxers PDF o imatges</span><input id="bulkPick" type="file" accept="application/pdf,image/*,.pdf" multiple></label><p class="vision-note">Pots seleccionar diversos documents alhora.</p><div id="bulkQueue" class="bulk-list"></div><div class="bulk-actions"><button class="btn primary" data-act="uploadBulk">Pujar documents</button></div></div>
+    <p class="meta" id="bulkUploadStatus"></p>
+  </div></section>`;
+  $('#bulkPick')?.addEventListener('change',e=>{
+    const files=[...(e.target.files||[])];
+    const q=$('#bulkQueue'); if(!q)return;
+    q.innerHTML=files.map(f=>`<div class="bulk-row"><span><b>${esc(f.name)}</b><small>${(f.size/1024/1024).toFixed(2)} MB</small></span></div>`).join('');
+    q.dataset.count=String(files.length);
+  });
+  applyLanguage($('#bulkCompany'));
 }
 function renderManualForm(){
-  const type=$('#invoiceTypePick')?.value||'recibida';
-  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><h1>Entrada manual</h1><p>Introdueix les dades de la factura. El fitxer original és opcional.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades de la factura</h2><p class="sub">Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR',invoice_type:type},true)}</div><div style="margin-top:14px"><label class="field"><span>Fitxer original (opcional)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta">Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar factura</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+  const selected=state.newEntryType || $('#invoiceTypePick')?.value || '';
+  if(!selected){ toast(t('Has de seleccionar què vols registrar abans de continuar.'),true); renderCompanyShell(); setTimeout(()=>$('#invoiceTypePick')?.focus(),0); return; }
+  const recordType=selected==='gasto'?'gasto':'factura';
+  const invoiceType=selected==='gasto'?null:selected;
+  const requiredFile=recordType==='factura';
+  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><div class="eyebrow">Visió de gestió manual</div><h1>Entrada manual</h1><p>Introdueix les dades del registre. ${requiredFile?'El fitxer original és obligatori.':'El justificant original és opcional.'}</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades del registre</h2><p class="sub">Els camps es guardaran com a pendent perquè el gestor els pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR',record_type:recordType,invoice_type:invoiceType},true)}</div><div style="margin-top:14px"><label class="field"><span>${requiredFile?'Fitxer de factura (obligatori)':'Fitxer de justificant (opcional)'}</span><input id="manualFile" type="file" accept=".pdf,image/*" ${requiredFile?'required':''}></label><p class="meta">${requiredFile?'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.':'La despesa pot guardar-se sense adjunt.'}</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+  applyLanguage($('#view'));
 }
 async function saveManual(){
   const form=$('#manualForm'), err=$('#manualErr');
   const d=readFields(form);
-  if(!d.supplier_name){err.textContent='Indica l’empresa emissora.';return;}
+  if(!d.record_type){err.textContent=t('Selecciona el tipus de registre.');return;}
+  if(d.record_type==='factura' && !d.invoice_type){err.textContent=t('Selecciona si és una factura rebuda o emesa.');$('#manualForm [data-k=invoice_type]')?.focus();return;}
+  if(!d.supplier_name){err.textContent=t('Indica l’empresa emissora o el proveïdor.');return;}
+  if((d.record_type==='gasto' || d.invoice_type==='recibida') && !(Number(d.expense_total)>0)){
+    err.textContent=t('Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.');
+    return;
+  }
   const file=$('#manualFile')?.files?.[0]||null;
+  if(d.record_type==='factura' && !file){err.textContent=t('Les factures rebudes i emeses requereixen un fitxer PDF o imatge.');return;}
   const btn=$('[data-act="saveManual"]'); btn.disabled=true; btn.textContent='Desant…';
-  if(file && file.size>25*1024*1024){err.textContent='El fitxer supera el límit de 25 MB.';btn.disabled=false;btn.textContent='Desar factura';return;}
-  const baseRec={company_id:state.profile.company_id,...d,invoice_type:normalizeInvoiceType(d.invoice_type),status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
+  if(file && file.size>25*1024*1024){err.textContent=t('El fitxer supera el límit de 25 MB.');btn.disabled=false;btn.textContent='Desar';return;}
+  const baseRec={company_id:state.profile.company_id,...d,record_type:d.record_type,invoice_type:d.record_type==='gasto'?null:normalizeInvoiceType(d.invoice_type),expense_breakdown:d.expense_breakdown||{},expense_total:Number(d.expense_total||0),status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
   const {data:ins,error}=await sb.from('invoices').insert(baseRec).select().single();
-  if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar factura';return;}
+  if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar';return;}
   if(file){
     const finalPath=`${state.profile.company_id}/${ins.id}/${safeName(file.name)}`;
     const {error:up}=await sb.storage.from('invoices').upload(finalPath,file,{upsert:false});
-    if(up){await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar el fitxer original: '+up.message;btn.disabled=false;btn.textContent='Desar factura';return;}
+    if(up){await sb.from('invoices').delete().eq('id',ins.id);err.textContent=t('No s’ha pogut guardar el fitxer original: ')+up.message;btn.disabled=false;btn.textContent='Desar';return;}
     const {error:patch}=await sb.from('invoices').update({file_path:finalPath}).eq('id',ins.id);
-    if(patch){await sb.storage.from('invoices').remove([finalPath]).catch(()=>{});await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar la ruta del fitxer: '+patch.message;btn.disabled=false;btn.textContent='Desar factura';return;}
+    if(patch){await sb.storage.from('invoices').remove([finalPath]).catch(()=>{});await sb.from('invoices').delete().eq('id',ins.id);err.textContent=t('No s’ha pogut guardar la ruta del fitxer: ')+patch.message;btn.disabled=false;btn.textContent='Desar';return;}
   }
-  toast('Factura guardada correctament'); state.pendingFile=null; state.view='mine'; await loadData(); renderCompanyShell();
+  toast(t('Registre guardat correctament')); state.pendingFile=null; state.view='mine'; state.newEntryType=''; await loadData(); renderCompanyShell();
 }
 function filteredCompanyHistory(){
   const f=state.historyFilters, q=(f.q||'').trim().toLowerCase();
   return state.invoices.filter(x=>{
-    if(f.type && normalizeInvoiceType(x.invoice_type)!==f.type) return false;
+    if(f.type){ const typ=x.record_type==='gasto'?'gasto':normalizeInvoiceType(x.invoice_type); if(typ!==f.type) return false; }
     if(f.status && (x.status||'pendiente')!==f.status) return false;
     const d=x.invoice_date || (x.created_at||'').slice(0,10);
     if(f.from && d<f.from) return false;
@@ -658,6 +932,62 @@ function scheduleHistoryRender(){
   clearTimeout(historyFilterTimer);
   historyFilterTimer=setTimeout(()=>renderHistory(),120);
 }
+
+function pnlRows(companyId='', from='', to=''){
+  return state.invoices.filter(x=>{
+    if(companyId && x.company_id!==companyId) return false;
+    const d=x.invoice_date || (x.created_at||'').slice(0,10);
+    if(from && d<from) return false;
+    if(to && d>to) return false;
+    return true;
+  });
+}
+function pnlSummary(rows){
+  let income=0, expense=0, nonEur=0, unclassified=0;
+  const categories={};
+  for(const x of rows){
+    const cur=normalizeCurrency(x.currency);
+    if(cur!=='EUR'){nonEur++;continue;}
+    if(x.record_type==='gasto' || x.invoice_type==='recibida'){
+      const ex=Number(x.expense_total||0);
+      if(ex>0){
+        expense+=ex;
+        const bd=(x.expense_breakdown&&typeof x.expense_breakdown==='object')?x.expense_breakdown:{};
+        for(const [k,v] of Object.entries(bd)) categories[k]=(categories[k]||0)+Number(v||0);
+      }else unclassified++;
+    }else if(x.record_type==='factura' && x.invoice_type==='emitida'){
+      income+=Number(x.base||0);
+    }
+  }
+  return {income,expense,result:income-expense,nonEur,unclassified,categories};
+}
+function pnlCategoryLabel(key){const map=Object.fromEntries(EXPENSE_CATEGORIES);return map[key]||key;}
+function pnlCategoryTable(s){
+  const rows=Object.entries(s.categories).filter(([,v])=>Number(v)>0).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length)return '<div class="empty">Encara no hi ha despeses classificades en el període seleccionat.</div>';
+  return `<table><thead><tr><th>Categoria de despesa</th><th class="n">Import</th></tr></thead><tbody>${rows.map(([k,v])=>`<tr><td>${esc(pnlCategoryLabel(k))}</td><td class="n">${money(v,'EUR')}</td></tr>`).join('')}</tbody></table>`;
+}
+function renderProfitLossCompany(){
+  const box=$('#pnl');if(!box)return;
+  const s=pnlSummary(pnlRows(state.profile.company_id,state.pnlFilters.from,state.pnlFilters.to));
+  box.innerHTML=`<section class="pnl"><div class="pnl-head"><div><h2>Pèrdues i guanys</h2><p>Resum de factures emeses, factures rebudes i despeses.</p></div><div class="filters" style="padding:8px;gap:8px"><label class="field"><span>Des de</span><input type="date" id="pnlFrom" value="${esc(state.pnlFilters.from)}"></label><label class="field"><span>Fins a</span><input type="date" id="pnlTo" value="${esc(state.pnlFilters.to)}"></label></div></div>
+  <div class="pnl-cards"><div class="pnl-card"><span>Ingressos</span><strong>${money(s.income,'EUR')}</strong></div><div class="pnl-card"><span>Despeses computables</span><strong>${money(s.expense,'EUR')}</strong></div><div class="pnl-card result ${s.result<0?'negative':''}"><span>Resultat</span><strong>${money(s.result,'EUR')}</strong></div></div>
+  ${s.unclassified?`<p class="pnl-meta">${s.unclassified} registre(s) de despesa no tenen desglossament i no s’inclouen en la suma de despeses.</p>`:''}
+  ${s.nonEur?`<p class="pnl-meta">${s.nonEur} registre(s) en una moneda diferent d’EUR no s’inclouen en aquest resum.</p>`:''}
+  <div class="pnl-table">${pnlCategoryTable(s)}</div></section>`;
+  applyLanguage(box);
+}
+function renderProfitLossManager(){
+  const box=$('#pnl');if(!box)return;
+  const s=pnlSummary(pnlRows(state.filters.company,state.filters.from,state.filters.to));
+  box.innerHTML=`<section class="pnl"><div class="pnl-head"><div><h2>Pèrdues i guanys</h2><p>Resum econòmic segons els filtres actuals del gestor.</p></div></div>
+  <div class="pnl-cards"><div class="pnl-card"><span>Ingressos</span><strong>${money(s.income,'EUR')}</strong></div><div class="pnl-card"><span>Despeses computables</span><strong>${money(s.expense,'EUR')}</strong></div><div class="pnl-card result ${s.result<0?'negative':''}"><span>Resultat</span><strong>${money(s.result,'EUR')}</strong></div></div>
+  ${s.unclassified?`<p class="pnl-meta">${s.unclassified} registre(s) de despesa no tenen desglossament i no s’inclouen en la suma de despeses.</p>`:''}
+  ${s.nonEur?`<p class="pnl-meta">${s.nonEur} registre(s) en una moneda diferent d’EUR no s’inclouen en aquest resum.</p>`:''}
+  <div class="pnl-table">${pnlCategoryTable(s)}</div></section>`;
+  applyLanguage(box);
+}
+
 function renderHistory(){
   const box=$('#history'); if(!box) return;
   const list=filteredCompanyHistory();
@@ -665,7 +995,7 @@ function renderHistory(){
   const head=`<div class="section-head"><h2>Historial de factures</h2><span>${list.length} de ${total}</span></div>
     <div class="filters history-filters">
       <label class="field grow"><span>Cercar emissor, NIF, número o concepte</span><input type="search" data-hf="q" autocomplete="off" placeholder="Escriu per cercar…"></label>
-      <label class="field"><span>Tipus</span><select data-hf="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option></select></label>
+      <label class="field"><span>Tipus</span><select data-hf="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option><option value="gasto">Despesa</option></select></label>
       <label class="field"><span>Estat</span><select data-hf="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
       <label class="field"><span>Des de</span><input type="date" data-hf="from"></label>
       <label class="field"><span>Fins a</span><input type="date" data-hf="to"></label>
@@ -675,46 +1005,144 @@ function renderHistory(){
   syncCompanyHistoryFilters();
   applyLanguage($('#history'));
 }
+async function uploadBulkDocuments(){
+  if(state.appMode!=='bulk' || !state.profile?.company_id)return;
+  const input=$('#bulkPick'); const files=[...(input?.files||[])]; const status=$('#bulkUploadStatus');
+  if(!files.length){toast(t('Selecciona fitxers'),true);return;}
+  const btn=$('[data-act="uploadBulk"]'); if(btn){btn.disabled=true;btn.textContent=t('Pujant documents…');}
+  let done=0;
+  try{
+    for(const file of files){
+      if(file.size>25*1024*1024) throw new Error(`${file.name}: ${t('El fitxer supera el límit de 25 MB.')}`);
+      const id=crypto.randomUUID();
+      const path=`${state.profile.company_id}/bulk/${id}/${safeName(file.name)}`;
+      const {error:up}=await sb.storage.from('invoices').upload(path,file,{upsert:false});
+      if(up) throw new Error(`${file.name}: ${up.message}`);
+      const {error:ins}=await sb.from('bulk_documents').insert({id,company_id:state.profile.company_id,file_path:path,file_name:file.name,file_type:file.type||null,file_size:file.size});
+      if(ins){await sb.storage.from('invoices').remove([path]).catch(()=>{});throw new Error(`${file.name}: ${ins.message}`);}
+      done++; if(status) status.textContent=`${done}/${files.length} ${t('documents pujats')}`;
+    }
+    toast(t('Documents pujats correctament'));
+    if(input) input.value='';
+    if($('#bulkQueue')) $('#bulkQueue').innerHTML='';
+    if(status) status.textContent=`${done} ${t('documents pujats')}`;
+  }catch(e){toast(e.message||t('No s’han pogut pujar els documents.'),true);if(status)status.textContent=`${done}/${files.length}`;}
+  finally{if(btn){btn.disabled=false;btn.textContent=t('Pujar documents');}}
+}
+async function loadBulkDocuments(companyId){
+  const r=await sb.from('bulk_documents').select('*').eq('company_id',companyId).order('created_at',{ascending:false});
+  if(r.error){toast(r.error.message,true);return []}
+  return r.data||[];
+}
+async function downloadBulkDocument(doc){
+  const {data,error}=await sb.storage.from('invoices').createSignedUrl(doc.file_path,120);
+  if(error){toast(error.message,true);return;}
+  const a=document.createElement('a');a.href=data.signedUrl;a.download=doc.file_name||'document';a.target='_blank';a.click();
+}
+async function downloadAllBulkDocuments(companyId, companyName){
+  if(!window.JSZip){toast('JSZip no està disponible.',true);return;}
+  const docs=await loadBulkDocuments(companyId); if(!docs.length){toast(t('No hi ha documents per descarregar.'),true);return;}
+  const zip=new JSZip(); const btn=$('[data-act="bulkZip"]'); if(btn){btn.disabled=true;btn.textContent='…'}
+  try{
+    let i=0;
+    for(const doc of docs){
+      const {data,error}=await sb.storage.from('invoices').createSignedUrl(doc.file_path,180);
+      if(error) throw error;
+      const resp=await fetch(data.signedUrl); if(!resp.ok) throw new Error(`${doc.file_name}: HTTP ${resp.status}`);
+      const blob=await resp.blob(); zip.file(`${String(++i).padStart(3,'0')}_${safeName(doc.file_name)}`,blob);
+    }
+    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');a.href=url;a.download=`documents_${safeName(companyName||'empresa')}_${new Date().toISOString().slice(0,10)}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+    toast(`${docs.length} ${t('documents descarregats en ZIP')}`);
+  }catch(e){toast(e.message||t('No s’ha pogut crear el ZIP.'),true)}finally{if(btn){btn.disabled=false;btn.textContent=t('Descarregar tots en ZIP')}}
+}
+function renderManagerBulk(company){
+  const content=$('#managerContent'); if(!content)return;
+  content.insertAdjacentHTML('beforeend',`<section class="hero manager-mode-card"><div><div class="eyebrow">${t('Visió 2 · Càrrega documental')}</div><h2>${t('Documents per descarregar')}</h2><p>${t('El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.')}</p><div class="bar"><span class="sub" id="bulkManagerCount">Cargando…</span><div class="row-actions"><button class="btn primary" data-act="bulkZip">${t('Descarregar tots en ZIP')}</button></div></div><div id="bulkManagerList" class="bulk-list"></div></div></section>`);
+  applyLanguage(content);
+  loadBulkDocuments(company.id).then(docs=>{
+    const count=$('#bulkManagerCount'), list=$('#bulkManagerList'); if(!list)return;
+    count.textContent=`${docs.length} ${t('documents disponibles').toLowerCase()}`;
+    list.innerHTML=docs.length?docs.map(d=>`<div class="bulk-row"><span><b>${esc(d.file_name)}</b><small>${fmtStamp(d.created_at)} · ${((Number(d.file_size||0)/1024/1024)||0).toFixed(2)} MB</small></span><button class="btn" data-act="bulkDownload" data-bulk-id="${esc(d.id)}">${t('Descarregar')}</button></div>`).join(''):`<div class="empty">${t('No hi ha documents per descarregar.')}</div>`;
+    state.bulkDocuments=docs;
+  });
+}
+
 function managerView(){
-  $('#view').innerHTML=`<section class="manager-welcome"><div><div class="eyebrow">Panell de gestió</div><h2>Bon dia, Joan Nogue</h2><p>Controla clients, factures pendents i exportacions des d’un únic espai.</p></div><div class="manager-badge">JN</div></section><div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
-  <div class="filters">
-    <label class="field"><span>Client</span><select data-f="company" id="fCompany"></select></label>
-    <label class="field"><span>Tipus</span><select data-f="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option></select></label>
+  $('#view').innerHTML=`<section class="manager-welcome"><div><div class="eyebrow">Panell de gestió</div><h2>Bon dia, Joan Nogue</h2><p>${t('Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.')}</p></div><div class="manager-badge">JN</div></section>
+  <div class="section-head" style="margin-top:4px"><h2>Empreses</h2><span id="clientCount"></span></div>
+  <div class="filters"><label class="field grow"><span>Empresa</span><select data-f="company" id="fCompany"></select></label></div>
+  <section id="managerContent"></section>`;
+  syncFilters(); renderManagerContent(); applyLanguage($('#view'));
+}
+function syncFilters(){
+  const c=$('#fCompany'); if(!c)return;
+  c.innerHTML='<option value="">'+t('Selecciona una empresa')+'</option>'+state.companies.map(x=>`<option value="${x.id}" ${state.filters.company===x.id?'selected':''}>${esc(x.name)} · ${x.app_mode==='bulk'?t('Càrrega documental'):t('Gestió manual')}</option>`).join('');
+  if(state.filters.company && !state.companies.some(x=>x.id===state.filters.company)) state.filters.company='';
+  c.value=state.filters.company||'';
+  $('#clientCount').textContent=`${state.companies.length} ${state.companies.length===1?'empresa registrada':'empreses registrades'}`;
+}
+function currentManagerCompany(){return state.companies.find(x=>x.id===state.filters.company)||null;}
+function renderManagerLanding(){
+  const content=$('#managerContent'); if(!content)return;
+  content.innerHTML=`<div class="manager-company-grid">${state.companies.map(c=>{
+    const isBulk=c.app_mode==='bulk';
+    return `<article class="manager-company-card">
+      <div class="manager-company-top">
+        <div><div class="manager-company-name">${esc(c.name)}</div><div class="manager-company-meta">${esc(c.tax_id||'')}</div></div>
+        <span class="manager-mode-badge ${isBulk?'bulk':'manual'}">${isBulk?t('Visió 2 · Càrrega documental'):t('Visió 1 · Gestió manual')}</span>
+      </div>
+      <div class="manager-company-guide">
+        ${isBulk?`<strong>${t('Com l’has de gestionar')}</strong><div>${t('Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.')}</div><ul><li>${t('Descarrega els documents.')}</li><li>${t('Utilitza el ZIP per portar-los a la teva carpeta local.')}</li><li>${t('No hi ha Pèrdues i Guanys ni revisió de camps.')}</li></ul>`:`<strong>${t('Com l’has de gestionar')}</strong><div>${t('Aquesta empresa treballa amb informació comptable detallada.')}</div><ul><li>${t('Revisa i corregeix les factures i despeses.')}</li><li>${t('Consulta el detall de cada registre.')}</li><li>${t('Utilitza Pèrdues i Guanys per veure el resultat econòmic.')}</li></ul>`}
+      </div>
+      <button class="btn ${isBulk?'':'primary'}" data-act="selectManagerCompany" data-company-id="${esc(c.id)}">${t('Gestionar empresa')}</button>
+    </article>`;
+  }).join('')}</div>`;
+  applyLanguage(content);
+}
+function renderManagerContent(){
+  const c=currentManagerCompany();
+  if(!c){renderManagerLanding();return;}
+  const isBulk=c.app_mode==='bulk';
+  const content=$('#managerContent');
+  const label=isBulk?t('Visió 2 · Càrrega documental'):t('Visió 1 · Gestió manual i comptable');
+  const desc=isBulk?t('Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.') : t('Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.');
+  content.innerHTML=`<div class="manager-selected-head"><div><div class="manager-mode-badge ${isBulk?'bulk':'manual'}">${label}</div><div class="title">${esc(c.name)}</div><div class="meta">${esc(c.tax_id||'')} · ${desc}</div></div><button class="btn" data-act="clearManagerCompany">${t('Canviar d’empresa')}</button></div>`;
+  if(isBulk) renderManagerBulk(c); else renderManagerManual();
+}
+function renderManagerManual(){
+  const content=$('#managerContent'); if(!content)return;
+  content.innerHTML=`<div class="filters">
+    <label class="field"><span>Tipus</span><select data-f="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option><option value="gasto">Despesa</option></select></label>
     <label class="field"><span>Estat</span><select data-f="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
     <label class="field"><span>Des de</span><input type="date" data-f="from"></label>
     <label class="field"><span>Fins a</span><input type="date" data-f="to"></label>
     <label class="field grow"><span>Cercar client, emissor, NIF o núm.</span><input type="search" data-f="q"></label>
-  </div>
-  <div id="summary" class="summary"></div>
-  <div class="bar"><span class="sub" id="countTxt" style="margin:0"></span><div class="row-actions"><button class="btn primary" data-act="export">Exportar totes a Excel</button></div></div>
-  <div id="tbl"></div>`;
-  syncFilters(); renderManagerTable();
-  applyLanguage($('#view'));
-}
-function syncFilters(){
-  const c=$('#fCompany'); if(!c) return;
-  c.innerHTML='<option value="">Tots</option>'+state.companies.map(x=>`<option value="${x.id}" ${state.filters.company===x.id?'selected':''}>${esc(x.name)}${x.tax_id?' — '+esc(x.tax_id):''}</option>`).join('');
-  document.querySelectorAll('[data-f]').forEach(el=>{el.value=state.filters[el.dataset.f]||''});
-  $('#clientCount').textContent=`${state.companies.length} ${state.companies.length===1?'empresa registrada':'empreses registrades'}`;
+  </div><section id="pnl"></section><div id="summary" class="summary"></div><div class="bar"><span class="sub" id="countTxt" style="margin:0"></span><div class="row-actions"><button class="btn primary" data-act="export">Exportar totes a Excel</button></div></div><div id="tbl"></div>`;
+  document.querySelectorAll('[data-f]').forEach(el=>{if(el.dataset.f!=='company')el.value=state.filters[el.dataset.f]||''});
+  renderProfitLossManager(); renderManagerTable(); applyLanguage(content);
 }
 function filteredInvoices(){
   const f=state.filters,q=f.q.trim().toLowerCase();
   return state.invoices.filter(x=>{
+    const company=state.companies.find(c=>c.id===x.company_id);
+    if(company?.app_mode==='bulk') return false;
     if(f.company && x.company_id!==f.company) return false;
-    if(f.type && normalizeInvoiceType(x.invoice_type)!==f.type) return false;
-    if(f.status && (x.status||'pendiente')!==f.status) return false;
+    if(f.type){const typ=x.record_type==='gasto'?'gasto':normalizeInvoiceType(x.invoice_type);if(typ!==f.type)return false;}
+    if(f.status && (x.status||'pendiente')!==f.status)return false;
     const d=x.invoice_date || (x.created_at||'').slice(0,10);
-    if(f.from&&d<f.from) return false; if(f.to&&d>f.to) return false;
-    if(q){const company=state.companies.find(c=>c.id===x.company_id);const hay=`${company?.name||''} ${company?.tax_id||''} ${x.supplier_name||''} ${x.supplier_tax_id||''} ${x.invoice_number||''} ${x.concept||''}`.toLowerCase(); if(!hay.includes(q)) return false;}
+    if(f.from&&d<f.from) return false;if(f.to&&d>f.to)return false;
+    if(q){const hay=`${company?.name||''} ${company?.tax_id||''} ${x.supplier_name||''} ${x.supplier_tax_id||''} ${x.invoice_number||''} ${x.concept||''}`.toLowerCase();if(!hay.includes(q))return false;}
     return true;
   }).sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
 }
 function renderManagerTable(){
-  const list=filteredInvoices(); const eur=list.filter(x=>(x.currency||'EUR')==='EUR'); const sum=k=>eur.reduce((a,x)=>a+Number(x[k]||0),0); const pend=state.invoices.filter(x=>(x.status||'pendiente')==='pendiente').length;
+  renderProfitLossManager();
+  const list=filteredInvoices(); const eur=list.filter(x=>(x.currency||'EUR')==='EUR'); const sum=k=>eur.reduce((a,x)=>a+Number(x[k]||0),0); const pend=state.invoices.filter(x=>{const c=state.companies.find(c=>c.id===x.company_id);return c?.app_mode!=='bulk' && (x.status||'pendiente')==='pendiente';}).length;
   $('#summary').innerHTML=`<div>Base imposable<strong>${money(sum('base'))}</strong></div><div>IVA<strong>${money(sum('vat_amount'))}</strong></div><div>Total<strong>${money(sum('total'))}</strong></div><div>Pendents de revisar<strong>${pend}</strong></div>`;
   $('#countTxt').textContent=`${list.length} ${list.length===1?'factura':'factures'}`+(eur.length<list.length?' (sumes només EUR)':'');
   if(!list.length){$('#tbl').innerHTML='<div class="empty">Cap factura coincideix amb els filtres.</div>';return}
-  $('#tbl').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Pujada</th><th>Client</th><th>Tipus</th><th>Data</th><th>Emissor</th><th>NIF emissor</th><th>Núm. factura</th><th class="n">Base</th><th class="n">IVA</th><th class="n">Total</th><th>Estat</th><th></th></tr></thead><tbody>${list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return `<tr><td>${esc(fmtStamp(x.created_at))}</td><td><b>${esc(c?.name||x.company_id)}</b><small>${esc(c?.tax_id||'')}</small></td><td>${invoiceTypeChip(x.invoice_type)}</td><td>${fmtDate(x.invoice_date)}</td><td>${esc(x.supplier_name||'Sense nom')}<small>${esc(x.concept||'')}</small></td><td>${esc(x.supplier_tax_id||'')}</td><td>${esc(x.invoice_number||'')}${x.file_type==='application/pdf'?'<small>PDF</small>':''}</td><td class="n">${x.base==null?'':money(x.base,x.currency)}</td><td class="n">${x.vat_amount==null?'':money(x.vat_amount,x.currency)}</td><td class="n"><b>${money(x.total,x.currency)}</b></td><td>${statusChip(x.status)}</td><td><button class="btn ghost" data-act="open" data-id="${x.id}">Veure</button></td></tr>`}).join('')}</tbody></table></div>`;
+  $('#tbl').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Pujada</th><th>Client</th><th>Tipus</th><th>Data</th><th>Emissor / Proveïdor</th><th>NIF</th><th>Núm.</th><th class="n">Base</th><th class="n">IVA</th><th class="n">Total</th><th>Estat</th><th></th></tr></thead><tbody>${list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return `<tr><td>${esc(fmtStamp(x.created_at))}</td><td><b>${esc(c?.name||x.company_id)}</b><small>${esc(c?.tax_id||'')}</small></td><td>${invoiceTypeChip(x.record_type==='gasto'?'gasto':x.invoice_type)}${x.record_type==='gasto'?'<small>Despesa</small>':''}</td><td>${fmtDate(x.invoice_date)}</td><td>${esc(x.supplier_name||'Sense nom')}<small>${esc(x.concept||'')}</small></td><td>${esc(x.supplier_tax_id||'')}</td><td>${esc(x.invoice_number||'')}</td><td class="n">${x.base==null?'':money(x.base,x.currency)}</td><td class="n">${x.vat_amount==null?'':money(x.vat_amount,x.currency)}</td><td class="n"><b>${money(x.total,x.currency)}</b></td><td>${statusChip(x.status)}</td><td><button class="btn ghost" data-act="open" data-id="${x.id}">Veure</button></td></tr>`}).join('')}</tbody></table></div>`;
 }
 function currencyField(v={},editable=true){
   const code=normalizeCurrency(v.currency||'EUR');
@@ -722,14 +1150,41 @@ function currencyField(v={},editable=true){
   return `<label class="field"><span>Moneda</span><select data-k="currency" ${editable?'':'disabled'}>${opts.map(([c,l])=>`<option value="${c}" ${code===c?'selected':''}>${l}</option>`).join('')}</select></label>`;
 }
 function invoiceTypeField(v={},editable=true){
+  const recordType=normalizeRecordType(v.record_type);
   const type=normalizeInvoiceType(v.invoice_type);
-  return `<label class="field"><span>Tipus de factura</span><select data-k="invoice_type" ${editable?'':'disabled'}><option value="recibida" ${type==='recibida'?'selected':''}>Factura rebuda</option><option value="emitida" ${type==='emitida'?'selected':''}>Factura emesa</option></select></label>`;
+  const hidden=`<input type="hidden" data-k="record_type" value="${recordType}">`;
+  if(recordType==='gasto') return hidden+`<label class="field"><span>Tipus</span><input type="text" value="Despesa" readonly></label>`;
+  return hidden+`<label class="field"><span>Tipus de factura${editable?' <b aria-hidden="true">*</b>':''}</span><select data-k="invoice_type" ${editable?'required':'disabled'}><option value="">Selecciona el tipus</option><option value="recibida" ${type==='recibida'?'selected':''}>Factura rebuda</option><option value="emitida" ${type==='emitida'?'selected':''}>Factura emesa</option></select></label>`;
+}
+function expenseBreakdownHTML(v={},editable=true){
+  const bd=v.expense_breakdown||{};
+  const total=Object.values(bd).reduce((a,x)=>a+(Number(x)||0),0);
+  const rows=EXPENSE_CATEGORIES.map(([k,lbl])=>`<div class="expense-row"><label>${lbl}</label><input type="number" step="0.01" min="0" data-expense-k="${k}" value="${esc(bd[k] ?? '')}" ${editable?'':'disabled'}></div>`).join('');
+  return `<div class="expense-card" data-expense-card>
+    <div class="expense-head"><div><h3>Desglossament de despeses fiscalment deduïbles</h3><p>Per a factures rebudes i despeses. Introdueix només els imports que corresponguin.</p></div></div>
+    <div class="expense-grid">${rows}</div>
+    <div class="expense-total"><span>Total despeses computables</span><strong id="expenseTotalPreview">${money(total,'EUR')}</strong></div>
+  </div>`;
 }
 function fieldsHTML(v={},editable=true){
+  const recordType=normalizeRecordType(v.record_type||'factura');
   const f=(k,l,t='text',wide=false)=>`<label class="field ${wide?'wide':''}"><span>${l}</span><input type="${t}" data-k="${k}" value="${esc(v[k] ?? '')}" ${editable?'':'readonly'}></label>`;
-  return invoiceTypeField(v,editable)+f('supplier_name','Empresa emissora','text',true)+f('supplier_tax_id','NIF / CIF de l’emissor')+f('invoice_number','Núm. de factura')+f('invoice_date','Data de la factura','date')+currencyField(v,editable)+f('base','Base imposable','number')+f('vat_rate','IVA (%)','number')+f('vat_amount','Quota d’IVA','number')+f('total','Total','number')+f('concept','Concepte','text',true);
+  const common=invoiceTypeField(v,editable)+f('supplier_name',recordType==='gasto'?'Proveïdor / beneficiari':'Empresa emissora','text',true)+f('supplier_tax_id','NIF / CIF de l’emissor')+f('invoice_number','Núm. de factura')+f('invoice_date','Data de la factura','date')+currencyField(v,editable)+f('base','Base imposable','number')+f('vat_rate','IVA (%)','number')+f('vat_amount','Quota d’IVA','number')+f('total','Total','number')+f('concept','Concepte','text',true);
+  return common + ((recordType==='gasto'||v.invoice_type==='recibida') ? expenseBreakdownHTML(v,editable) : '');
 }
-function readFields(root){const o={};root.querySelectorAll('[data-k]').forEach(x=>{o[x.dataset.k]=x.value.trim()||null});o.currency=normalizeCurrency(o.currency);o.invoice_type=normalizeInvoiceType(o.invoice_type);['base','vat_rate','vat_amount','total'].forEach(k=>{if(o[k]!=null){const n=Number(String(o[k]).replace(',','.'));o[k]=Number.isFinite(n)?n:null}});return o}
+function readFields(root){
+  const o={};
+  root.querySelectorAll('[data-k]').forEach(x=>{o[x.dataset.k]=x.value.trim()||null});
+  o.currency=normalizeCurrency(o.currency);
+  o.invoice_type=(o.invoice_type==='emitida'||o.invoice_type==='recibida')?o.invoice_type:null;
+  o.record_type=(o.record_type==='gasto')?'gasto':'factura';
+  const breakdown={};
+  root.querySelectorAll('[data-expense-k]').forEach(x=>{const n=Number(String(x.value||'').replace(',','.')); if(Number.isFinite(n)&&n>0) breakdown[x.dataset.expenseK]=n;});
+  o.expense_breakdown=breakdown;
+  o.expense_total=Object.values(breakdown).reduce((a,x)=>a+Number(x||0),0);
+  ['base','vat_rate','vat_amount','total'].forEach(k=>{if(o[k]!=null){const n=Number(String(o[k]).replace(',','.'));o[k]=Number.isFinite(n)?n:null}});
+  return o;
+}
 function uploadProgressHtml(stage, detail, percent) {
   return `<section class="work"><div><div class="imgwrap" id="previewBox"><div style="text-align:center;padding:36px 18px"><div class="scan" style="position:relative;top:auto;left:auto;right:auto;animation:none;margin:0 auto 18px;width:70%;height:4px"></div><b>${esc(stage)}</b><p class="sub" style="margin:8px 0 0">${esc(detail)}</p></div></div></div><div><h2>${esc(stage)}</h2><p class="sub">${esc(detail)}</p><div style="margin:18px 0 8px;height:10px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden"><div style="height:100%;width:${Math.max(5,Math.min(100,percent))}%;background:var(--brand);transition:width .3s ease"></div></div><p class="meta">El procés pot trigar uns segons. Si supera els 60 segons, mostrarem l’error.</p><div class="actions"><button class="btn" data-act="cancelUpload">Cancel·lar</button></div></div></section>`;
 }
@@ -780,6 +1235,8 @@ function uploadIsActive(opId){
 
 async function openUpload(file){
   if(!file) return;
+  const selectedType=$('#invoiceTypePick')?.value||state.newEntryType||'';
+  if(!selectedType){ toast(t('Has de seleccionar què vols registrar abans de continuar.'),true); renderCompanyShell(); setTimeout(()=>$('#invoiceTypePick')?.focus(),0); return; }
   const maxBytes=15*1024*1024;
   if(file.size>maxBytes){
     renderUploadReview(file,'',{currency:'EUR'},'El fitxer supera el límit de 15 MB per a la lectura automàtica. Prova amb un fitxer més petit.',true);
@@ -787,7 +1244,7 @@ async function openUpload(file){
   }
 
   const draftId=crypto.randomUUID();
-  state.pendingFile={file,src:'',path:'',values:{currency:'EUR',invoice_type:normalizeInvoiceType($('#invoiceTypePick')?.value)},draftId,tempInvoiceId:null,opId:draftId};
+  state.pendingFile={file,src:'',path:'',values:{currency:'EUR',invoice_type:selectedType},invoice_type:selectedType,draftId,tempInvoiceId:null,opId:draftId};
   $('#view').innerHTML=uploadProgressHtml('Preparant el fitxer…','Preparant el PDF o la imatge per pujar-la de manera segura.',10);
   const src=isPdf(file) ? '' : await dataUrlFromFile(file);
   if(!uploadIsActive(draftId)) return;
@@ -886,9 +1343,11 @@ async function cancelPendingUpload(){
 async function saveUpload(){
   const p=state.pendingFile; if(!p?.path)return;
   const d=readFields($('#uploadForm')),err=$('#uploadErr');
+  if(d.record_type==='factura' && !d.invoice_type){err.textContent=t('Selecciona si és una factura rebuda o emesa.');return;}
+  if((d.record_type==='gasto'||d.invoice_type==='recibida') && !(Number(d.expense_total)>0)){err.textContent=t('Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.');return;}
   if(!d.supplier_name){err.textContent='Indica l’empresa emissora.';return;}
   const btn=$('[data-act="saveUpload"]');btn.disabled=true;btn.textContent='Desant…';
-  const {data:ins,error}=await sb.from('invoices').insert({company_id:state.profile.company_id,...d,invoice_type:normalizeInvoiceType(d.invoice_type||p.invoice_type),status:'pendiente',file_name:p.file.name,file_type:p.file.type||null}).select().single();
+  const {data:ins,error}=await sb.from('invoices').insert({company_id:state.profile.company_id,...d,record_type:d.record_type||p.record_type||'factura',invoice_type:d.record_type==='gasto'?null:normalizeInvoiceType(d.invoice_type||p.invoice_type),expense_breakdown:d.expense_breakdown||{},expense_total:Number(d.expense_total||0),status:'pendiente',file_name:p.file.name,file_type:p.file.type||null}).select().single();
   if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar factura';return}
   const finalPath=`${state.profile.company_id}/${ins.id}/${safeName(p.file.name)}`;
   const {error:mv}=await sb.storage.from('invoices').move(p.path,finalPath);
@@ -909,8 +1368,10 @@ async function openDetail(id){
 }
 async function saveDetail(){
   const inv=state.current, err=$('#detailErr'), v=readFields($('#detailForm')); const patch={...v};
+  if(v.record_type==='factura' && !v.invoice_type){err.textContent=t('Selecciona si és una factura rebuda o emesa.');return;}
+  if((v.record_type==='gasto'||v.invoice_type==='recibida') && !(Number(v.expense_total)>0)){err.textContent=t('Per a una factura rebuda o una despesa has d’introduir almenys un import al desglose de despeses.');return;}
   if(state.profile.role==='manager'){patch.status=$('#detailStatus').value;patch.note=$('#detailNote').value.trim()||null}
-  const {error}=await sb.from('invoices').update(patch).eq('id',inv.id); if(error){err.textContent=error.message;return} toast('Canvis desats');$('#dlg').close();await loadData();
+  const {error}=await sb.from('invoices').update(patch).eq('id',inv.id); if(error){err.textContent=error.message;return} toast(t('Canvis desats'));$('#dlg').close();await loadData();
 }
 async function deleteCurrent(){
   const inv=state.current; if(!inv)return; if(!confirm('Vols eliminar aquesta factura i el seu fitxer original?'))return;
@@ -941,57 +1402,54 @@ async function loadData(){
     ]);
     if(companiesResult.error){toast(companiesResult.error.message,true);return}
     if(invoicesResult.error){toast(invoicesResult.error.message,true);return}
-    state.companies=companiesResult.data||[];
-    state.invoices=(invoicesResult.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency),invoice_type:normalizeInvoiceType(x.invoice_type)}));
+    state.companies=(companiesResult.data||[]).map(x=>({...x,app_mode:x.app_mode==='bulk'?'bulk':'manual'}));
+    state.invoices=(invoicesResult.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency),record_type:normalizeRecordType(x.record_type),invoice_type:normalizeInvoiceType(x.invoice_type),expense_breakdown:x.expense_breakdown||{},expense_total:Number(x.expense_total||0)}));
     if(state.view==='panel')managerView();
   }else{
+    if(state.appMode==='bulk'){state.invoices=[];return;}
     const {data,isError}=await fetchCompanyInvoices(); if(isError)return; state.invoices=data||[]; if(state.view==='mine')renderHistory();
   }
 }
-async function fetchCompanyInvoices(){const r=await sb.from('invoices').select('*').order('created_at',{ascending:false}).limit(500); if(r.error){toast(r.error.message,true);return {data:[],isError:true}} return {data:(r.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency),invoice_type:normalizeInvoiceType(x.invoice_type)})),isError:false}}
-async function exportExcel(){
-  // L'export del gestor ignora tots els filtres: sempre exporta totes les factures visibles del gestor.
-  const list=state.invoices.slice().sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
-  if(!list.length){toast('No hi ha factures per exportar',true);return}
-  const head=['Client','NIF client','Tipus factura','Pujada el','Data factura','Emissor','NIF emissor','Núm. factura','Concepte','Base imposable','IVA (%)','Quota IVA','Total','Moneda','Estat','Nota del gestor','Fitxer','ID factura'];
-  const rows=list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return[c?.name||'',c?.tax_id||'',invoiceTypeLabel(x.invoice_type),new Date(x.created_at),x.invoice_date?new Date(x.invoice_date):null,x.supplier_name||'',x.supplier_tax_id||'',x.invoice_number||'',x.concept||'',x.base??null,x.vat_rate??null,x.vat_amount??null,x.total??null,x.currency||'EUR',x.status==='revisada'?'Revisada':'Pendent',x.note||'',x.file_name||'',x.id]});
-  const ws=XLSX.utils.aoa_to_sheet([head,...rows],{cellDates:true});
-  const last=rows.length+1;
-  ws['!cols']=[24,14,18,19,14,28,16,18,32,16,9,14,14,10,12,34,28,38].map(w=>({wch:w}));
-  ws['!autofilter']={ref:`A1:${XLSX.utils.encode_col(head.length-1)}${last}`};
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Factures');
-
-  const byClient=new Map();
-  for(const x of list){
-    const c=state.companies.find(c=>c.id===x.company_id);
-    const key=x.company_id;
-    if(!byClient.has(key)) byClient.set(key,{name:c?.name||key,tax:c?.tax_id||'',count:0,base:0,iva:0,total:0,currencies:new Set()});
-    const o=byClient.get(key);
-    o.count++;
-    o.base+=Number(x.base||0);
-    o.iva+=Number(x.vat_amount||0);
-    o.total+=Number(x.total||0);
-    o.currencies.add(x.currency||'EUR');
-  }
-  const summaryHead=['Client','NIF client','Nº factures','Base imposable','Quota IVA','Total','Monedes'];
-  const summaryRows=[...byClient.values()].map(o=>[o.name,o.tax,o.count,Number(o.base.toFixed(2)),Number(o.iva.toFixed(2)),Number(o.total.toFixed(2)),[...o.currencies].join(', ')]);
-  const ws2=XLSX.utils.aoa_to_sheet([summaryHead,...summaryRows]);
-  ws2['!cols']=[30,16,14,18,16,16,18].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws2,'Resum per client');
-
-  const out=XLSX.write(wb,{bookType:'xlsx',type:'array',cellDates:true});
-  const blob=new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url=URL.createObjectURL(blob); const a=document.createElement('a');
-  a.href=url; a.download=`factures_totes_${new Date().toISOString().slice(0,10)}.xlsx`; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  toast(`${list.length} factures exportades a Excel`);
-}
+async function fetchCompanyInvoices(){const r=await sb.from('invoices').select('*').order('created_at',{ascending:false}).limit(500); if(r.error){toast(r.error.message,true);return {data:[],isError:true}} return {data:(r.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency),record_type:normalizeRecordType(x.record_type),invoice_type:normalizeInvoiceType(x.invoice_type),expense_breakdown:x.expense_breakdown||{},expense_total:Number(x.expense_total||0)})),isError:false}}
 async function login(){
-  const email=$('#loginEmail').value.trim(), pass=$('#loginPass').value, err=$('#loginErr'); const {data,error}=await sb.auth.signInWithPassword({email,password:pass}); if(error){err.textContent=error.message;return} state.session=data.session;state.user=data.user;await loadProfile();
+  const email=$('#loginEmail')?.value.trim();
+  const pass=$('#loginPass')?.value || '';
+  const err=$('#loginErr');
+  if(err) err.textContent='';
+  if(!email || !pass){
+    if(err) err.textContent=t('Introdueix el correu electrònic i la contrasenya.');
+    return;
+  }
+  const btn=$('[data-act="login"]');
+  if(btn){btn.disabled=true;btn.textContent=t('Entrar')+'…';}
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error){
+      if(err) err.textContent=error.message || t('No s’ha pogut iniciar la sessió.');
+      return;
+    }
+    state.session=data.session;
+    state.user=data.user;
+    await loadProfile();
+  }catch(ex){
+    if(err) err.textContent=ex?.message || t('No s’ha pogut iniciar la sessió.');
+  }finally{
+    const b=$('[data-act="login"]');
+    if(b && !state.user){b.disabled=false;b.textContent=t('Entrar');}
+  }
 }
 async function loadProfile(){
-  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single(); if(error){fatal('No s’ha pogut llegir el perfil: '+error.message);return} state.profile=data;renderWho();state.view=data.role==='manager'?'panel':'mine';await loadData(); if(data.role==='manager'){ $('#tabs').hidden=false;$('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button><button class="tab" data-act="tab" data-v="mine" aria-pressed="false">Les meves factures</button>'; managerView(); } else renderCompanyShell();
+  const {data,error}=await sb.from('profiles').select('*').eq('id',state.user.id).single();
+  if(error){await sb.auth.signOut().catch(()=>{});resetSignedOut();renderLogin();const e=$('#loginErr');if(e)e.textContent='No s’ha pogut carregar el perfil. Contacta amb el gestor.';return}
+  state.profile=data;
+  if(data.role==='company'){
+    const {data:company,error:cErr}=await sb.from('companies').select('*').eq('id',data.company_id).single();
+    if(cErr||!company){await sb.auth.signOut().catch(()=>{});resetSignedOut();const e=$('#loginErr');if(e)e.textContent='Aquest usuari no està associat a cap empresa configurada.';return;}
+    state.company=company; state.appMode=company.app_mode==='bulk'?'bulk':'manual';
+  }else{state.company=null;state.appMode='manual';}
+  renderWho();state.view=data.role==='manager'?'panel':'mine';await loadData();
+  if(data.role==='manager'){ $('#tabs').hidden=false;$('#tabs').innerHTML='<button class="tab" data-act="tab" data-v="panel" aria-pressed="true">Panel del gestor</button>'; managerView(); } else renderCompanyShell();
+  applyLanguage(document);
 }
 function resetSignedOut(){
   state.session=null;
@@ -1001,7 +1459,12 @@ function resetSignedOut(){
   state.companies=[];
   state.current=null;
   state.pendingFile=null;
-  state.historyFilters={status:'',from:'',to:'',q:''};
+  state.company=null;
+  state.appMode='manual';
+  state.bulkDocuments=[];
+  state.newEntryType='';
+  state.historyFilters={status:'',type:'',from:'',to:'',q:''};
+  state.filters={company:'',type:'',status:'',from:'',to:'',q:''};
   state.view='mine';
   $('#dlg')?.close();
   $('#tabs').hidden=true;
@@ -1038,7 +1501,15 @@ async function init(){
 }
 
 document.addEventListener('change',e=>{
-  if(e.target.id==='langSelect'){ setLanguage(e.target.value); return; }
+  if(e.target.id==='filePick'){const f=e.target.files?.[0];e.target.value='';if(f)openUpload(f)}
+  if(e.target.id==='pnlFrom'){state.pnlFilters.from=e.target.value;renderProfitLossCompany();}
+  if(e.target.id==='pnlTo'){state.pnlFilters.to=e.target.value;renderProfitLossCompany();}
+  if(e.target.id==='bulkPick')return;
+  if(e.target.matches('[data-f]')){
+    state.filters[e.target.dataset.f]=e.target.value;
+    if(e.target.dataset.f==='company') renderManagerContent(); else renderManagerTable();
+  }
+  if(e.target.matches('[data-hf]')){state.historyFilters[e.target.dataset.hf]=e.target.value;renderHistory();}
 });
 
 document.addEventListener('click', async e=>{
@@ -1046,10 +1517,12 @@ document.addEventListener('click', async e=>{
   try{
     if(a==='login') await login();
     else if(a==='logout') await logout();
-    else if(a==='pick' || a==='aiMode') $('#filePick').click();
-    else if(a==='manualMode') renderManualForm();
+    else if(a==='manualMode'){
+      const type=$('#invoiceTypePick')?.value||state.newEntryType||'';
+      if(!type){toast(t('Has de seleccionar què vols registrar abans de continuar.'),true);$('#invoiceTypePick')?.focus();return;}
+      state.newEntryType=type; renderManualForm();
+    }
     else if(a==='backCapture') renderCompanyShell();
-    else if(a==='manualFromAI') renderManualForm();
     else if(a==='saveManual') await saveManual();
     else if(a==='saveUpload') await saveUpload();
     else if(a==='cancelUpload') await cancelPendingUpload();
@@ -1059,16 +1532,23 @@ document.addEventListener('click', async e=>{
     else if(a==='delete') await deleteCurrent();
     else if(a==='download') await downloadCurrent();
     else if(a==='export') exportExcel();
+    else if(a==='selectManagerCompany'){state.filters.company=el.dataset.companyId||'';state.filters.type='';state.filters.status='';state.filters.from='';state.filters.to='';state.filters.q='';managerView();}
+    else if(a==='clearManagerCompany'){state.filters.company='';state.filters.type='';state.filters.status='';state.filters.from='';state.filters.to='';state.filters.q='';managerView();}
+    else if(a==='uploadBulk') await uploadBulkDocuments();
+    else if(a==='bulkDownload'){
+      const doc=state.bulkDocuments.find(d=>d.id===el.dataset.bulkId); if(doc) await downloadBulkDocument(doc);
+    }
+    else if(a==='bulkZip'){const c=currentManagerCompany();if(c)await downloadAllBulkDocuments(c.id,c.name);}
     else if(a==='tab'){state.view=el.dataset.v;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===state.view)));state.view==='panel'?managerView():renderCompanyShell();}
   }catch(ex){toast(ex.message||'Error inesperat',true)}
 });
-document.addEventListener('change',e=>{
-  if(e.target.id==='filePick'){const f=e.target.files?.[0];e.target.value='';if(f)openUpload(f)}
-  if(e.target.matches('[data-f]')){state.filters[e.target.dataset.f]=e.target.value;renderManagerTable();}
-  if(e.target.matches('[data-hf]')){state.historyFilters[e.target.dataset.hf]=e.target.value;renderHistory();}
-});
+
 document.addEventListener('input',e=>{
-  if(e.target.matches('[data-f]')){state.filters[e.target.dataset.f]=e.target.value;renderManagerTable();}
+  if(e.target.matches('[data-expense-k]')){
+    const root=e.target.closest('.expense-card');
+    if(root){const total=[...root.querySelectorAll('[data-expense-k]')].reduce((a,x)=>a+(Number(String(x.value||'').replace(',','.'))||0),0);const out=root.querySelector('#expenseTotalPreview');if(out)out.textContent=money(total,'EUR');}
+  }
+  if(e.target.matches('[data-f]')){state.filters[e.target.dataset.f]=e.target.value;if(e.target.dataset.f==='company')renderManagerContent();else if(currentManagerCompany()?.app_mode==='bulk')renderManagerContent();else renderManagerTable();}
   if(e.target.matches('[data-hf]')){state.historyFilters[e.target.dataset.hf]=e.target.value;scheduleHistoryRender();}
 });
 initLanguage();
