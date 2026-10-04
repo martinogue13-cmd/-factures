@@ -70,6 +70,12 @@ html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
 .footer-contact span{color:var(--ink2)}
 .footer-contact a{color:var(--ink2);text-decoration:none}
 .footer-contact a:hover{color:var(--brand);text-decoration:underline}
+
+@media (max-width:760px){
+  .bulk-summary{grid-template-columns:1fr 1fr}
+  .bulk-stat strong{font-size:1.2rem}
+}
+
 @media (max-width:760px){.brand-sub{display:none}.top-in{padding:10px 14px}.who-name{display:none}.role-chip{display:none}.manager-welcome{align-items:flex-start}}
 
 *,*::before,*::after{box-sizing:inherit}
@@ -363,6 +369,20 @@ dialog::backdrop{background:var(--backdrop)}
 .bulk-upload .hero{display:block;text-align:left}
 .bulk-drop{border:2px dashed var(--line);border-radius:16px;padding:28px;text-align:center;background:var(--paper);margin-top:18px}
 .bulk-drop input[type=file]{display:block;width:100%;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+
+.bulk-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+.bulk-stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.bulk-stat span{display:block;font-size:.78rem;color:var(--ink2);font-weight:600}
+.bulk-stat strong{display:block;font-size:1.45rem;line-height:1.15;margin-top:4px}
+.bulk-stat small{display:block;color:var(--ink2);margin-top:4px}
+.bulk-stat .bulk-last{font-size:1rem;word-break:break-word}
+.bulk-filters{margin:12px 0;padding:10px}
+.bulk-period-note{color:var(--ink2);font-size:.9rem;margin:8px 0 14px}
+.bulk-month-group{margin-top:16px}
+.bulk-month-head{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:10px 10px 0 0}
+.bulk-month-head span{color:var(--ink2);font-size:.86rem}
+.bulk-month-group .bulk-list{border-top:0;border-radius:0 0 10px 10px}
+
 .bulk-list{margin-top:16px}
 .bulk-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .bulk-row + .bulk-row{margin-top:8px}
@@ -516,7 +536,7 @@ if (!['ca','es','en'].includes(CURRENT_LANG)) CURRENT_LANG = 'ca';
 const I18N = {
   ca: {
     'Pujant documents…':'Pujant documents…','documents disponibles':'documents disponibles',
-    'documents pujats':'documents pujats','Documents pujats correctament':'Documents pujats correctament','documents descarregats en ZIP':'documents descarregats en ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Les factures rebudes i emeses requereixen un fitxer PDF o imatge.','El fitxer supera el límit de 25 MB.':'El fitxer supera el límit de 25 MB.','No s’han pogut pujar els documents.':'No s’han pogut pujar els documents.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'El client només puja documents. Tu els descarregues i els portes a la carpeta local.','Càrrega de documents':'Càrrega de documents',
+    'documents pujats':'documents pujats','Aquest mes':'Aquest mes','Mesos amb documents':'Mesos amb documents','Última pujada':'Última pujada','document registrat més recent':'document registrat més recent','històric disponible':'històric disponible','mes seleccionat':'mes seleccionat','tots els mesos':'tots els mesos','Mes de pujada':'Mes de pujada','Mostrant':'Mostrant','del mes':'del mes','documents':'documents','disponibles':'disponibles','No hi ha documents en aquest període.':'No hi ha documents en aquest període.','Mes no disponible':'Mes no disponible','Descarrega documents individualment':'Descarrega documents individualment','Descarregar visibles en ZIP':'Descarregar visibles en ZIP','Encara no has pujat cap document.':'Encara no has pujat cap document.','Pujat':'Pujat','Documents pujats correctament':'Documents pujats correctament','documents descarregats en ZIP':'documents descarregats en ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Les factures rebudes i emeses requereixen un fitxer PDF o imatge.','El fitxer supera el límit de 25 MB.':'El fitxer supera el límit de 25 MB.','No s’han pogut pujar els documents.':'No s’han pogut pujar els documents.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'El client només puja documents. Tu els descarregues i els portes a la carpeta local.','Càrrega de documents':'Càrrega de documents',
     'Visió de gestió manual':'Visió de gestió manual',
     'Visió de càrrega de documents':'Visió de càrrega de documents',
     'Selecciona què vols registrar abans de continuar.':'Selecciona què vols registrar abans de continuar.',
@@ -594,7 +614,7 @@ const I18N = {
   },
   es: {
     'Pujant documents…':'Subiendo documentos…','documents disponibles':'documentos disponibles',
-    'documents pujats':'documentos subidos','Documents pujats correctament':'Documentos subidos correctamente','documents descarregats en ZIP':'documentos descargados en ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Las facturas recibidas y emitidas requieren un archivo PDF o imagen.','El fitxer supera el límit de 25 MB.':'El archivo supera el límite de 25 MB.','No s’han pogut pujar els documents.':'No se han podido subir los documentos.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'El cliente solo sube documentos. Tú los descargas y los llevas a la carpeta local.','Càrrega de documents':'Carga de documentos',
+    'documents pujats':'documentos subidos','Aquest mes':'Este mes','Mesos amb documents':'Meses con documentos','Última pujada':'Última subida','document registrat més recent':'documento registrado más reciente','històric disponible':'histórico disponible','mes seleccionat':'mes seleccionado','tots els mesos':'todos los meses','Mes de pujada':'Mes de subida','Mostrant':'Mostrando','del mes':'del mes','documents':'documentos','disponibles':'disponibles','No hi ha documents en aquest període.':'No hay documentos en este periodo.','Mes no disponible':'Mes no disponible','Descarrega documents individualment':'Descarga documentos individualmente','Descarregar visibles en ZIP':'Descargar visibles en ZIP','Encara no has pujat cap document.':'Todavía no has subido ningún documento.','Pujat':'Subido','Documents pujats correctament':'Documentos subidos correctamente','documents descarregats en ZIP':'documentos descargados en ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Las facturas recibidas y emitidas requieren un archivo PDF o imagen.','El fitxer supera el límit de 25 MB.':'El archivo supera el límite de 25 MB.','No s’han pogut pujar els documents.':'No se han podido subir los documentos.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'El cliente solo sube documentos. Tú los descargas y los llevas a la carpeta local.','Càrrega de documents':'Carga de documentos',
     'Visió de gestió manual':'Visión de gestión manual',
     'Visió de càrrega de documents':'Visión de carga de documentos',
     'Selecciona què vols registrar abans de continuar.':'Selecciona qué quieres registrar antes de continuar.',
@@ -669,7 +689,7 @@ const I18N = {
   },
   en: {
     'Pujant documents…':'Uploading documents…','documents disponibles':'available documents',
-    'documents pujats':'documents uploaded','Documents pujats correctament':'Documents uploaded successfully','documents descarregats en ZIP':'documents downloaded as ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Received and issued invoices require a PDF or image file.','El fitxer supera el límit de 25 MB.':'The file exceeds the 25 MB limit.','No s’han pogut pujar els documents.':'The documents could not be uploaded.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'The client only uploads documents. You download them and move them to the local folder.','Càrrega de documents':'Document upload',
+    'documents pujats':'documents uploaded','Aquest mes':'This month','Mesos amb documents':'Months with documents','Última pujada':'Latest upload','document registrat més recent':'most recently registered document','històric disponible':'history available','mes seleccionat':'selected month','tots els mesos':'all months','Mes de pujada':'Upload month','Mostrant':'Showing','del mes':'for the month of','documents':'documents','disponibles':'available','No hi ha documents en aquest període.':'No documents in this period.','Mes no disponible':'Month unavailable','Descarrega documents individualment':'Download documents individually','Descarregar visibles en ZIP':'Download visible as ZIP','Encara no has pujat cap document.':'You have not uploaded any documents yet.','Pujat':'Uploaded','Documents pujats correctament':'Documents uploaded successfully','documents descarregats en ZIP':'documents downloaded as ZIP','Les factures rebudes i emeses requereixen un fitxer PDF o imatge.':'Received and issued invoices require a PDF or image file.','El fitxer supera el límit de 25 MB.':'The file exceeds the 25 MB limit.','No s’han pogut pujar els documents.':'The documents could not be uploaded.','El client només puja documents. Tu els descarregues i els portes a la carpeta local.':'The client only uploads documents. You download them and move them to the local folder.','Càrrega de documents':'Document upload',
     'Visió de gestió manual':'Manual management view',
     'Visió de càrrega de documents':'Document upload view',
     'Selecciona què vols registrar abans de continuar.':'Select what you want to record before continuing.',
@@ -853,20 +873,98 @@ function renderCapture(){
   applyLanguage($('#capture'));
 }
 
-function renderBulkCompany(){
+
+function monthKeyFromDate(value){
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function monthLabelFromKey(key){
+  if(!key) return '';
+  const [y,m]=key.split('-').map(Number);
+  if(!y||!m) return key;
+  return new Intl.DateTimeFormat(CURRENT_LANG==='ca'?'ca-ES':CURRENT_LANG==='es'?'es-ES':'en-US',{month:'long',year:'numeric'}).format(new Date(y,m-1,1));
+}
+function bulkMonthOptions(docs, selected=''){
+  const keys=[...new Set(docs.map(d=>monthKeyFromDate(d.created_at)).filter(Boolean))].sort().reverse();
+  return `<option value="">${esc(t('Tots els mesos'))}</option>${keys.map(k=>`<option value="${esc(k)}" ${selected===k?'selected':''}>${esc(monthLabelFromKey(k))}</option>`).join('')}`;
+}
+function bulkSummary(docs, month=''){
+  const scoped=month?docs.filter(d=>monthKeyFromDate(d.created_at)===month):docs;
+  const nowKey=monthKeyFromDate(new Date());
+  return {
+    scopedCount:scoped.length,
+    total:docs.length,
+    thisMonth:docs.filter(d=>monthKeyFromDate(d.created_at)===nowKey).length,
+    months:new Set(docs.map(d=>monthKeyFromDate(d.created_at)).filter(Boolean)).size,
+    last:docs[0]?.created_at ? fmtStamp(docs[0].created_at) : '—'
+  };
+}
+function bulkGroupedRows(docs, month='', withActions=false){
+  const scoped=month?docs.filter(d=>monthKeyFromDate(d.created_at)===month):docs;
+  if(!scoped.length) return `<div class="empty">${esc(t('No hi ha documents en aquest període.'))}</div>`;
+  const groups={};
+  for(const d of scoped){
+    const k=monthKeyFromDate(d.created_at)||'';
+    (groups[k] ||= []).push(d);
+  }
+  return Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,items])=>`
+    <div class="bulk-month-group">
+      <div class="bulk-month-head"><strong>${esc(monthLabelFromKey(k)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div>
+      <div class="bulk-list">
+        ${items.map(d=>`<div class="bulk-row">
+          <span><b>${esc(d.file_name)}</b><small>${fmtStamp(d.created_at)} · ${((Number(d.file_size||0)/1024/1024)||0).toFixed(2)} MB</small></span>
+          ${withActions?`<button class="btn" data-act="bulkDownload" data-bulk-id="${esc(d.id)}">${t('Descarregar')}</button>`:`<span class="chip">${esc(t('Pujat'))}</span>`}
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+async function renderBulkCompany(){
   const box=$('#bulkCompany'); if(!box)return;
   box.innerHTML=`<section class="hero bulk-upload"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de càrrega de documents</div><h1>Càrrega massiva de documents</h1><p>Selecciona diversos PDF o imatges i puja’ls en una sola operació. No es processen ni es classifiquen automàticament.</p>
     <div class="bulk-drop"><label class="field"><span>Fitxers PDF o imatges</span><input id="bulkPick" type="file" accept="application/pdf,image/*,.pdf" multiple></label><p class="vision-note">Pots seleccionar diversos documents alhora.</p><div id="bulkQueue" class="bulk-list"></div><div class="bulk-actions"><button class="btn primary" data-act="uploadBulk">Pujar documents</button></div></div>
     <p class="meta" id="bulkUploadStatus"></p>
+  </div></section>
+  <section class="hero bulk-uploaded" style="margin-top:18px"><div>
+    <div class="eyebrow">Documents pujats</div>
+    <div class="section-head" style="margin:0 0 10px"><h2 style="margin:0">Els meus documents</h2><button class="btn" data-act="refreshBulkMine">Actualitzar</button></div>
+    <p class="sub">Aquí pots comprovar quins documents ja has pujat i quan es van registrar.</p>
+    <div id="bulkMineList" class="bulk-list"><div class="empty">${esc(t('Carregant…'))}</div></div>
   </div></section>`;
   $('#bulkPick')?.addEventListener('change',e=>{
-    const files=[...(e.target.files||[])];
-    const q=$('#bulkQueue'); if(!q)return;
+    const files=[...(e.target.files||[])]; const q=$('#bulkQueue'); if(!q)return;
     q.innerHTML=files.map(f=>`<div class="bulk-row"><span><b>${esc(f.name)}</b><small>${(f.size/1024/1024).toFixed(2)} MB</small></span></div>`).join('');
     q.dataset.count=String(files.length);
   });
   applyLanguage($('#bulkCompany'));
+  await renderBulkMineList();
 }
+async function renderBulkMineList(){
+  const docs=await loadBulkDocuments(state.profile.company_id);
+  const box=$('#bulkMineList'); if(!box)return;
+  const selected=box.dataset.month||'';
+  const s=bulkSummary(docs,selected);
+  box.innerHTML=`
+    <div class="bulk-summary">
+      <div class="bulk-stat"><span>${t('Documents pujats')}</span><strong>${s.scopedCount}</strong><small>${selected?t('mes seleccionat'):t('tots els mesos')}</small></div>
+      <div class="bulk-stat"><span>${t('Aquest mes')}</span><strong>${s.thisMonth}</strong><small>${esc(monthLabelFromKey(monthKeyFromDate(new Date())))}</small></div>
+      <div class="bulk-stat"><span>${t('Mesos amb documents')}</span><strong>${s.months}</strong><small>${t('històric disponible')}</small></div>
+      <div class="bulk-stat"><span>${t('Última pujada')}</span><strong class="bulk-last">${esc(s.last)}</strong><small>${t('document registrat més recent')}</small></div>
+    </div>
+    <div class="filters bulk-filters">
+      <label class="field"><span>${t('Mes de pujada')}</span><select id="bulkMineMonth">${bulkMonthOptions(docs,selected)}</select></label>
+    </div>
+    <div class="bulk-period-note">${esc(selected?`${t('Mostrant')} ${s.scopedCount} ${t('documents').toLowerCase()} ${t('del mes')} ${monthLabelFromKey(selected)}.`:`${s.total} ${t('documents').toLowerCase()} ${t('disponibles').toLowerCase()}.`)}</div>
+    <div class="bulk-months">${bulkGroupedRows(docs,selected,false)}</div>`;
+  $('#bulkMineMonth')?.addEventListener('change',e=>{
+    box.dataset.month=e.target.value;
+    renderBulkMineList();
+  });
+  state.bulkDocuments=docs;
+  applyLanguage(box);
+}
+
 function renderManualForm(){
   const initial={currency:'EUR',record_type:'factura',invoice_type:'',expense_breakdown:{}};
   $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><div class="eyebrow">Visió de gestió manual</div><h1>Entrada manual</h1><p>Selecciona el tipus de registre i introdueix-ne les dades.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades del registre</h2><p class="sub">Les factures rebudes i emeses han d’incloure obligatòriament el PDF o la imatge original. Les despeses poden guardar-se amb o sense adjunt.</p><div class="fields" id="manualForm">${fieldsHTML(initial,true)}</div><div style="margin-top:14px"><label class="field"><span id="manualFileLabel">Fitxer de factura (obligatori)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta" id="manualFileMeta">Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
@@ -1046,6 +1144,7 @@ async function uploadBulkDocuments(){
     if(input) input.value='';
     if($('#bulkQueue')) $('#bulkQueue').innerHTML='';
     if(status) status.textContent=`${done} ${t('documents pujats')}`;
+    await renderBulkMineList();
   }catch(e){toast(e.message||t('No s’han pogut pujar els documents.'),true);if(status)status.textContent=`${done}/${files.length}`;}
   finally{if(btn){btn.disabled=false;btn.textContent=t('Pujar documents');}}
 }
@@ -1059,9 +1158,9 @@ async function downloadBulkDocument(doc){
   if(error){toast(error.message,true);return;}
   const a=document.createElement('a');a.href=data.signedUrl;a.download=doc.file_name||'document';a.target='_blank';a.click();
 }
-async function downloadAllBulkDocuments(companyId, companyName){
+async function downloadAllBulkDocuments(companyId, companyName, month=''){
   if(!window.JSZip){toast('JSZip no està disponible.',true);return;}
-  const docs=await loadBulkDocuments(companyId); if(!docs.length){toast(t('No hi ha documents per descarregar.'),true);return;}
+  const allDocs=await loadBulkDocuments(companyId); const docs=month?allDocs.filter(d=>monthKeyFromDate(d.created_at)===month):allDocs; if(!docs.length){toast(t('No hi ha documents per descarregar.'),true);return;}
   const zip=new JSZip(); const btn=$('[data-act="bulkZip"]'); if(btn){btn.disabled=true;btn.textContent='…'}
   try{
     let i=0;
@@ -1076,16 +1175,40 @@ async function downloadAllBulkDocuments(companyId, companyName){
     toast(`${docs.length} ${t('documents descarregats en ZIP')}`);
   }catch(e){toast(e.message||t('No s’ha pogut crear el ZIP.'),true)}finally{if(btn){btn.disabled=false;btn.textContent=t('Descarregar tots en ZIP')}}
 }
-function renderManagerBulk(company){
+async function renderManagerBulk(company){
   const content=$('#managerContent'); if(!content)return;
-  content.insertAdjacentHTML('beforeend',`<section class="hero manager-mode-card"><div><div class="eyebrow">${t('Visió 2 · Càrrega documental')}</div><h2>${t('Documents per descarregar')}</h2><p>${t('El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.')}</p><div class="bar"><span class="sub" id="bulkManagerCount">Cargando…</span><div class="row-actions"><button class="btn primary" data-act="bulkZip">${t('Descarregar tots en ZIP')}</button></div></div><div id="bulkManagerList" class="bulk-list"></div></div></section>`);
-  applyLanguage(content);
-  loadBulkDocuments(company.id).then(docs=>{
-    const count=$('#bulkManagerCount'), list=$('#bulkManagerList'); if(!list)return;
-    count.textContent=`${docs.length} ${t('documents disponibles').toLowerCase()}`;
-    list.innerHTML=docs.length?docs.map(d=>`<div class="bulk-row"><span><b>${esc(d.file_name)}</b><small>${fmtStamp(d.created_at)} · ${((Number(d.file_size||0)/1024/1024)||0).toFixed(2)} MB</small></span><button class="btn" data-act="bulkDownload" data-bulk-id="${esc(d.id)}">${t('Descarregar')}</button></div>`).join(''):`<div class="empty">${t('No hi ha documents per descarregar.')}</div>`;
-    state.bulkDocuments=docs;
+  content.insertAdjacentHTML('beforeend',`
+    <section class="hero manager-mode-card">
+      <div>
+        <div class="eyebrow">${t('Visió 2 · Càrrega documental')}</div>
+        <h2>${t('Documents per descarregar')}</h2>
+        <p>${t('El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.')}</p>
+        <div id="bulkManagerDashboard"><div class="empty">${esc(t('Carregant…'))}</div></div>
+      </div>
+    </section>`);
+  const docs=await loadBulkDocuments(company.id);
+  const box=$('#bulkManagerDashboard'); if(!box)return;
+  const selected=box.dataset.month||'';
+  const s=bulkSummary(docs,selected);
+  box.innerHTML=`
+    <div class="bulk-summary">
+      <div class="bulk-stat"><span>${t('Documents disponibles')}</span><strong>${s.scopedCount}</strong><small>${selected?t('mes seleccionat'):t('tots els mesos')}</small></div>
+      <div class="bulk-stat"><span>${t('Aquest mes')}</span><strong>${s.thisMonth}</strong><small>${esc(monthLabelFromKey(monthKeyFromDate(new Date())))}</small></div>
+      <div class="bulk-stat"><span>${t('Mesos amb documents')}</span><strong>${s.months}</strong><small>${t('històric disponible')}</small></div>
+      <div class="bulk-stat"><span>${t('Última pujada')}</span><strong class="bulk-last">${esc(s.last)}</strong><small>${t('document registrat més recent')}</small></div>
+    </div>
+    <div class="filters bulk-filters">
+      <label class="field"><span>${t('Mes de pujada')}</span><select id="bulkManagerMonth">${bulkMonthOptions(docs,selected)}</select></label>
+      <div class="field"><span>&nbsp;</span><button class="btn primary" data-act="bulkZip" data-month="${esc(selected)}">${t('Descarregar visibles en ZIP')}</button></div>
+    </div>
+    <div class="bulk-period-note">${esc(selected?`${t('Mostrant')} ${s.scopedCount} ${t('documents').toLowerCase()} ${t('del mes')} ${monthLabelFromKey(selected)}.`:`${s.total} ${t('documents').toLowerCase()} ${t('disponibles').toLowerCase()}.`)}</div>
+    <div id="bulkManagerList" class="bulk-months">${bulkGroupedRows(docs,selected,true)}</div>`;
+  $('#bulkManagerMonth')?.addEventListener('change',e=>{
+    box.dataset.month=e.target.value;
+    renderManagerBulk(company);
   });
+  state.bulkDocuments=docs;
+  applyLanguage(content);
 }
 
 function managerView(){
@@ -1556,10 +1679,11 @@ document.addEventListener('click', async e=>{
     else if(a==='selectManagerCompany'){state.filters.company=el.dataset.companyId||'';state.filters.type='';state.filters.status='';state.filters.from='';state.filters.to='';state.filters.q='';managerView();}
     else if(a==='clearManagerCompany'){state.filters.company='';state.filters.type='';state.filters.status='';state.filters.from='';state.filters.to='';state.filters.q='';managerView();}
     else if(a==='uploadBulk') await uploadBulkDocuments();
+    else if(a==='refreshBulkMine') await renderBulkMineList();
     else if(a==='bulkDownload'){
       const doc=state.bulkDocuments.find(d=>d.id===el.dataset.bulkId); if(doc) await downloadBulkDocument(doc);
     }
-    else if(a==='bulkZip'){const c=currentManagerCompany();if(c)await downloadAllBulkDocuments(c.id,c.name);}
+    else if(a==='bulkZip'){const c=currentManagerCompany();if(c)await downloadAllBulkDocuments(c.id,c.name,el.dataset.month||'');}
     else if(a==='tab'){state.view=el.dataset.v;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===state.view)));state.view==='panel'?managerView():renderCompanyShell();}
   }catch(ex){toast(ex.message||'Error inesperat',true)}
 });
