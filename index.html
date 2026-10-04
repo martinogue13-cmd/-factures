@@ -841,25 +841,18 @@ function renderCompanyShell(){
     $('#view').innerHTML=`<section id="bulkCompany"></section>`;
     renderBulkCompany();
   }else{
-    $('#view').innerHTML=`<section id="capture"></section><section id="pnl"></section><section id="history"></section>`;
-    renderCapture(); renderProfitLossCompany(); renderHistory();
+    $('#view').innerHTML=`<section id="capture"></section><section id="history"></section>`;
+    renderCapture(); renderHistory();
     applyLanguage($('#view'));
   }
 }
 function renderCapture(){
-  const selected=state.newEntryType||'';
-  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de gestió manual</div><h1>Registra un document</h1><p>Selecciona el tipus de registre i introdueix les dades manualment.</p>
-    <label class="field entry-kind" style="margin:14px 0 18px;max-width:520px"><span>Tipus de registre <b aria-hidden="true">*</b></span><select id="invoiceTypePick" required>
-      <option value="">Selecciona una opció</option>
-      <option value="recibida" ${selected==='recibida'?'selected':''}>Factura rebuda</option>
-      <option value="emitida" ${selected==='emitida'?'selected':''}>Factura emesa</option>
-      <option value="gasto" ${selected==='gasto'?'selected':''}>Despesa</option>
-    </select></label>
-    <div class="mode-grid" style="grid-template-columns:1fr"><div class="mode-card primary-mode"><h3>Introduir les dades manualment</h3><p>Les factures rebudes i emeses requereixen l’adjunt original. Les despeses poden guardar-se amb o sense adjunt.</p><div class="mode-action"><button class="btn primary" data-act="manualMode">Introduir les dades</button></div></div></div>
-    <input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
-  $('#invoiceTypePick')?.addEventListener('change',e=>{state.newEntryType=e.target.value;});
+  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de gestió manual</div><h1>Registra una factura o una despesa</h1><p>Introdueix les dades manualment. El tipus de registre es seleccionarà dins del formulari.</p>
+    <div class="mode-grid" style="grid-template-columns:1fr"><div class="mode-card primary-mode"><h3>Introduir les dades manualment</h3><p>Selecciona dins del formulari si es tracta d’una factura rebuda, una factura emesa o una despesa. Les factures requereixen l’adjunt original; les despeses poden guardar-se sense adjunt.</p><div class="mode-action"><button class="btn primary" data-act="manualMode">Introduir les dades</button></div></div></div>
+  </div>${RECEIPT}</section>`;
   applyLanguage($('#capture'));
 }
+
 function renderBulkCompany(){
   const box=$('#bulkCompany'); if(!box)return;
   box.innerHTML=`<section class="hero bulk-upload"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de càrrega de documents</div><h1>Càrrega massiva de documents</h1><p>Selecciona diversos PDF o imatges i puja’ls en una sola operació. No es processen ni es classifiquen automàticament.</p>
@@ -875,14 +868,41 @@ function renderBulkCompany(){
   applyLanguage($('#bulkCompany'));
 }
 function renderManualForm(){
-  const selected=state.newEntryType || $('#invoiceTypePick')?.value || '';
-  if(!selected){ toast(t('Has de seleccionar què vols registrar abans de continuar.'),true); renderCompanyShell(); setTimeout(()=>$('#invoiceTypePick')?.focus(),0); return; }
-  const recordType=selected==='gasto'?'gasto':'factura';
-  const invoiceType=selected==='gasto'?null:selected;
-  const requiredFile=recordType==='factura';
-  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><div class="eyebrow">Visió de gestió manual</div><h1>Entrada manual</h1><p>Introdueix les dades del registre. ${requiredFile?'El fitxer original és obligatori.':'El justificant original és opcional.'}</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades del registre</h2><p class="sub">Els camps es guardaran com a pendent perquè el gestor els pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR',record_type:recordType,invoice_type:invoiceType},true)}</div><div style="margin-top:14px"><label class="field"><span>${requiredFile?'Fitxer de factura (obligatori)':'Fitxer de justificant (opcional)'}</span><input id="manualFile" type="file" accept=".pdf,image/*" ${requiredFile?'required':''}></label><p class="meta">${requiredFile?'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.':'La despesa pot guardar-se sense adjunt.'}</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+  const initial={currency:'EUR',record_type:'factura',invoice_type:'',expense_breakdown:{}};
+  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><div class="eyebrow">Visió de gestió manual</div><h1>Entrada manual</h1><p>Selecciona el tipus de registre i introdueix-ne les dades.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades del registre</h2><p class="sub">Les factures rebudes i emeses han d’incloure obligatòriament el PDF o la imatge original. Les despeses poden guardar-se amb o sense adjunt.</p><div class="fields" id="manualForm">${fieldsHTML(initial,true)}</div><div style="margin-top:14px"><label class="field"><span id="manualFileLabel">Fitxer de factura (obligatori)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta" id="manualFileMeta">Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+  updateManualFormMode();
   applyLanguage($('#view'));
 }
+function updateManualFormMode(){
+  const form=$('#manualForm'); if(!form)return;
+  const recordType=form.querySelector('[data-k=record_type]')?.value||'factura';
+  const invType=form.querySelector('[data-k=invoice_type]');
+  const file=$('#manualFile');
+  const label=$('#manualFileLabel');
+  const meta=$('#manualFileMeta');
+  const expenseCard=form.querySelector('[data-expense-card]');
+  const invoiceField=form.querySelector('[data-invoice-type-field]') || form.querySelector('[data-k=invoice_type]')?.closest('.field');
+  const invoiceLabel=invoiceField?.querySelector('span');
+  const supplierLabel=form.querySelector('[data-k=supplier_name]')?.closest('.field')?.querySelector('span');
+  if(recordType==='gasto'){
+    if(invType){ invType.value=''; invType.disabled=true; }
+    if(invoiceField) invoiceField.style.display='none';
+    if(invoiceLabel) invoiceLabel.textContent='Tipus de factura';
+    if(expenseCard) expenseCard.style.display='';
+    if(file){file.required=false;}
+    if(label) label.textContent='Fitxer de justificant (opcional)';
+    if(meta) meta.textContent='La despesa pot guardar-se sense adjunt.';
+  }else{
+    if(invoiceField) invoiceField.style.display='';
+    if(invType) invType.disabled=false;
+    if(expenseCard) expenseCard.style.display=(invType?.value==='recibida')?'':'none';
+    if(file) file.required=true;
+    if(label) label.textContent='Fitxer de factura (obligatori)';
+    if(meta) meta.textContent='Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.';
+  }
+  if(supplierLabel) supplierLabel.textContent=recordType==='gasto'?'Proveïdor / beneficiari':'Empresa emissora';
+}
+
 async function saveManual(){
   const form=$('#manualForm'), err=$('#manualErr');
   const d=readFields(form);
@@ -1151,11 +1171,15 @@ function currencyField(v={},editable=true){
 }
 function invoiceTypeField(v={},editable=true){
   const recordType=normalizeRecordType(v.record_type);
-  const type=normalizeInvoiceType(v.invoice_type);
-  const hidden=`<input type="hidden" data-k="record_type" value="${recordType}">`;
-  if(recordType==='gasto') return hidden+`<label class="field"><span>Tipus</span><input type="text" value="Despesa" readonly></label>`;
-  return hidden+`<label class="field"><span>Tipus de factura${editable?' <b aria-hidden="true">*</b>':''}</span><select data-k="invoice_type" ${editable?'required':'disabled'}><option value="">Selecciona el tipus</option><option value="recibida" ${type==='recibida'?'selected':''}>Factura rebuda</option><option value="emitida" ${type==='emitida'?'selected':''}>Factura emesa</option></select></label>`;
+  const type=(v.invoice_type==='emitida'||v.invoice_type==='recibida')?v.invoice_type:'';
+  if(!editable){
+    return `<label class="field"><span>Tipus de registre</span><input type="text" value="${recordType==='gasto'?'Despesa':'Factura'}" readonly></label>`+
+      (recordType==='gasto'?`<input type="hidden" data-k="invoice_type" value="">`:`<label class="field"><span>Tipus de factura</span><input type="text" value="${type==='emitida'?'Factura emesa':'Factura rebuda'}" readonly></label>`);
+  }
+  return `<label class="field"><span>Tipus de registre <b aria-hidden="true">*</b></span><select data-k="record_type" required><option value="factura" ${recordType==='factura'?'selected':''}>Factura</option><option value="gasto" ${recordType==='gasto'?'selected':''}>Despesa</option></select></label>`+
+    `<label class="field" data-invoice-type-field><span>Tipus de factura <b aria-hidden="true">*</b></span><select data-k="invoice_type" ${recordType==='gasto'?'disabled':'required'}><option value="">Selecciona el tipus</option><option value="recibida" ${type==='recibida'?'selected':''}>Factura rebuda</option><option value="emitida" ${type==='emitida'?'selected':''}>Factura emesa</option></select></label>`;
 }
+
 function expenseBreakdownHTML(v={},editable=true){
   const bd=v.expense_breakdown||{};
   const total=Object.values(bd).reduce((a,x)=>a+(Number(x)||0),0);
@@ -1502,9 +1526,8 @@ async function init(){
 
 document.addEventListener('change',e=>{
   if(e.target.id==='filePick'){const f=e.target.files?.[0];e.target.value='';if(f)openUpload(f)}
-  if(e.target.id==='pnlFrom'){state.pnlFilters.from=e.target.value;renderProfitLossCompany();}
-  if(e.target.id==='pnlTo'){state.pnlFilters.to=e.target.value;renderProfitLossCompany();}
   if(e.target.id==='bulkPick')return;
+  if(e.target.closest('#manualForm') && e.target.matches('[data-k="record_type"],[data-k="invoice_type"]')) updateManualFormMode();
   if(e.target.matches('[data-f]')){
     state.filters[e.target.dataset.f]=e.target.value;
     if(e.target.dataset.f==='company') renderManagerContent(); else renderManagerTable();
@@ -1518,9 +1541,7 @@ document.addEventListener('click', async e=>{
     if(a==='login') await login();
     else if(a==='logout') await logout();
     else if(a==='manualMode'){
-      const type=$('#invoiceTypePick')?.value||state.newEntryType||'';
-      if(!type){toast(t('Has de seleccionar què vols registrar abans de continuar.'),true);$('#invoiceTypePick')?.focus();return;}
-      state.newEntryType=type; renderManualForm();
+      renderManualForm();
     }
     else if(a==='backCapture') renderCompanyShell();
     else if(a==='saveManual') await saveManual();
