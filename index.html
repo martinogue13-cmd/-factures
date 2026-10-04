@@ -163,6 +163,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .chip{display:inline-block;font-size:.78rem;font-weight:600;padding:2px 9px;border-radius:999px}
 .chip.pendiente{background:var(--warn-bg);color:var(--warn)}
 .chip.revisada{background:var(--ok-bg);color:var(--ok)}
+.chip.invoice-type{margin-left:6px}.chip.invoice-type.recibida{background:#eaf1ff;color:#274d8a}.chip.invoice-type.emitida{background:#eee8ff;color:#5b3aa6}
 
 
 .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
@@ -391,10 +392,13 @@ const money = (n, cur='EUR') => {
 const fmtDate = s => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); return m ? `${m[3]}/${m[2]}/${m[1]}` : 'sin fecha'; };
 const fmtStamp = s => { const d=new Date(s); return isNaN(d)?'':d.toLocaleString('ca-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}); };
 const statusChip = s => `<span class="chip ${s==='revisada'?'revisada':'pendiente'}">${s==='revisada'?'Revisada':'Pendent'}</span>`;
+const normalizeInvoiceType = v => v==='emitida' ? 'emitida' : 'recibida';
+const invoiceTypeLabel = v => normalizeInvoiceType(v)==='emitida' ? 'Factura emesa' : 'Factura rebuda';
+const invoiceTypeChip = v => `<span class="chip invoice-type ${normalizeInvoiceType(v)==='emitida'?'emitida':'recibida'}">${invoiceTypeLabel(v)}</span>`;
 const RECEIPT = `<svg class="receipt" viewBox="0 0 200 250" fill="none" aria-hidden="true"><path d="M20 8h160v222l-16-10-16 10-16-10-16 10-16-10-16 10-16-10-16 10-16-10-16 10V8z" fill="var(--paper)" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><rect x="38" y="44" width="92" height="14" rx="2" fill="var(--mark)"/><rect x="38" y="76" width="70" height="14" rx="2" fill="var(--mark)"/><path d="M40 52h86M40 84h64M40 118h120M40 142h120M40 166h80" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><rect x="38" y="186" width="124" height="16" rx="2" fill="var(--mark)"/><path d="M42 194h112" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>`;
 const safeName = n => (n||'factura').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'_').slice(0,120) || 'factura';
 const isPdf = f => f?.type === 'application/pdf' || /\.pdf$/i.test(f?.name||'');
-let state = {session:null,user:null,profile:null,companies:[],invoices:[],view:'mine',filters:{company:'',status:'',from:'',to:'',q:''},historyFilters:{status:'',from:'',to:'',q:''},current:null,pendingFile:null};
+let state = {session:null,user:null,profile:null,companies:[],invoices:[],view:'mine',filters:{company:'',type:'',status:'',from:'',to:'',q:''},historyFilters:{status:'',type:'',from:'',to:'',q:''},current:null,pendingFile:null};
 let toastTimer;
 function toast(msg,bad=false){const t=$('#toast');t.textContent=msg;t.className='on'+(bad?' bad':'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',3500)}
 function fatal(msg){$('#view').innerHTML=`<div class="notice bad">${esc(msg)}</div>`}
@@ -433,6 +437,10 @@ const I18N = {
     'Correu electrònic':'Correu electrònic','Contrasenya':'Contrasenya','Entrar':'Entrar',
     'Bústia corporativa · Joan Nogue':'Bústia corporativa · Joan Nogue',
     'Registra una factura':'Registra una factura',
+    'Tipus de factura':'Tipus de factura',
+    'Factura rebuda':'Factura rebuda',
+    'Factura emesa':'Factura emesa',
+    'Tria si és una factura rebuda de proveïdors o una factura emesa per la teva empresa.':'Tria si és una factura rebuda de proveïdors o una factura emesa per la teva empresa.',
     'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.',
     'Llegir la factura automàticament':'Llegir la factura automàticament',
     'Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.',
@@ -441,7 +449,7 @@ const I18N = {
     'Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.',
     'Introduir dades':'Introduir dades',
     'Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.',
-    'Historial de factures':'Historial de factures','Cercar emissor, NIF, número o concepte':'Cercar emissor, NIF, número o concepte','Escriu per cercar…':'Escriu per cercar…',
+    'Historial de factures':'Historial de factures','Tipus':'Tipus','Tots els tipus':'Tots els tipus','Factura rebuda':'Factura rebuda','Factura emesa':'Factura emesa','Cercar emissor, NIF, número o concepte':'Cercar emissor, NIF, número o concepte','Escriu per cercar…':'Escriu per cercar…',
     'Estat':'Estat','Tots':'Tots','Pendent':'Pendent','Revisada':'Revisada','Des de':'Des de','Fins a':'Fins a',
     'No hi ha cap factura que coincideixi amb els filtres.':'No hi ha cap factura que coincideixi amb els filtres.',
     'Sense nom':'Sense nom','Núm.':'Núm.','Entrada manual':'Entrada manual',
@@ -477,9 +485,9 @@ const I18N = {
     'Llegir la factura automàticament':'Leer la factura automáticamente','Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Sube un PDF, JPG o PNG y la IA intentará extraer el emisor, NIF, número, fecha, base, IVA y total.',
     'Utilitzar la lectura automàtica':'Usar lectura automática','Introduir les dades manualment':'Introducir los datos manualmente','Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Rellena los datos tú mismo. Puedes adjuntar el PDF o la imagen original opcionalmente.',
     'Introduir dades':'Introducir datos','Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Ambas opciones guardan la factura en el mismo historial y respetan el aislamiento de tu empresa.',
-    'Historial de factures':'Historial de facturas','Cercar emissor, NIF, número o concepte':'Buscar emisor, NIF, número o concepto','Escriu per cercar…':'Escribe para buscar…','Estat':'Estado','Tots':'Todos','Pendent':'Pendiente','Revisada':'Revisada','Des de':'Desde','Fins a':'Hasta',
+    'Historial de factures':'Historial de facturas','Tipus':'Tipo','Tots els tipus':'Todos los tipos','Factura rebuda':'Factura recibida','Factura emesa':'Factura emitida','Cercar emissor, NIF, número o concepte':'Buscar emisor, NIF, número o concepto','Escriu per cercar…':'Escribe para buscar…','Estat':'Estado','Tots':'Todos','Pendent':'Pendiente','Revisada':'Revisada','Des de':'Desde','Fins a':'Hasta',
     'No hi ha cap factura que coincideixi amb els filtres.':'No hay ninguna factura que coincida con los filtros.','Sense nom':'Sin nombre','Núm.':'N.º','Entrada manual':'Entrada manual','Introdueix les dades de la factura. El fitxer original és opcional.':'Introduce los datos de la factura. El archivo original es opcional.','Tornar':'Volver','Dades de la factura':'Datos de la factura','Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.':'Los campos se guardarán como factura pendiente para que el gestor pueda revisarla.','Fitxer original (opcional)':'Archivo original (opcional)','Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.':'Si adjuntas un archivo, se guardará con la factura pero no se enviará a la IA.','Desar factura':'Guardar factura','Cancel·lar':'Cancelar','Empresa emissora.':'Empresa emisora.','Moneda':'Moneda','Base imposable':'Base imponible','IVA (%)':'IVA (%)','Quota de l’IVA':'Cuota de IVA','Total':'Total','Concepte':'Concepto',
-    'Panell de gestió':'Panel de gestión','Bon dia, Joan Nogue':'Buenos días, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Controla clientes, facturas pendientes y exportaciones desde un único espacio.','Panell del gestor':'Panel del gestor','Client':'Cliente','Cercar client, emissor, NIF o núm.':'Buscar cliente, emisor, NIF o n.º','Exportar totes a Excel':'Exportar todo a Excel','Pujada':'Subida','Data':'Fecha','Emissor':'Emisor','NIF emissor':'NIF emisor','Núm. factura':'N.º factura','IVA':'IVA','Cap factura coincideix amb els filtres.':'Ninguna factura coincide con los filtros.','empresa registrada':'empresa registrada','empreses registrades':'empresas registradas','factura':'factura','factures':'facturas','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'La lectura automática ha tardado más de 60 segundos. Comprueba la Edge Function y vuelve a intentarlo.','Pujant el fitxer…':'Subiendo archivo…','Analitzant amb IA…':'Analizando con IA…','Preparant el fitxer…':'Preparando archivo…','Pujada cancel·lada':'Subida cancelada','Desant…':'Guardando…','Factura guardada correctament':'Factura guardada correctamente','Tancar':'Cerrar','Descarregar original':'Descargar original','Desar canvis':'Guardar cambios','Eliminar':'Eliminar','Canvis desats':'Cambios guardados'
+    'Panell de gestió':'Panel de gestión','Tipus':'Tipo','Tots els tipus':'Todos los tipos','Factura rebuda':'Factura recibida','Factura emesa':'Factura emitida','Bon dia, Joan Nogue':'Buenos días, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Controla clientes, facturas pendientes y exportaciones desde un único espacio.','Panell del gestor':'Panel del gestor','Client':'Cliente','Cercar client, emissor, NIF o núm.':'Buscar cliente, emisor, NIF o n.º','Exportar totes a Excel':'Exportar todo a Excel','Pujada':'Subida','Data':'Fecha','Emissor':'Emisor','NIF emissor':'NIF emisor','Núm. factura':'N.º factura','IVA':'IVA','Cap factura coincideix amb els filtres.':'Ninguna factura coincide con los filtros.','empresa registrada':'empresa registrada','empreses registrades':'empresas registradas','factura':'factura','factures':'facturas','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'La lectura automática ha tardado más de 60 segundos. Comprueba la Edge Function y vuelve a intentarlo.','Pujant el fitxer…':'Subiendo archivo…','Analitzant amb IA…':'Analizando con IA…','Preparant el fitxer…':'Preparando archivo…','Pujada cancel·lada':'Subida cancelada','Desant…':'Guardando…','Factura guardada correctament':'Factura guardada correctamente','Tancar':'Cerrar','Descarregar original':'Descargar original','Desar canvis':'Guardar cambios','Eliminar':'Eliminar','Canvis desats':'Cambios guardados'
   },
   en: {
     '__brand_title__':'Invoice Inbox',
@@ -495,9 +503,9 @@ const I18N = {
     'Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.':'Choose how you want to register it: with AI-powered automatic reading or by entering the data manually.',
     'Llegir la factura automàticament':'Read invoice automatically','Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.':'Upload a PDF, JPG or PNG and AI will try to extract the issuer, tax ID, number, date, taxable base, VAT and total.',
     'Utilitzar la lectura automàtica':'Use automatic reading','Introduir les dades manualment':'Enter data manually','Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.':'Fill in the fields yourself. You can optionally attach the original PDF or image.','Introduir dades':'Enter data','Totes dues opcions guarden la factura al mateix historial i respecten l’aïllament de la teva empresa.':'Both options save the invoice in the same history and respect your company’s data isolation.',
-    'Historial de factures':'Invoice history','Cercar emissor, NIF, número o concepte':'Search issuer, tax ID, number or concept','Escriu per cercar…':'Type to search…','Estat':'Status','Tots':'All','Pendent':'Pending','Revisada':'Reviewed','Des de':'From','Fins a':'To',
+    'Historial de factures':'Invoice history','Tipus':'Type','Tots els tipus':'All types','Factura rebuda':'Received invoice','Factura emesa':'Issued invoice','Cercar emissor, NIF, número o concepte':'Search issuer, tax ID, number or concept','Escriu per cercar…':'Type to search…','Estat':'Status','Tots':'All','Pendent':'Pending','Revisada':'Reviewed','Des de':'From','Fins a':'To',
     'No hi ha cap factura que coincideixi amb els filtres.':'No invoices match the selected filters.','Sense nom':'Unnamed','Núm.':'No.','Entrada manual':'Manual entry','Introdueix les dades de la factura. El fitxer original és opcional.':'Enter the invoice data. The original file is optional.','Tornar':'Back','Dades de la factura':'Invoice data','Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.':'The fields will be saved as a pending invoice for the manager to review.','Fitxer original (opcional)':'Original file (optional)','Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.':'If you attach a file, it will be saved with the invoice but will not be sent to AI.','Desar factura':'Save invoice','Cancel·lar':'Cancel','Empresa emissora.':'Issuer company.','Moneda':'Currency','Base imposable':'Taxable base','IVA (%)':'VAT (%)','Quota de l’IVA':'VAT amount','Total':'Total','Concepte':'Concept',
-    'Panell de gestió':'Management dashboard','Bon dia, Joan Nogue':'Good morning, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Manage clients, pending invoices and exports from one place.','Panell del gestor':'Manager dashboard','Client':'Client','Cercar client, emissor, NIF o núm.':'Search client, issuer, tax ID or number','Exportar totes a Excel':'Export all to Excel','Pujada':'Uploaded','Data':'Date','Emissor':'Issuer','NIF emissor':'Issuer tax ID','Núm. factura':'Invoice no.','IVA':'VAT','Cap factura coincideix amb els filtres.':'No invoices match the filters.','empresa registrada':'registered company','empreses registrades':'registered companies','factura':'invoice','factures':'invoices','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'Automatic reading took longer than 60 seconds. Check the Edge Function and try again.','Pujant el fitxer…':'Uploading file…','Analitzant amb IA…':'Analyzing with AI…','Preparant el fitxer…':'Preparing file…','Pujada cancel·lada':'Upload canceled','Desant…':'Saving…','Factura guardada correctament':'Invoice saved successfully','Tancar':'Close','Descarregar original':'Download original','Desar canvis':'Save changes','Eliminar':'Delete','Canvis desats':'Changes saved'
+    'Panell de gestió':'Management dashboard','Tipus':'Type','Tots els tipus':'All types','Factura rebuda':'Received invoice','Factura emesa':'Issued invoice','Bon dia, Joan Nogue':'Good morning, Joan Nogue','Controla clients, factures pendents i exportacions des d’un únic espai.':'Manage clients, pending invoices and exports from one place.','Panell del gestor':'Manager dashboard','Client':'Client','Cercar client, emissor, NIF o núm.':'Search client, issuer, tax ID or number','Exportar totes a Excel':'Export all to Excel','Pujada':'Uploaded','Data':'Date','Emissor':'Issuer','NIF emissor':'Issuer tax ID','Núm. factura':'Invoice no.','IVA':'VAT','Cap factura coincideix amb els filtres.':'No invoices match the filters.','empresa registrada':'registered company','empreses registrades':'registered companies','factura':'invoice','factures':'invoices','La lectura automàtica ha trigat més de 60 segons. Comprova la Edge Function i torna-ho a provar.':'Automatic reading took longer than 60 seconds. Check the Edge Function and try again.','Pujant el fitxer…':'Uploading file…','Analitzant amb IA…':'Analyzing with AI…','Preparant el fitxer…':'Preparing file…','Pujada cancel·lada':'Upload canceled','Desant…':'Saving…','Factura guardada correctament':'Invoice saved successfully','Tancar':'Close','Descarregar original':'Download original','Desar canvis':'Save changes','Eliminar':'Delete','Canvis desats':'Changes saved'
   }
 };
 function t(text){
@@ -599,13 +607,14 @@ function renderCompanyShell(){
   applyLanguage($('#view'));
 }
 function renderCapture(){
-  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><h1>Registra una factura</h1><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
+  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><h1>Registra una factura</h1><p>Tria si és una factura rebuda de proveïdors o una factura emesa per la teva empresa.</p><label class="field" style="margin:14px 0 18px;max-width:520px"><span>Tipus de factura</span><select id="invoiceTypePick"><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option></select></label><p>Tria com vols registrar-la: amb lectura automàtica mitjançant IA o introduint les dades manualment.</p><div class="mode-grid">
     <div class="mode-card primary-mode" data-act="aiMode"><h3>Llegir la factura automàticament</h3><p>Puja un PDF, JPG o PNG i la IA intentarà extreure l’emissor, NIF, número, data, base, IVA i total.</p><div class="mode-action"><button class="btn primary" data-act="aiMode">Utilitzar la lectura automàtica</button></div></div>
     <div class="mode-card" data-act="manualMode"><h3>Introduir les dades manualment</h3><p>Omple tu mateix els camps. Pots adjuntar el PDF o la imatge original opcionalment.</p><div class="mode-action"><button class="btn" data-act="manualMode">Introduir dades</button></div></div>
   </div><input id="filePick" type="file" accept=".pdf,image/*" hidden></div>${RECEIPT}</section>`;
 }
 function renderManualForm(){
-  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><h1>Entrada manual</h1><p>Introdueix les dades de la factura. El fitxer original és opcional.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades de la factura</h2><p class="sub">Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR'},true)}</div><div style="margin-top:14px"><label class="field"><span>Fitxer original (opcional)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta">Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar factura</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+  const type=$('#invoiceTypePick')?.value||'recibida';
+  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><h1>Entrada manual</h1><p>Introdueix les dades de la factura. El fitxer original és opcional.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades de la factura</h2><p class="sub">Els camps es guardaran com a factura pendent perquè el gestor la pugui revisar.</p><div class="fields" id="manualForm">${fieldsHTML({currency:'EUR',invoice_type:type},true)}</div><div style="margin-top:14px"><label class="field"><span>Fitxer original (opcional)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta">Si adjuntes un fitxer, es guardarà amb la factura però no s’enviarà a la IA.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar factura</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
 }
 async function saveManual(){
   const form=$('#manualForm'), err=$('#manualErr');
@@ -614,7 +623,7 @@ async function saveManual(){
   const file=$('#manualFile')?.files?.[0]||null;
   const btn=$('[data-act="saveManual"]'); btn.disabled=true; btn.textContent='Desant…';
   if(file && file.size>25*1024*1024){err.textContent='El fitxer supera el límit de 25 MB.';btn.disabled=false;btn.textContent='Desar factura';return;}
-  const baseRec={company_id:state.profile.company_id,...d,status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
+  const baseRec={company_id:state.profile.company_id,...d,invoice_type:normalizeInvoiceType(d.invoice_type),status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
   const {data:ins,error}=await sb.from('invoices').insert(baseRec).select().single();
   if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar factura';return;}
   if(file){
@@ -629,6 +638,7 @@ async function saveManual(){
 function filteredCompanyHistory(){
   const f=state.historyFilters, q=(f.q||'').trim().toLowerCase();
   return state.invoices.filter(x=>{
+    if(f.type && normalizeInvoiceType(x.invoice_type)!==f.type) return false;
     if(f.status && (x.status||'pendiente')!==f.status) return false;
     const d=x.invoice_date || (x.created_at||'').slice(0,10);
     if(f.from && d<f.from) return false;
@@ -655,12 +665,13 @@ function renderHistory(){
   const head=`<div class="section-head"><h2>Historial de factures</h2><span>${list.length} de ${total}</span></div>
     <div class="filters history-filters">
       <label class="field grow"><span>Cercar emissor, NIF, número o concepte</span><input type="search" data-hf="q" autocomplete="off" placeholder="Escriu per cercar…"></label>
+      <label class="field"><span>Tipus</span><select data-hf="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option></select></label>
       <label class="field"><span>Estat</span><select data-hf="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
       <label class="field"><span>Des de</span><input type="date" data-hf="from"></label>
       <label class="field"><span>Fins a</span><input type="date" data-hf="to"></label>
     </div>`;
   if(!list.length){box.innerHTML=head+`<div class="empty">No hi ha cap factura que coincideixi amb els filtres.</div>`;syncCompanyHistoryFilters();return;}
-  box.innerHTML=head+`<ul class="list">${list.map(x=>`<li><button class="item" data-act="open" data-id="${esc(x.id)}"><span><b>${esc(x.supplier_name||'Sense nom')}</b><small>${x.invoice_number?'Núm. '+esc(x.invoice_number)+', ':''}${fmtDate(x.invoice_date)}${x.file_type==='application/pdf'?' (PDF)':''}</small></span><span class="amt"><strong>${money(x.total,x.currency)}</strong>${statusChip(x.status)}</span></button></li>`).join('')}</ul>`;
+  box.innerHTML=head+`<ul class="list">${list.map(x=>`<li><button class="item" data-act="open" data-id="${esc(x.id)}"><span><b>${esc(x.supplier_name||'Sense nom')}</b><small>${x.invoice_number?'Núm. '+esc(x.invoice_number)+', ':''}${fmtDate(x.invoice_date)}${x.file_type==='application/pdf'?' (PDF)':''}</small></span><span class="amt"><strong>${money(x.total,x.currency)}</strong>${invoiceTypeChip(x.invoice_type)}${statusChip(x.status)}</span></button></li>`).join('')}</ul>`;
   syncCompanyHistoryFilters();
   applyLanguage($('#history'));
 }
@@ -668,6 +679,7 @@ function managerView(){
   $('#view').innerHTML=`<section class="manager-welcome"><div><div class="eyebrow">Panell de gestió</div><h2>Bon dia, Joan Nogue</h2><p>Controla clients, factures pendents i exportacions des d’un únic espai.</p></div><div class="manager-badge">JN</div></section><div class="section-head" style="margin-top:4px"><h2>Panell del gestor</h2><span id="clientCount"></span></div>
   <div class="filters">
     <label class="field"><span>Client</span><select data-f="company" id="fCompany"></select></label>
+    <label class="field"><span>Tipus</span><select data-f="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option></select></label>
     <label class="field"><span>Estat</span><select data-f="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
     <label class="field"><span>Des de</span><input type="date" data-f="from"></label>
     <label class="field"><span>Fins a</span><input type="date" data-f="to"></label>
@@ -689,6 +701,7 @@ function filteredInvoices(){
   const f=state.filters,q=f.q.trim().toLowerCase();
   return state.invoices.filter(x=>{
     if(f.company && x.company_id!==f.company) return false;
+    if(f.type && normalizeInvoiceType(x.invoice_type)!==f.type) return false;
     if(f.status && (x.status||'pendiente')!==f.status) return false;
     const d=x.invoice_date || (x.created_at||'').slice(0,10);
     if(f.from&&d<f.from) return false; if(f.to&&d>f.to) return false;
@@ -701,18 +714,22 @@ function renderManagerTable(){
   $('#summary').innerHTML=`<div>Base imposable<strong>${money(sum('base'))}</strong></div><div>IVA<strong>${money(sum('vat_amount'))}</strong></div><div>Total<strong>${money(sum('total'))}</strong></div><div>Pendents de revisar<strong>${pend}</strong></div>`;
   $('#countTxt').textContent=`${list.length} ${list.length===1?'factura':'factures'}`+(eur.length<list.length?' (sumes només EUR)':'');
   if(!list.length){$('#tbl').innerHTML='<div class="empty">Cap factura coincideix amb els filtres.</div>';return}
-  $('#tbl').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Pujada</th><th>Client</th><th>Data</th><th>Emissor</th><th>NIF emissor</th><th>Núm. factura</th><th class="n">Base</th><th class="n">IVA</th><th class="n">Total</th><th>Estat</th><th></th></tr></thead><tbody>${list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return `<tr><td>${esc(fmtStamp(x.created_at))}</td><td><b>${esc(c?.name||x.company_id)}</b><small>${esc(c?.tax_id||'')}</small></td><td>${fmtDate(x.invoice_date)}</td><td>${esc(x.supplier_name||'Sense nom')}<small>${esc(x.concept||'')}</small></td><td>${esc(x.supplier_tax_id||'')}</td><td>${esc(x.invoice_number||'')}${x.file_type==='application/pdf'?'<small>PDF</small>':''}</td><td class="n">${x.base==null?'':money(x.base,x.currency)}</td><td class="n">${x.vat_amount==null?'':money(x.vat_amount,x.currency)}</td><td class="n"><b>${money(x.total,x.currency)}</b></td><td>${statusChip(x.status)}</td><td><button class="btn ghost" data-act="open" data-id="${x.id}">Veure</button></td></tr>`}).join('')}</tbody></table></div>`;
+  $('#tbl').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Pujada</th><th>Client</th><th>Tipus</th><th>Data</th><th>Emissor</th><th>NIF emissor</th><th>Núm. factura</th><th class="n">Base</th><th class="n">IVA</th><th class="n">Total</th><th>Estat</th><th></th></tr></thead><tbody>${list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return `<tr><td>${esc(fmtStamp(x.created_at))}</td><td><b>${esc(c?.name||x.company_id)}</b><small>${esc(c?.tax_id||'')}</small></td><td>${invoiceTypeChip(x.invoice_type)}</td><td>${fmtDate(x.invoice_date)}</td><td>${esc(x.supplier_name||'Sense nom')}<small>${esc(x.concept||'')}</small></td><td>${esc(x.supplier_tax_id||'')}</td><td>${esc(x.invoice_number||'')}${x.file_type==='application/pdf'?'<small>PDF</small>':''}</td><td class="n">${x.base==null?'':money(x.base,x.currency)}</td><td class="n">${x.vat_amount==null?'':money(x.vat_amount,x.currency)}</td><td class="n"><b>${money(x.total,x.currency)}</b></td><td>${statusChip(x.status)}</td><td><button class="btn ghost" data-act="open" data-id="${x.id}">Veure</button></td></tr>`}).join('')}</tbody></table></div>`;
 }
 function currencyField(v={},editable=true){
   const code=normalizeCurrency(v.currency||'EUR');
   const opts=[['EUR','EUR — Euro'],['USD','USD — Dòlar nord-americà'],['GBP','GBP — Lliura esterlina'],['CHF','CHF — Franc suís'],['CAD','CAD — Dòlar canadenc'],['AUD','AUD — Dòlar australià'],['JPY','JPY — Ien japonès']];
   return `<label class="field"><span>Moneda</span><select data-k="currency" ${editable?'':'disabled'}>${opts.map(([c,l])=>`<option value="${c}" ${code===c?'selected':''}>${l}</option>`).join('')}</select></label>`;
 }
+function invoiceTypeField(v={},editable=true){
+  const type=normalizeInvoiceType(v.invoice_type);
+  return `<label class="field"><span>Tipus de factura</span><select data-k="invoice_type" ${editable?'':'disabled'}><option value="recibida" ${type==='recibida'?'selected':''}>Factura rebuda</option><option value="emitida" ${type==='emitida'?'selected':''}>Factura emesa</option></select></label>`;
+}
 function fieldsHTML(v={},editable=true){
   const f=(k,l,t='text',wide=false)=>`<label class="field ${wide?'wide':''}"><span>${l}</span><input type="${t}" data-k="${k}" value="${esc(v[k] ?? '')}" ${editable?'':'readonly'}></label>`;
-  return f('supplier_name','Empresa emissora','text',true)+f('supplier_tax_id','NIF / CIF de l’emissor')+f('invoice_number','Núm. de factura')+f('invoice_date','Data de la factura','date')+currencyField(v,editable)+f('base','Base imposable','number')+f('vat_rate','IVA (%)','number')+f('vat_amount','Quota d’IVA','number')+f('total','Total','number')+f('concept','Concepte','text',true);
+  return invoiceTypeField(v,editable)+f('supplier_name','Empresa emissora','text',true)+f('supplier_tax_id','NIF / CIF de l’emissor')+f('invoice_number','Núm. de factura')+f('invoice_date','Data de la factura','date')+currencyField(v,editable)+f('base','Base imposable','number')+f('vat_rate','IVA (%)','number')+f('vat_amount','Quota d’IVA','number')+f('total','Total','number')+f('concept','Concepte','text',true);
 }
-function readFields(root){const o={};root.querySelectorAll('[data-k]').forEach(x=>{o[x.dataset.k]=x.value.trim()||null});o.currency=normalizeCurrency(o.currency);['base','vat_rate','vat_amount','total'].forEach(k=>{if(o[k]!=null){const n=Number(String(o[k]).replace(',','.'));o[k]=Number.isFinite(n)?n:null}});return o}
+function readFields(root){const o={};root.querySelectorAll('[data-k]').forEach(x=>{o[x.dataset.k]=x.value.trim()||null});o.currency=normalizeCurrency(o.currency);o.invoice_type=normalizeInvoiceType(o.invoice_type);['base','vat_rate','vat_amount','total'].forEach(k=>{if(o[k]!=null){const n=Number(String(o[k]).replace(',','.'));o[k]=Number.isFinite(n)?n:null}});return o}
 function uploadProgressHtml(stage, detail, percent) {
   return `<section class="work"><div><div class="imgwrap" id="previewBox"><div style="text-align:center;padding:36px 18px"><div class="scan" style="position:relative;top:auto;left:auto;right:auto;animation:none;margin:0 auto 18px;width:70%;height:4px"></div><b>${esc(stage)}</b><p class="sub" style="margin:8px 0 0">${esc(detail)}</p></div></div></div><div><h2>${esc(stage)}</h2><p class="sub">${esc(detail)}</p><div style="margin:18px 0 8px;height:10px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden"><div style="height:100%;width:${Math.max(5,Math.min(100,percent))}%;background:var(--brand);transition:width .3s ease"></div></div><p class="meta">El procés pot trigar uns segons. Si supera els 60 segons, mostrarem l’error.</p><div class="actions"><button class="btn" data-act="cancelUpload">Cancel·lar</button></div></div></section>`;
 }
@@ -770,7 +787,7 @@ async function openUpload(file){
   }
 
   const draftId=crypto.randomUUID();
-  state.pendingFile={file,src:'',path:'',values:{currency:'EUR'},draftId,tempInvoiceId:null,opId:draftId};
+  state.pendingFile={file,src:'',path:'',values:{currency:'EUR',invoice_type:normalizeInvoiceType($('#invoiceTypePick')?.value)},draftId,tempInvoiceId:null,opId:draftId};
   $('#view').innerHTML=uploadProgressHtml('Preparant el fitxer…','Preparant el PDF o la imatge per pujar-la de manera segura.',10);
   const src=isPdf(file) ? '' : await dataUrlFromFile(file);
   if(!uploadIsActive(draftId)) return;
@@ -798,6 +815,7 @@ async function openUpload(file){
   const {data:tmp,error:tmpErr}=await sb.from('invoices').insert({
     company_id:state.profile.company_id,
     status:'pendiente',
+    invoice_type:state.pendingFile.invoice_type,
     file_path:path,
     file_name:file.name,
     file_type:file.type||null
@@ -870,7 +888,7 @@ async function saveUpload(){
   const d=readFields($('#uploadForm')),err=$('#uploadErr');
   if(!d.supplier_name){err.textContent='Indica l’empresa emissora.';return;}
   const btn=$('[data-act="saveUpload"]');btn.disabled=true;btn.textContent='Desant…';
-  const {data:ins,error}=await sb.from('invoices').insert({company_id:state.profile.company_id,...d,status:'pendiente',file_name:p.file.name,file_type:p.file.type||null}).select().single();
+  const {data:ins,error}=await sb.from('invoices').insert({company_id:state.profile.company_id,...d,invoice_type:normalizeInvoiceType(d.invoice_type||p.invoice_type),status:'pendiente',file_name:p.file.name,file_type:p.file.type||null}).select().single();
   if(error){err.textContent=error.message;btn.disabled=false;btn.textContent='Desar factura';return}
   const finalPath=`${state.profile.company_id}/${ins.id}/${safeName(p.file.name)}`;
   const {error:mv}=await sb.storage.from('invoices').move(p.path,finalPath);
@@ -924,22 +942,22 @@ async function loadData(){
     if(companiesResult.error){toast(companiesResult.error.message,true);return}
     if(invoicesResult.error){toast(invoicesResult.error.message,true);return}
     state.companies=companiesResult.data||[];
-    state.invoices=(invoicesResult.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency)}));
+    state.invoices=(invoicesResult.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency),invoice_type:normalizeInvoiceType(x.invoice_type)}));
     if(state.view==='panel')managerView();
   }else{
     const {data,isError}=await fetchCompanyInvoices(); if(isError)return; state.invoices=data||[]; if(state.view==='mine')renderHistory();
   }
 }
-async function fetchCompanyInvoices(){const r=await sb.from('invoices').select('*').order('created_at',{ascending:false}).limit(500); if(r.error){toast(r.error.message,true);return {data:[],isError:true}} return {data:(r.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency)})),isError:false}}
+async function fetchCompanyInvoices(){const r=await sb.from('invoices').select('*').order('created_at',{ascending:false}).limit(500); if(r.error){toast(r.error.message,true);return {data:[],isError:true}} return {data:(r.data||[]).map(x=>({...x,currency:normalizeCurrency(x.currency),invoice_type:normalizeInvoiceType(x.invoice_type)})),isError:false}}
 async function exportExcel(){
   // L'export del gestor ignora tots els filtres: sempre exporta totes les factures visibles del gestor.
   const list=state.invoices.slice().sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
   if(!list.length){toast('No hi ha factures per exportar',true);return}
-  const head=['Client','NIF client','Pujada el','Data factura','Emissor','NIF emissor','Núm. factura','Concepte','Base imposable','IVA (%)','Quota IVA','Total','Moneda','Estat','Nota del gestor','Fitxer','ID factura'];
-  const rows=list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return[c?.name||'',c?.tax_id||'',new Date(x.created_at),x.invoice_date?new Date(x.invoice_date):null,x.supplier_name||'',x.supplier_tax_id||'',x.invoice_number||'',x.concept||'',x.base??null,x.vat_rate??null,x.vat_amount??null,x.total??null,x.currency||'EUR',x.status==='revisada'?'Revisada':'Pendent',x.note||'',x.file_name||'',x.id]});
+  const head=['Client','NIF client','Tipus factura','Pujada el','Data factura','Emissor','NIF emissor','Núm. factura','Concepte','Base imposable','IVA (%)','Quota IVA','Total','Moneda','Estat','Nota del gestor','Fitxer','ID factura'];
+  const rows=list.map(x=>{const c=state.companies.find(c=>c.id===x.company_id);return[c?.name||'',c?.tax_id||'',invoiceTypeLabel(x.invoice_type),new Date(x.created_at),x.invoice_date?new Date(x.invoice_date):null,x.supplier_name||'',x.supplier_tax_id||'',x.invoice_number||'',x.concept||'',x.base??null,x.vat_rate??null,x.vat_amount??null,x.total??null,x.currency||'EUR',x.status==='revisada'?'Revisada':'Pendent',x.note||'',x.file_name||'',x.id]});
   const ws=XLSX.utils.aoa_to_sheet([head,...rows],{cellDates:true});
   const last=rows.length+1;
-  ws['!cols']=[24,14,19,14,28,16,18,32,16,9,14,14,10,12,34,28,38].map(w=>({wch:w}));
+  ws['!cols']=[24,14,18,19,14,28,16,18,32,16,9,14,14,10,12,34,28,38].map(w=>({wch:w}));
   ws['!autofilter']={ref:`A1:${XLSX.utils.encode_col(head.length-1)}${last}`};
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'Factures');
