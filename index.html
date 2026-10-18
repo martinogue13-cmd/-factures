@@ -1527,7 +1527,8 @@ const BULK_DOCUMENT_CATEGORIES = [
   {value:'venta', label:'Document de venda'},
   {value:'compra', label:'Document de compra'},
   {value:'otros', label:'Altres'},
-  {value:'cierre_caja', label:'Ticket de tancament de caixa'}
+  {value:'cierre_caja', label:'Ticket de tancament de caixa'},
+  {value:'bancos', label:'Bancs'}
 ];
 function normalizeBulkCategory(value){
   return BULK_DOCUMENT_CATEGORIES.some(c=>c.value===value) ? value : 'otros';
@@ -1806,7 +1807,7 @@ function renderBulkQueue(files){
     return `<div class="bulk-row bulk-queue-row">
       <div class="bulk-queue-file"><b>${esc(f.name)}</b><small>${(f.size/1024/1024).toFixed(2)} MB</small></div>
       <label class="field bulk-category-field"><span>${t('Classificació del document')}</span><select data-bulk-category data-bulk-token="${esc(encodeURIComponent(token))}">${bulkCategoryOptions(selected)}</select></label>
-      <button type="button" class="btn ghost" data-act="removeBulkSelected" data-file-index="${i}" aria-label="${esc(t('Treure de la selecció'))}: ${esc(f.name)}">${esc(t('Treure de la selecció'))}</button>
+      <button type="button" class="btn ghost bulk-remove-btn" data-act="removeBulkSelected" data-file-index="${i}" title="${esc(t('Treure de la selecció'))}" aria-label="${esc(t('Treure de la selecció'))}: ${esc(f.name)}">&times;</button>
     </div>`;
   }).join('');
   q.dataset.count=String(files.length);
@@ -1864,7 +1865,7 @@ async function uploadBulkDocuments(){
       const path=`${state.profile.company_id}/bulk/${id}/${safeName(file.name)}`;
       const {error:up}=await sb.storage.from('invoices').upload(path,file,{upsert:false,contentType:v27MimeForBulkFile(file)});
       if(up) throw new Error(`${file.name}: ${up.message}`);
-      const {error:ins}=await sb.from('bulk_documents').insert({id,company_id:state.profile.company_id,file_path:path,file_name:file.name,file_type:v27MimeForBulkFile(file)||file.type||null,file_size:file.size,document_category:normalizeBulkCategory(category),uploaded_by:state.user?.id||null});
+      const {error:ins}=await sb.from('bulk_documents').insert({id,company_id:state.profile.company_id,file_path:path,file_name:file.name,file_type:v27MimeForBulkFile(file)||file.type||null,file_size:file.size,document_category:normalizeBulkCategory(category),page_count:(['venta','compra'].includes(normalizeBulkCategory(category))?(state.bulkUploadPageCount||null):null),uploaded_by:state.user?.id||null});
       if(ins){await sb.storage.from('invoices').remove([path]).catch(()=>{});throw new Error(`${file.name}: ${ins.message}`);}
       done++; if(status) status.textContent=`${done}/${filesToUpload.length} ${t('documents pujats')}`;
     }
@@ -3891,7 +3892,7 @@ bulkSummaryNote = function(summary,selectedMonth='',selectedCategory='',selected
 
 renderBulkQueue = function(files){
   const q=$('#bulkQueue');if(!q)return;if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
-  q.innerHTML=(files||[]).map((f,i)=>{const token=bulkFileToken(f);const selected=state.bulkCategoryByFile[token]||'';return `<div class="bulk-row bulk-queue-row"><div class="bulk-queue-file"><b>${esc(f.name)}</b><small>${(f.size/1024/1024).toFixed(2)} MB · ${esc((f.name.split('.').pop()||'').toUpperCase())}</small></div><label class="field bulk-category-field"><span>${t('Classificació del document')}</span><select data-bulk-category data-bulk-token="${esc(encodeURIComponent(token))}">${bulkCategoryOptions(selected)}</select></label><button type="button" class="btn ghost" data-act="removeBulkSelected" data-file-index="${i}" aria-label="${esc(t('Treure de la selecció'))}: ${esc(f.name)}">${esc(t('Treure de la selecció'))}</button></div>`;}).join('');q.dataset.count=String((files||[]).length);
+  q.innerHTML=(files||[]).map((f,i)=>{const token=bulkFileToken(f);const selected=state.bulkCategoryByFile[token]||'';return `<div class="bulk-row bulk-queue-row"><div class="bulk-queue-file"><b>${esc(f.name)}</b><small>${(f.size/1024/1024).toFixed(2)} MB · ${esc((f.name.split('.').pop()||'').toUpperCase())}</small></div><label class="field bulk-category-field"><span>${t('Classificació del document')}</span><select data-bulk-category data-bulk-token="${esc(encodeURIComponent(token))}">${bulkCategoryOptions(selected)}</select></label><button type="button" class="btn ghost bulk-remove-btn" data-act="removeBulkSelected" data-file-index="${i}" title="${esc(t('Treure de la selecció'))}" aria-label="${esc(t('Treure de la selecció'))}: ${esc(f.name)}">&times;</button></div>`;}).join('');q.dataset.count=String((files||[]).length);
 };
 
 renderBulkCompany = async function(){
@@ -3991,18 +3992,18 @@ function setupBulkRealtime(companyId){
 /* Keep the month/category/status filters aligned and live across both roles. */
 document.addEventListener('change',e=>{
   const el=e.target;const id=el?.id;
-  if(!['bulkMineMonth','bulkMineCategory','bulkMineStatus','bulkManagerMonth','bulkManagerCategory','bulkManagerStatus'].includes(id))return;
+  if(!['bulkMineMonth','bulkMineCategory','bulkMineStatus','bulkMinePageCount','bulkManagerMonth','bulkManagerCategory','bulkManagerStatus','bulkManagerPageCount'].includes(id))return;
   e.stopImmediatePropagation();
   if(id.startsWith('bulkMine')){
     const companyId=state.profile?.company_id;if(!companyId)return;
     if(!state.bulkMineFilters)state.bulkMineFilters=Object.create(null);
     const prior=state.bulkMineFilters[companyId]||{};
-    state.bulkMineFilters[companyId]={month:id==='bulkMineMonth'?el.value:( $('#bulkMineMonth')?.value??prior.month??''),category:id==='bulkMineCategory'?el.value:( $('#bulkMineCategory')?.value??prior.category??''),status:id==='bulkMineStatus'?el.value:( $('#bulkMineStatus')?.value??prior.status??'')};
+    const nextCategory=id==='bulkMineCategory'?el.value:( $('#bulkMineCategory')?.value??prior.category??'');const nextPageCount=id==='bulkMinePageCount'?el.value:( $('#bulkMinePageCount')?.value??prior.pageCount??'');state.bulkMineFilters[companyId]={month:id==='bulkMineMonth'?el.value:( $('#bulkMineMonth')?.value??prior.month??''),category:nextCategory,status:id==='bulkMineStatus'?el.value:( $('#bulkMineStatus')?.value??prior.status??''),pageCount:(!nextCategory||['venta','compra'].includes(nextCategory))?nextPageCount:''};
     renderBulkMineList().catch(err=>toast(err.message,true));
   }else{
     const company=currentManagerCompany();if(!company)return;
     if(!state.bulkManagerFilters)state.bulkManagerFilters=Object.create(null);const prior=state.bulkManagerFilters[company.id]||{};
-    state.bulkManagerFilters[company.id]={month:id==='bulkManagerMonth'?el.value:($('#bulkManagerMonth')?.value??prior.month??''),category:id==='bulkManagerCategory'?el.value:($('#bulkManagerCategory')?.value??prior.category??''),status:id==='bulkManagerStatus'?el.value:($('#bulkManagerStatus')?.value??prior.status??'')};
+    const nextCategory=id==='bulkManagerCategory'?el.value:($('#bulkManagerCategory')?.value??prior.category??'');const nextPageCount=id==='bulkManagerPageCount'?el.value:($('#bulkManagerPageCount')?.value??prior.pageCount??'');state.bulkManagerFilters[company.id]={month:id==='bulkManagerMonth'?el.value:($('#bulkManagerMonth')?.value??prior.month??''),category:nextCategory,status:id==='bulkManagerStatus'?el.value:($('#bulkManagerStatus')?.value??prior.status??''),pageCount:(!nextCategory||['venta','compra'].includes(nextCategory))?nextPageCount:''};
     renderManagerBulk(company).catch(err=>toast(err.message,true));
   }
 },true);
@@ -4030,6 +4031,1004 @@ html[data-theme="dark"] .v27-confirm-check,:root:not([data-theme="light"]) .v27-
 @media(max-width:760px){.bulk-workflow-step{flex:1 1 125px}.v27-bulk-row{flex-direction:column}.v27-bulk-main{width:100%}}
 `;
 document.head.appendChild(v27BulkStyle);
+
+/* v28: manager-first download progress dashboard */
+const V28_MANAGER_I18N = {
+  ca: {
+    'Control de descàrrega i recepció':'Control de descàrrega i recepció',
+    'Pendents de descarregar':'Pendents de descarregar',
+    'Recepcionats':'Recepcionats',
+    'Descarregar de nou':'Descarregar de nou',
+    'Descarregats pendents de recepció':'Descarregats pendents de recepció',
+    'Última descàrrega':'Última descàrrega',
+    'No s’ha descarregat cap document':'No s’ha descarregat cap document',
+    'Total en el període':'Total en el període',
+    'Els comptadors segueixen el mes i la classificació seleccionats; el filtre d’estat només afecta la llista.':'Els comptadors segueixen el mes i la classificació seleccionats; el filtre d’estat només afecta la llista.',
+    'Ordre de treball':'Ordre de treball',
+    'Primer es mostren els documents pendents de descàrrega, després els descarregats pendents de recepció i, al final, els recepcionats.':'Primer es mostren els documents pendents de descàrrega, després els descarregats pendents de recepció i, al final, els recepcionats.',
+    'Encara no descarregat':'Encara no descarregat',
+    'Descarregat el':'Descarregat el',
+    'Recepcionat el':'Recepcionat el',
+    'Sense data de descàrrega':'Sense data de descàrrega',
+    'Documents que necessiten atenció':'Documents que necessiten atenció',
+    'Tots els documents estan recepcionats':'Tots els documents estan recepcionats'
+  },
+  es: {
+    'Control de descàrrega i recepció':'Control de descarga y recepción',
+    'Pendents de descarregar':'Pendientes de descargar',
+    'Recepcionats':'Recepcionados',
+    'Descarregar de nou':'Descargar de nuevo',
+    'Descarregats pendents de recepció':'Descargados pendientes de recepción',
+    'Última descàrrega':'Última descarga',
+    'No s’ha descarregat cap document':'No se ha descargado ningún documento',
+    'Total en el període':'Total en el periodo',
+    'Els comptadors segueixen el mes i la classificació seleccionats; el filtre d’estat només afecta la llista.':'Los contadores siguen el mes y la clasificación seleccionados; el filtro de estado solo afecta a la lista.',
+    'Ordre de treball':'Orden de trabajo',
+    'Primer es mostren els documents pendents de descàrrega, després els descarregats pendents de recepció i, al final, els recepcionats.':'Primero se muestran los documentos pendientes de descarga, después los descargados pendientes de recepción y, al final, los recepcionados.',
+    'Encara no descarregat':'Todavía no descargado',
+    'Descarregat el':'Descargado el',
+    'Recepcionat el':'Recepcionado el',
+    'Sense data de descàrrega':'Sin fecha de descarga',
+    'Documents que necessiten atenció':'Documentos que requieren atención',
+    'Tots els documents estan recepcionats':'Todos los documentos están recepcionados'
+  },
+  en: {
+    'Control de descàrrega i recepció':'Download and receipt control',
+    'Pendents de descarregar':'Pending download',
+    'Recepcionats':'Received',
+    'Descarregar de nou':'Download again',
+    'Descarregats pendents de recepció':'Downloaded, pending receipt',
+    'Última descàrrega':'Latest download',
+    'No s’ha descarregat cap document':'No documents have been downloaded',
+    'Total en el període':'Total in period',
+    'Els comptadors segueixen el mes i la classificació seleccionats; el filtre d’estat només afecta la llista.':'Counters follow the selected month and category; the status filter only affects the list.',
+    'Ordre de treball':'Work order',
+    'Primer es mostren els documents pendents de descàrrega, després els descarregats pendents de recepció i, al final, els recepcionats.':'Pending downloads appear first, followed by downloaded items awaiting receipt, then received items.',
+    'Encara no descarregat':'Not downloaded yet',
+    'Descarregat el':'Downloaded on',
+    'Recepcionat el':'Received on',
+    'Sense data de descàrrega':'No download date',
+    'Documents que necessiten atenció':'Documents needing attention',
+    'Tots els documents estan recepcionats':'All documents have been received'
+  }
+};
+Object.keys(V28_MANAGER_I18N).forEach(lang=>Object.assign(I18N[lang],V28_MANAGER_I18N[lang]));
+
+function v28ManagerStatus(doc){ return v27StatusOf(doc); }
+function v28ManagerScope(docs, month='', category=''){
+  return (docs||[]).filter(d=>(!month||monthKeyFromDate(d.created_at)===month)&&(!category||normalizeBulkCategory(d.document_category)===category));
+}
+function v28LatestDownloaded(docs){
+  return (docs||[]).filter(d=>d.downloaded_at).sort((a,b)=>String(b.downloaded_at).localeCompare(String(a.downloaded_at)))[0]||null;
+}
+function v28ManagerStatusSummary(docs){
+  const pending=(docs||[]).filter(d=>v28ManagerStatus(d)==='pending_download').length;
+  const awaiting=(docs||[]).filter(d=>v28ManagerStatus(d)==='pending_receipt').length;
+  const received=(docs||[]).filter(d=>v28ManagerStatus(d)==='received').length;
+  return {total:(docs||[]).length,pending,awaiting,received,latest:v28LatestDownloaded(docs)};
+}
+function v28ManagerRows(docs, month='', category='', status=''){
+  const scoped=v28ManagerScope(docs,month,category).filter(d=>v27BulkStatusMatches(d,status));
+  if(!scoped.length)return `<div class="empty">${esc(t('No hi ha documents en aquest període.'))}</div>`;
+  const rank={pending_download:0,pending_receipt:1,received:2};
+  const groups={};
+  for(const d of scoped){const k=monthKeyFromDate(d.created_at)||'';(groups[k] ||= []).push(d);}
+  return Object.entries(groups).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,items])=>{
+    items.sort((a,b)=>{
+      const ar=rank[v28ManagerStatus(a)],br=rank[v28ManagerStatus(b)];if(ar!==br)return ar-br;
+      if(ar===1)return String(b.downloaded_at||'').localeCompare(String(a.downloaded_at||''));
+      if(ar===2)return String(b.received_at||'').localeCompare(String(a.received_at||''));
+      return String(b.created_at||'').localeCompare(String(a.created_at||''));
+    });
+    return `<div class="bulk-month-group"><div class="bulk-month-head"><strong>${esc(monthLabelFromKey(k)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div><div class="bulk-list">${items.map(d=>{
+      const cat=normalizeBulkCategory(d.document_category);const st=v28ManagerStatus(d);
+      const statusText=v27StatusLabel(st);
+      let detail=t('Encara no descarregat');
+      if(st==='pending_receipt')detail=`${t('Descarregat el')} ${fmtStamp(d.downloaded_at)}`;
+      if(st==='received')detail=`${t('Descarregat el')} ${fmtStamp(d.downloaded_at)} · ${t('Recepcionat el')} ${fmtStamp(d.received_at)}`;
+      const icon=st==='pending_download'?'○':st==='pending_receipt'?'↓':'✓';
+      return `<div class="bulk-row v27-bulk-row v28-manager-row" data-manager-status="${esc(st)}">
+        <div class="v27-bulk-main">
+          <div class="v28-file-title-line"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(d.id)}" aria-label="${esc(t('Obrir'))}: ${esc(d.file_name)}"><b>${esc(d.file_name)}</b></button><span class="v28-status-badge v28-state-${esc(st)}"><span aria-hidden="true">${icon}</span> ${esc(statusText)}</span></div>
+          <small class="bulk-file-meta">${esc(t('Pujat'))}: ${esc(fmtStamp(d.created_at))} · ${((Number(d.file_size||0)/1024/1024)||0).toFixed(2)} MB <span class="bulk-category-pill" data-category="${esc(cat)}">${esc(bulkCategoryLabel(cat))}</span></small>
+          <div class="v28-download-proof ${st==='pending_download'?'v28-proof-pending':''}">${st==='pending_download'?`<b>${esc(t('Encara no descarregat'))}</b>`:`<b>${esc(detail)}</b>`}</div>
+          ${v27BulkWorkflow(d)}
+        </div>
+        <div class="bulk-row-actions"><button class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(d.id)}">${t('Obrir')}</button><button class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(d.id)}">${st==='pending_download'?t('Descarregar'):t('Descarregar de nou')}</button></div>
+      </div>`;
+    }).join('')}</div></div>`;
+  }).join('');
+}
+
+renderManagerBulk = async function(company){
+  const content=$('#managerContent');if(!content||!company)return;setupBulkRealtime(company.id);
+  if(!state.bulkManagerFilters)state.bulkManagerFilters=Object.create(null);
+  const saved=state.bulkManagerFilters[company.id]||{};const docs=await loadBulkDocuments(company.id);
+  const month=saved.month??'';const category=saved.category??'';const status=saved.status??'';
+  content.innerHTML=`<section class="hero manager-mode-card"><div><div class="eyebrow">${t('Visió 2 · Càrrega documental')}</div><h2>${t('Documents per descarregar')}</h2><p>${t('El client puja i classifica els documents; pots filtrar-los per tipus i descarregar-los quan els processis.')}</p><div id="bulkManagerDashboard"></div></div></section>`;
+  const box=$('#bulkManagerDashboard');const scoped=v28ManagerScope(docs,month,category);const summary=v28ManagerStatusSummary(scoped);box.dataset.month=month;box.dataset.category=category;box.dataset.status=status;
+  const latest=summary.latest;
+  const latestHtml=latest?`<div class="v28-latest-file"><span class="v28-latest-name">${esc(latest.file_name||'')}</span><span class="v28-latest-date">${esc(fmtStamp(latest.downloaded_at))}</span></div>`:`<div class="v28-latest-empty">${esc(t('No s’ha descarregat cap document'))}</div>`;
+  const attention=summary.pending+summary.awaiting;
+  const attentionText=attention?`${attention} ${t('Documents que necessiten atenció').toLowerCase()}`:t('Tots els documents estan recepcionats');
+  box.innerHTML=`<section class="v28-progress-panel">
+      <div class="v28-progress-head"><div><h3>${t('Control de descàrrega i recepció')}</h3><p>${esc(attentionText)}</p></div><span class="v28-total-chip">${summary.total} ${t('documents').toLowerCase()} · ${t('Total en el període').toLowerCase()}</span></div>
+      <div class="v28-progress-grid">
+        <div class="v28-progress-card v28-card-pending"><span>${t('Pendents de descarregar')}</span><strong>${summary.pending}</strong><small>${t('Pendent de descàrrega')}</small></div>
+        <div class="v28-progress-card v28-card-awaiting"><span>${t('Descarregats pendents de recepció')}</span><strong>${summary.awaiting}</strong><small>${t('Pendent de recepció')}</small></div>
+        <div class="v28-progress-card v28-card-received"><span>${t('Recepcionats')}</span><strong>${summary.received}</strong><small>${t('Recepció confirmada')}</small></div>
+        <div class="v28-progress-card v28-card-latest"><span>${t('Última descàrrega')}</span>${latestHtml}</div>
+      </div>
+      <p class="v28-progress-foot">${t('Els comptadors segueixen el mes i la classificació seleccionats; el filtre d’estat només afecta la llista.')}</p>
+    </section>
+    <div class="filters bulk-filters"><label class="field"><span>${t('Mes de pujada')}</span><select id="bulkManagerMonth">${bulkMonthOptions(docs,month)}</select></label><label class="field"><span>${t('Classificació del document')}</span><select id="bulkManagerCategory">${bulkCategoryFilterOptions(category)}</select></label><label class="field"><span>${t('Estat del document')}</span><select id="bulkManagerStatus">${v27StatusOptions(status)}</select></label><div class="field"><span>&nbsp;</span><button class="btn primary" data-act="bulkZip" data-month="${esc(month)}" data-category="${esc(category)}" data-status="${esc(status)}">${t('Descarregar visibles en ZIP')}</button></div></div>
+    <div class="v28-work-order"><b>${t('Ordre de treball')}:</b> ${t('Primer es mostren els documents pendents de descàrrega, després els descarregats pendents de recepció i, al final, els recepcionats.')}</div>
+    <div class="bulk-period-note">${esc(bulkSummaryNote(bulkSummary(docs,month,category,status),month,category,status))}</div>
+    <div id="bulkManagerList" class="bulk-months">${v28ManagerRows(docs,month,category,status)}</div>`;
+  state.bulkDocuments=docs;applyLanguage(content);
+};
+
+const v28ManagerStyle=document.createElement('style');
+v28ManagerStyle.textContent=`
+.v28-progress-panel{margin:16px 0 18px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:0 8px 24px rgba(15,35,55,.055)}
+.v28-progress-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}.v28-progress-head h3{font-size:1.08rem;margin:0 0 5px;color:var(--ink)}.v28-progress-head p{margin:0;color:var(--ink2);font-size:.88rem}.v28-total-chip{border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:.76rem;font-weight:700;color:var(--ink2);white-space:nowrap}
+.v28-progress-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.v28-progress-card{display:flex;flex-direction:column;gap:7px;min-height:112px;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--paper);min-width:0}.v28-progress-card>span{font-size:.78rem;font-weight:750;color:var(--ink2);line-height:1.35}.v28-progress-card>strong{font-size:2rem;line-height:1;color:var(--ink)}.v28-progress-card>small{font-size:.75rem;color:var(--ink2)}.v28-card-pending{border-top:4px solid #d99a39}.v28-card-awaiting{border-top:4px solid #3a80c7}.v28-card-received{border-top:4px solid #23966d}.v28-card-latest{border-top:4px solid var(--brand)}.v28-latest-file{display:flex;flex-direction:column;gap:6px;min-width:0}.v28-latest-name{font-size:.88rem;line-height:1.35;font-weight:800;overflow-wrap:anywhere;color:var(--ink)}.v28-latest-date{font-size:.75rem;color:var(--ink2)}.v28-latest-empty{font-size:.82rem;color:var(--ink2);line-height:1.4}
+.v28-progress-foot{margin:12px 0 0;font-size:.76rem;color:var(--ink2)}.v28-work-order{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 12px;padding:10px 12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;color:var(--ink2);font-size:.81rem;line-height:1.45}.v28-work-order b{color:var(--ink)}
+.v28-manager-row{border-left:4px solid var(--line);padding-left:12px}.v28-manager-row[data-manager-status="pending_download"]{border-left-color:#d99a39}.v28-manager-row[data-manager-status="pending_receipt"]{border-left-color:#3a80c7}.v28-manager-row[data-manager-status="received"]{border-left-color:#23966d}.v28-file-title-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.v28-file-title-line .bulk-file-open{flex:1;min-width:180px}.v28-file-title-line .bulk-file-open b{font-size:.97rem}.v28-status-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 9px;font-size:.74rem;line-height:1.2;font-weight:800;max-width:100%}.v28-state-pending_download{background:#fff3da;color:#734608;border:1px solid #efd19b}.v28-state-pending_receipt{background:#eaf3ff;color:#194e86;border:1px solid #bad6f6}.v28-state-received{background:#e3f7ee;color:#145b42;border:1px solid #a9dfc7}.v28-download-proof{margin-top:8px;font-size:.82rem;color:var(--ink2);line-height:1.45}.v28-download-proof b{font-weight:750}.v28-download-proof.v28-proof-pending{color:#94601a}.v28-manager-row .bulk-row-actions{display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start}
+html[data-theme="dark"] .v28-state-pending_download,:root:not([data-theme="light"]) .v28-state-pending_download{background:#392c16;color:#ffe4ae;border-color:#70562b}html[data-theme="dark"] .v28-state-pending_receipt,:root:not([data-theme="light"]) .v28-state-pending_receipt{background:#162f4b;color:#d4e8ff;border-color:#315f8d}html[data-theme="dark"] .v28-state-received,:root:not([data-theme="light"]) .v28-state-received{background:#12382c;color:#d4ffeb;border-color:#2b775c}html[data-theme="dark"] .v28-download-proof.v28-proof-pending,:root:not([data-theme="light"]) .v28-download-proof.v28-proof-pending{color:#ffd28a}
+@media(max-width:900px){.v28-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v28-progress-head{flex-direction:column}.v28-manager-row .bulk-row-actions{width:100%}}
+@media(max-width:520px){.v28-progress-grid{grid-template-columns:1fr 1fr}.v28-progress-card{padding:10px;min-height:104px}.v28-progress-card>strong{font-size:1.7rem}.v28-total-chip{white-space:normal}.v28-manager-row .bulk-row-actions .btn{flex:1}}
+`;
+document.head.appendChild(v28ManagerStyle);
+
+
+/* v29: compact cross-only control for removing a file from the pending selection */
+const v29RemoveButtonStyle=document.createElement('style');
+v29RemoveButtonStyle.textContent=`
+.bulk-queue-row>.bulk-remove-btn{width:38px;min-width:38px;height:38px;flex:0 0 38px;display:inline-flex;align-items:center;justify-content:center;padding:0;border-radius:10px;font-size:1.65rem;font-weight:500;line-height:1;white-space:nowrap;align-self:center}
+.bulk-queue-row>.bulk-remove-btn:hover{border-color:#d65c5c;color:#b42318;background:rgba(212,74,74,.08)}
+.bulk-queue-row>.bulk-remove-btn:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+@media(max-width:760px){.bulk-queue-row>.bulk-remove-btn{width:38px!important;min-width:38px!important;height:38px;flex:0 0 38px;align-self:flex-end;margin-top:-2px}}
+html[data-theme="dark"] .bulk-queue-row>.bulk-remove-btn:hover,:root:not([data-theme="light"]) .bulk-queue-row>.bulk-remove-btn:hover{color:#ffb6b0;border-color:#a94d4d;background:rgba(212,74,74,.14)}
+`;
+document.head.appendChild(v29RemoveButtonStyle);
+
+
+
+/* v30: require document classification BEFORE the user can choose files. */
+Object.assign(I18N.ca, {
+  'Classificació de la pujada':'Classificació de la pujada',
+  'Selecciona una classificació per continuar.':'Selecciona una classificació per continuar.',
+  'La classificació s’aplicarà a tots els documents d’aquesta selecció.':'La classificació s’aplicarà a tots els documents d’aquesta selecció.',
+  'Classificació seleccionada':'Classificació seleccionada',
+  'Ara pots seleccionar els documents que vols pujar.':'Ara pots seleccionar els documents que vols pujar.',
+  'Classificació aplicada':'Classificació aplicada',
+  'Per canviar la classificació, treu tots els documents seleccionats.':'Per canviar la classificació, treu tots els documents seleccionats.',
+  'Selecciona documents per pujar.':'Selecciona documents per pujar.',
+  'Primer selecciona una classificació; després podràs triar els fitxers.':'Primer selecciona una classificació; després podràs triar els fitxers.'
+});
+Object.assign(I18N.es, {
+  'Classificació de la pujada':'Clasificación de la subida',
+  'Selecciona una classificació per continuar.':'Selecciona una clasificación para continuar.',
+  'La classificació s’aplicarà a tots els documents d’aquesta selecció.':'La clasificación se aplicará a todos los documentos de esta selección.',
+  'Classificació seleccionada':'Clasificación seleccionada',
+  'Ara pots seleccionar els documents que vols pujar.':'Ahora puedes seleccionar los documentos que quieres subir.',
+  'Classificació aplicada':'Clasificación aplicada',
+  'Per canviar la classificació, treu tots els documents seleccionats.':'Para cambiar la clasificación, quita todos los documentos seleccionados.',
+  'Selecciona documents per pujar.':'Selecciona documentos para subir.',
+  'Primer selecciona una classificació; després podràs triar els fitxers.':'Primero selecciona una clasificación; después podrás elegir los archivos.'
+});
+Object.assign(I18N.en, {
+  'Classificació de la pujada':'Upload classification',
+  'Selecciona una classificació per continuar.':'Select a classification to continue.',
+  'La classificació s’aplicarà a tots els documents d’aquesta selecció.':'This classification will apply to every document in this selection.',
+  'Classificació seleccionada':'Classification selected',
+  'Ara pots seleccionar els documents que vols pujar.':'You can now select the documents you want to upload.',
+  'Classificació aplicada':'Classification applied',
+  'Per canviar la classificació, treu tots els documents seleccionats.':'To change the classification, remove all selected documents.',
+  'Selecciona documents per pujar.':'Select documents to upload.',
+  'Primer selecciona una classificació; després podràs triar els fitxers.':'Select a classification first; then you can choose files.'
+});
+
+state.bulkUploadCategory = '';
+function v30SyncBulkUploadGate(){
+  const categorySelect=$('#bulkUploadCategory');
+  const input=$('#bulkPick');
+  const notice=$('#bulkClassifyNotice');
+  const uploadButton=$('[data-act="uploadBulk"]');
+  const files=input?[...input.files]:[];
+  const category=state.bulkUploadCategory||'';
+  if(categorySelect){categorySelect.value=category;categorySelect.disabled=files.length>0;}
+  if(input){input.disabled=!category;}
+  if(notice){
+    if(!category){
+      notice.textContent=t('Selecciona una classificació per continuar.');
+      notice.classList.remove('is-ready');notice.classList.add('is-required');
+      notice.setAttribute('role','alert');
+    }else if(files.length){
+      notice.textContent=`${t('Classificació aplicada')}: ${bulkCategoryLabel(category)}. ${t('Per canviar la classificació, treu tots els documents seleccionats.')}`;
+      notice.classList.remove('is-required');notice.classList.add('is-ready');
+      notice.setAttribute('role','status');
+    }else{
+      notice.textContent=`${t('Classificació seleccionada')}: ${bulkCategoryLabel(category)}. ${t('Ara pots seleccionar els documents que vols pujar.')}`;
+      notice.classList.remove('is-required');notice.classList.add('is-ready');
+      notice.setAttribute('role','status');
+    }
+  }
+  if(uploadButton)uploadButton.disabled=!category||files.length===0;
+}
+
+renderBulkQueue = function(files){
+  const q=$('#bulkQueue');if(!q)return;
+  const category=state.bulkUploadCategory||'';
+  if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+  const activeTokens=new Set((files||[]).map(bulkFileToken));
+  for(const token of Object.keys(state.bulkCategoryByFile)){
+    if(!activeTokens.has(token))delete state.bulkCategoryByFile[token];
+  }
+  q.innerHTML=(files||[]).map((file,i)=>{
+    const token=bulkFileToken(file);
+    if(category)state.bulkCategoryByFile[token]=category;
+    const ext=(file.name.split('.').pop()||'').toUpperCase();
+    return `<div class="bulk-row bulk-queue-row">
+      <div class="bulk-queue-file"><b>${esc(file.name)}</b><small>${(file.size/1024/1024).toFixed(2)} MB · ${esc(ext)}${category?` <span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span>`:''}</small></div>
+      <button type="button" class="btn ghost bulk-remove-btn" data-act="removeBulkSelected" data-file-index="${i}" title="${esc(t('Treure de la selecció'))}" aria-label="${esc(t('Treure de la selecció'))}: ${esc(file.name)}">&times;</button>
+    </div>`;
+  }).join('');
+  q.dataset.count=String((files||[]).length);
+};
+
+replaceBulkSelectedFiles = function(files){
+  const input=$('#bulkPick');if(!input)return;
+  try{
+    const transfer=new DataTransfer();
+    (files||[]).forEach(file=>transfer.items.add(file));
+    input.files=transfer.files;
+  }catch(_){
+    if(!(files||[]).length)input.value='';
+  }
+  const actualFiles=[...(input.files||[])];
+  if(!actualFiles.length){
+    state.bulkUploadCategory='';
+    state.bulkCategoryByFile=Object.create(null);
+    const select=$('#bulkUploadCategory');if(select)select.value='';
+  }else if(state.bulkUploadCategory){
+    if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+    actualFiles.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=state.bulkUploadCategory);
+  }
+  renderBulkQueue(actualFiles);
+  v30SyncBulkUploadGate();
+};
+
+renderBulkCompany = async function(){
+  const box=$('#bulkCompany');if(!box)return;
+  state.bulkUploadCategory='';
+  state.bulkCategoryByFile=Object.create(null);
+  const accept='.pdf,image/*,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif';
+  box.innerHTML=`<section class="hero bulk-upload"><div>
+    <div class="corporate-label">${t('Bústia corporativa · Joan Nogue')}</div>
+    <div class="eyebrow">${t('Visió de càrrega de documents')}</div>
+    <h1>${t('Càrrega massiva de documents')}</h1>
+    <p>${t('Primer selecciona una classificació; després podràs triar els fitxers.')}</p>
+    <div class="bulk-drop">
+      <div class="bulk-classification-first">
+        <label class="field bulk-upload-category-field"><span>${t('Classificació de la pujada')}</span><select id="bulkUploadCategory">${bulkCategoryOptions('')}</select></label>
+        <p id="bulkClassifyNotice" class="bulk-required-note is-required" role="alert" aria-live="polite">${t('Selecciona una classificació per continuar.')}</p>
+        <p class="vision-note">${t('La classificació s’aplicarà a tots els documents d’aquesta selecció.')}</p>
+      </div>
+      <label class="field bulk-pick-field"><span>${t('Fitxers PDF, imatges, Word, Excel i altres documents')}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice"></label>
+      <p class="vision-note">${t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.')}</p>
+      <p class="bulk-ticket-note">${t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.')}</p>
+      <div class="bulk-queue-heading">${t('Documents preparats')}</div><div id="bulkQueue" class="bulk-list"></div>
+      <div class="bulk-actions"><button class="btn primary" data-act="uploadBulk" disabled>${t('Pujar documents')}</button></div>
+    </div>
+    <p class="meta" id="bulkUploadStatus" role="status" aria-live="polite"></p>
+  </div></section>
+  <section class="hero bulk-uploaded" style="margin-top:18px"><div>
+    <div class="eyebrow">${t('Documents pujats')}</div>
+    <div class="section-head" style="margin:0 0 10px"><h2 style="margin:0">${t('Els meus documents')}</h2><button class="btn" data-act="refreshBulkMine">${t('Actualitzar')}</button></div>
+    <p class="sub">${t('Aquí pots comprovar quins documents ja has pujat i quan es van registrar. Fes clic al nom d’un document per obrir-lo.')}</p>
+    <div id="bulkMineList" class="bulk-list"><div class="empty">${esc(t('Carregant…'))}</div></div>
+  </div></section>`;
+  const categorySelect=$('#bulkUploadCategory');
+  categorySelect?.addEventListener('change',e=>{
+    const input=$('#bulkPick');
+    if(input?.files?.length){
+      e.target.value=state.bulkUploadCategory||'';
+      return;
+    }
+    state.bulkUploadCategory=BULK_DOCUMENT_CATEGORIES.some(c=>c.value===e.target.value)?e.target.value:'';
+    state.bulkCategoryByFile=Object.create(null);
+    v30SyncBulkUploadGate();
+  });
+  $('#bulkPick')?.addEventListener('change',e=>{
+    const input=e.target;
+    const files=[...(input.files||[])];
+    if(!state.bulkUploadCategory||!BULK_DOCUMENT_CATEGORIES.some(c=>c.value===state.bulkUploadCategory)){
+      input.value='';renderBulkQueue([]);v30SyncBulkUploadGate();
+      const status=$('#bulkUploadStatus');if(status)status.textContent=t('Selecciona una classificació per continuar.');
+      toast(t('Selecciona una classificació per continuar.'),true);return;
+    }
+    if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+    files.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=state.bulkUploadCategory);
+    renderBulkQueue(files);v30SyncBulkUploadGate();
+  });
+  applyLanguage($('#bulkCompany'));
+  v30SyncBulkUploadGate();
+  setupBulkRealtime(state.profile?.company_id);
+  await renderBulkMineList();
+};
+
+const v30OriginalUploadBulkDocuments=uploadBulkDocuments;
+uploadBulkDocuments=async function(){
+  if(state.appMode!=='bulk'||!state.profile?.company_id)return;
+  const input=$('#bulkPick');
+  const files=[...(input?.files||[])];
+  const category=state.bulkUploadCategory||$('#bulkUploadCategory')?.value||'';
+  const status=$('#bulkUploadStatus');
+  if(!BULK_DOCUMENT_CATEGORIES.some(c=>c.value===category)){
+    const message=t('Selecciona una classificació per continuar.');
+    if(status)status.textContent=message;toast(message,true);v30SyncBulkUploadGate();return;
+  }
+  if(!files.length){
+    const message=t('Selecciona documents per pujar.');
+    if(status)status.textContent=message;toast(message,true);v30SyncBulkUploadGate();return;
+  }
+  state.bulkUploadCategory=category;
+  if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+  files.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
+  await v30OriginalUploadBulkDocuments();
+  const remaining=[...(input?.files||[])];
+  if(!remaining.length){
+    state.bulkUploadCategory='';
+    state.bulkCategoryByFile=Object.create(null);
+    const select=$('#bulkUploadCategory');if(select)select.value='';
+  }else{
+    remaining.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
+  }
+  renderBulkQueue(remaining);
+  v30SyncBulkUploadGate();
+};
+
+const v30UploadGateStyle=document.createElement('style');
+v30UploadGateStyle.textContent=`
+.bulk-classification-first{margin:0 0 18px;padding:15px 16px;border:1px solid var(--line);border-radius:13px;background:var(--paper)}
+.bulk-upload-category-field{max-width:440px;gap:7px}.bulk-upload-category-field select{width:100%;min-height:44px;font-weight:650}
+.bulk-upload-category-field select:disabled{opacity:.78;cursor:not-allowed}
+.bulk-required-note{margin:10px 0 7px;padding:10px 12px;border-radius:9px;font-size:.87rem;line-height:1.45;font-weight:750;border:1px solid #e3b65f;background:#fff5dc;color:#79520b}
+.bulk-required-note.is-ready{border-color:#abd8c6;background:#eaf8f1;color:#155e46}
+.bulk-pick-field input:disabled{cursor:not-allowed;opacity:.62}
+.bulk-actions button:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+html[data-theme="dark"] .bulk-classification-first,:root:not([data-theme="light"]) .bulk-classification-first{background:#15232e;border-color:#314453}
+html[data-theme="dark"] .bulk-required-note.is-required,:root:not([data-theme="light"]) .bulk-required-note.is-required{background:#382d17;color:#ffe5ad;border-color:#70572b}
+html[data-theme="dark"] .bulk-required-note.is-ready,:root:not([data-theme="light"]) .bulk-required-note.is-ready{background:#12382c;color:#c8f5e2;border-color:#2b775c}
+@media(max-width:760px){.bulk-classification-first{padding:12px}.bulk-upload-category-field{max-width:none}.bulk-pick-field{width:100%}}
+`;
+document.head.appendChild(v30UploadGateStyle);
+
+
+
+/* v31: classification-first document summaries and only two tracked states (Pujat / Recepcionat). */
+const V31_BULK_I18N = {
+  ca: {
+    'Documents per classificació':'Documents per classificació',
+    'Selecciona una categoria per filtrar els documents.':'Selecciona una categoria per filtrar els documents.',
+    'Detall dels documents':'Detall dels documents',
+    'No hi ha documents amb aquests filtres.':'No hi ha documents amb aquests filtres.',
+    'Confirmació de recepció':'Confirmació de recepció',
+    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».':'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».',
+    'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.':'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.',
+    'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.':'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.',
+    'El document s’ha descarregat però no s’ha pogut confirmar la recepció.':'El document s’ha descarregat però no s’ha pogut confirmar la recepció.',
+    'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.':'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.',
+    'No s’ha pogut registrar la recepció a Supabase.':'No s’ha pogut registrar la recepció a Supabase.',
+    'Recepció confirmada':'Recepció confirmada',
+    'Pujat el':'Pujat el',
+    'Recepcionat el':'Recepcionat el',
+    'Documents pujats i recepcionats':'Documents pujats i recepcionats'
+  },
+  es: {
+    'Documents per classificació':'Documentos por clasificación',
+    'Selecciona una categoria per filtrar els documents.':'Selecciona una categoría para filtrar los documentos.',
+    'Detall dels documents':'Detalle de los documentos',
+    'No hi ha documents amb aquests filtres.':'No hay documentos con estos filtros.',
+    'Confirmació de recepció':'Confirmación de recepción',
+    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».':'Marca la casilla si confirmas que has recibido estos documentos. Si no, seguirán con el estado «Subido».',
+    'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.':'Si marcas la casilla, el documento pasará a «Recepcionado» tanto para el gestor como para el cliente.',
+    'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.':'Descarga completada. El estado seguirá siendo «Subido» hasta que confirmes la recepción.',
+    'El document s’ha descarregat però no s’ha pogut confirmar la recepció.':'El documento se ha descargado, pero no se pudo confirmar la recepción.',
+    'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.':'Los documentos se han descargado, pero no se pudo confirmar la recepción.',
+    'No s’ha pogut registrar la recepció a Supabase.':'No se pudo registrar la recepción en Supabase.',
+    'Recepció confirmada':'Recepción confirmada',
+    'Pujat el':'Subido el',
+    'Recepcionat el':'Recepcionado el',
+    'Documents pujats i recepcionats':'Documentos subidos y recepcionados'
+  },
+  en: {
+    'Documents per classificació':'Documents by category',
+    'Selecciona una categoria per filtrar els documents.':'Select a category to filter the documents.',
+    'Detall dels documents':'Document details',
+    'No hi ha documents amb aquests filtres.':'No documents match these filters.',
+    'Confirmació de recepció':'Receipt confirmation',
+    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».':'Check the box if you confirm receipt of these documents. Otherwise, they will remain in the “Uploaded” state.',
+    'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.':'If checked, the document will be marked “Received” for both the manager and the client.',
+    'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.':'Download complete. The status remains “Uploaded” until you confirm receipt.',
+    'El document s’ha descarregat però no s’ha pogut confirmar la recepció.':'The document was downloaded, but receipt could not be confirmed.',
+    'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.':'The documents were downloaded, but receipt could not be confirmed.',
+    'No s’ha pogut registrar la recepció a Supabase.':'Receipt could not be recorded in Supabase.',
+    'Recepció confirmada':'Receipt confirmed',
+    'Pujat el':'Uploaded on',
+    'Recepcionat el':'Received on',
+    'Documents pujats i recepcionats':'Uploaded and received documents'
+  }
+};
+Object.keys(V31_BULK_I18N).forEach(lang=>Object.assign(I18N[lang],V31_BULK_I18N[lang]));
+
+function v31StatusOf(doc){ return doc?.received_at ? 'received' : 'uploaded'; }
+v27StatusOf = v31StatusOf;
+v28ManagerStatus = v31StatusOf;
+function v31StatusLabel(status){ return status==='received' ? t('Recepcionat') : status==='uploaded' ? t('Pujat') : t('Tots els estats'); }
+v27StatusLabel = v31StatusLabel;
+v27StatusOptions = function(selected=''){
+  return `<option value="">${esc(t('Tots els estats'))}</option><option value="uploaded" ${selected==='uploaded'?'selected':''}>${esc(t('Pujat'))}</option><option value="received" ${selected==='received'?'selected':''}>${esc(t('Recepcionat'))}</option>`;
+};
+v27BulkStatusMatches = function(doc,status){ return !status || v31StatusOf(doc)===status; };
+v27BulkWorkflow = function(doc){
+  const received=!!doc?.received_at;
+  return `<div class="v31-status-line"><span class="v31-state-chip ${received?'is-received':'is-uploaded'}"><b>${esc(t(received?'Recepcionat':'Pujat'))}</b></span>${received?`<span class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</span>`:''}</div>`;
+};
+
+function v31CategoryOverview(docs, selectedCategory=''){
+  const items=BULK_DOCUMENT_CATEGORIES.map(c=>{
+    const count=(docs||[]).filter(d=>normalizeBulkCategory(d.document_category)===c.value).length;
+    const active=selectedCategory===c.value;
+    return `<button type="button" class="v31-category-card ${active?'is-active':''}" data-act="bulkCategoryJump" data-category="${esc(c.value)}" aria-pressed="${active?'true':'false'}"><span class="v31-category-name">${esc(t(c.label))}</span><strong>${count}</strong><small>${esc(t('documents'))}</small></button>`;
+  }).join('');
+  return `<section class="v31-category-overview"><div class="v31-section-heading"><h3>${esc(t('Documents per classificació'))}</h3><p>${esc(t('Selecciona una categoria per filtrar els documents.'))}</p></div><div class="v31-category-grid">${items}</div></section>`;
+}
+function v31DocumentGroupsHtml(docs, month='', category='', status='', withActions=false){
+  const scoped=(docs||[]).filter(d=>(!month||monthKeyFromDate(d.created_at)===month)&&(!category||normalizeBulkCategory(d.document_category)===category)&&v27BulkStatusMatches(d,status));
+  if(!scoped.length)return `<div class="empty">${esc(t('No hi ha documents amb aquests filtres.'))}</div>`;
+  return BULK_DOCUMENT_CATEGORIES.map(cat=>{
+    const catDocs=scoped.filter(d=>normalizeBulkCategory(d.document_category)===cat.value);
+    if(!catDocs.length)return '';
+    const byMonth={};
+    for(const doc of catDocs){const key=monthKeyFromDate(doc.created_at)||'';(byMonth[key] ||= []).push(doc);}
+    const monthHtml=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([key,items])=>{
+      items.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+      return `<div class="v31-month-block"><div class="v31-month-heading"><strong>${esc(monthLabelFromKey(key)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div><div class="bulk-list">${items.map(doc=>{
+        const received=!!doc.received_at;
+        const stateClass=received?'is-received':'is-uploaded';
+        return `<article class="bulk-row v31-document-row ${stateClass}">
+          <div class="v31-document-main">
+            <div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span></div>
+            <small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>
+            ${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}
+          </div>
+          <span class="bulk-category-pill" data-category="${esc(cat.value)}">${esc(t(cat.label))}</span>
+          <div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button>${withActions?`<button type="button" class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(doc.id)}">${esc(t('Descarregar'))}</button>`:''}</div>
+        </article>`;
+      }).join('')}</div></div>`;
+    }).join('');
+    return `<section class="v31-classification-group"><div class="v31-classification-heading"><h3>${esc(t(cat.label))}</h3><span>${catDocs.length} ${esc(t('documents'))}</span></div>${monthHtml}</section>`;
+  }).join('');
+}
+function v31BulkFilterSummary(docs, month='', category='', status=''){
+  const scoped=(docs||[]).filter(d=>(!month||monthKeyFromDate(d.created_at)===month)&&(!category||normalizeBulkCategory(d.document_category)===category)&&v27BulkStatusMatches(d,status));
+  const phrase=status?v31StatusLabel(status):category?bulkCategoryLabel(category):month?monthLabelFromKey(month):t('totes els mesos');
+  return `${scoped.length} ${t('documents').toLowerCase()} · ${esc(phrase)}`;
+}
+
+renderBulkMineList = async function(){
+  const companyId=state.profile?.company_id;if(!companyId)return;
+  const docs=await loadBulkDocuments(companyId);const box=$('#bulkMineList');if(!box)return;
+  if(!state.bulkMineFilters)state.bulkMineFilters=Object.create(null);
+  const saved=state.bulkMineFilters[companyId]||{};
+  const month=saved.month??box.dataset.month??'';const category=saved.category??box.dataset.category??'';const savedStatus=saved.status??box.dataset.status??'';const status=['uploaded','received'].includes(savedStatus)?savedStatus:'';
+  state.bulkMineFilters[companyId]={month,category,status};
+  box.dataset.month=month;box.dataset.category=category;box.dataset.status=status;
+  box.innerHTML=`${v31CategoryOverview(docs,category)}
+    <div class="filters bulk-filters v31-document-filters"><label class="field"><span>${esc(t('Mes de pujada'))}</span><select id="bulkMineMonth">${bulkMonthOptions(docs,month)}</select></label><label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkMineCategory">${bulkCategoryFilterOptions(category)}</select></label><label class="field"><span>${esc(t('Estat del document'))}</span><select id="bulkMineStatus">${v27StatusOptions(status)}</select></label></div>
+    <div class="bulk-period-note">${v31BulkFilterSummary(docs,month,category,status)}</div>
+    <section class="v31-document-details"><div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div><div class="v31-document-groups">${v31DocumentGroupsHtml(docs,month,category,status,false)}</div></section>`;
+  state.bulkDocuments=docs;applyLanguage(box);
+};
+
+renderManagerBulk = async function(company){
+  const content=$('#managerContent');if(!content||!company)return;setupBulkRealtime(company.id);
+  if(!state.bulkManagerFilters)state.bulkManagerFilters=Object.create(null);
+  const saved=state.bulkManagerFilters[company.id]||{};const docs=await loadBulkDocuments(company.id);
+  const month=saved.month??'';const category=saved.category??'';const savedStatus=saved.status??'';const status=['uploaded','received'].includes(savedStatus)?savedStatus:'';
+  state.bulkManagerFilters[company.id]={month,category,status};
+  content.innerHTML=`<section class="hero manager-mode-card"><div><div class="eyebrow">${esc(t('Visió 2 · Càrrega documental'))}</div><h2>${esc(t('Documents pujats i recepcionats'))}</h2><p>${esc(t('El client puja i classifica els documents; pots filtrar-los per tipus i descarregar-los quan els processis.'))}</p><div id="bulkManagerDashboard"></div></div></section>`;
+  const box=$('#bulkManagerDashboard');if(!box)return;
+  box.dataset.month=month;box.dataset.category=category;box.dataset.status=status;
+  box.innerHTML=`${v31CategoryOverview(docs,category)}
+    <div class="filters bulk-filters v31-document-filters"><label class="field"><span>${esc(t('Mes de pujada'))}</span><select id="bulkManagerMonth">${bulkMonthOptions(docs,month)}</select></label><label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkManagerCategory">${bulkCategoryFilterOptions(category)}</select></label><label class="field"><span>${esc(t('Estat del document'))}</span><select id="bulkManagerStatus">${v27StatusOptions(status)}</select></label><div class="field v31-zip-field"><span>&nbsp;</span><button type="button" class="btn primary" data-act="bulkZip" data-month="${esc(month)}" data-category="${esc(category)}" data-status="${esc(status)}">${esc(t('Descarregar visibles en ZIP'))}</button></div></div>
+    <div class="bulk-period-note">${v31BulkFilterSummary(docs,month,category,status)}</div>
+    <section class="v31-document-details"><div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div><div class="v31-document-groups">${v31DocumentGroupsHtml(docs,month,category,status,true)}</div></section>`;
+  state.bulkDocuments=docs;applyLanguage(content);
+};
+
+/* The download itself is no longer a tracked status. Only a manager's explicit receipt confirmation is persisted. */
+v27ShowDownloadConfirmation = function(action){
+  state.pendingBulkDownload=action;
+  const single=action.kind==='single';
+  const title=t('Confirmació de recepció');
+  const description=single?`${t('Estàs a punt de descarregar:')} <b>${esc(action.doc.file_name)}</b>`:`${t('Estàs a punt de descarregar els documents inclosos en aquest ZIP')} <b>(${action.docs.length})</b>`;
+  const checkboxLabel=single?t('Confirmo que he rebut aquest document.'):t('Confirmo que he rebut tots els documents inclosos en aquest ZIP.');
+  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>${esc(title)}</h2></div><button class="btn ghost" data-act="bulkCancelReceipt">${esc(t('Cancel·lar'))}</button></div><div class="notice" style="margin-top:14px">${description}</div><p class="sub" style="margin:12px 0">${esc(t('Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».'))}</p><label class="v27-confirm-check"><input type="checkbox" id="bulkReceiptConfirm"><span>${esc(checkboxLabel)}</span></label><p class="meta">${esc(t('Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.'))}</p><div class="actions"><button class="btn" data-act="bulkCancelReceipt">${esc(t('Cancel·lar'))}</button><button class="btn primary" data-act="bulkConfirmDownload">${esc(single?t('Descarregar document'):t('Descarregar documents'))}</button></div>`;
+  if(!$('#dlg').open)$('#dlg').showModal();applyLanguage($('#dlgBody'));
+};
+
+downloadBulkDocument = async function(doc){ if(doc)v27ShowDownloadConfirmation({kind:'single',doc,companyId:doc.company_id,docIds:[doc.id]}); };
+downloadAllBulkDocuments = async function(companyId,companyName,month='',category='',status){
+  const saved=state.bulkManagerFilters?.[companyId]||{};
+  if(status===undefined)status=saved.status||'';
+  const allDocs=await loadBulkDocuments(companyId);
+  const docs=allDocs.filter(d=>(!month||monthKeyFromDate(d.created_at)===month)&&(!category||normalizeBulkCategory(d.document_category)===category)&&v27BulkStatusMatches(d,status));
+  if(!docs.length){toast(t('No hi ha documents amb aquests filtres.'),true);return;}
+  v27ShowDownloadConfirmation({kind:'zip',companyId,companyName,docs,docIds:docs.map(d=>d.id)});
+};
+async function v31RecordReceipt(docIds){
+  const {data,error}=await sb.rpc('record_bulk_documents_receipt',{p_document_ids:docIds});
+  if(error)throw error;
+  if(typeof data==='number'&&data<docIds.length)throw new Error(t('No s’ha pogut registrar la recepció a Supabase.'));
+}
+async function v31PerformSingleDownload(action,confirmReceived){
+  try{
+    const {data,error}=await sb.storage.from('invoices').createSignedUrl(action.doc.file_path,300);
+    if(error||!data?.signedUrl)throw error||new Error(t('No s’ha pogut descarregar el document.'));
+    const response=await fetch(data.signedUrl);if(!response.ok)throw new Error(`${action.doc.file_name}: HTTP ${response.status}`);
+    await v27DownloadBlob(await response.blob(),action.doc.file_name);
+    if(confirmReceived){
+      try{await v31RecordReceipt([action.doc.id]);toast(t('Recepció confirmada'));await v27RefreshBulkStatuses(action.companyId);}
+      catch(err){toast(t('El document s’ha descarregat però no s’ha pogut confirmar la recepció.'),true);console.error(err);}
+    }else toast(t('Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.'));
+  }catch(error){toast(error.message||t('No s’ha pogut descarregar el document.'),true);}
+}
+async function v31PerformZipDownload(action,confirmReceived){
+  if(!window.JSZip){toast(t('JSZip no està disponible.'),true);return;}
+  try{
+    const zip=new JSZip();let i=0;
+    for(const doc of action.docs){const {data,error}=await sb.storage.from('invoices').createSignedUrl(doc.file_path,240);if(error||!data?.signedUrl)throw error||new Error(`${doc.file_name}: ${t('No s’ha pogut descarregar el document.')}`);const response=await fetch(data.signedUrl);if(!response.ok)throw new Error(`${doc.file_name}: HTTP ${response.status}`);zip.file(`${String(++i).padStart(3,'0')}_${safeName(doc.file_name)}`,await response.blob());}
+    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});await v27DownloadBlob(blob,`documents_${safeName(action.companyName||'empresa')}_${new Date().toISOString().slice(0,10)}.zip`);
+    if(confirmReceived){
+      try{await v31RecordReceipt(action.docIds);toast(t('Recepció confirmada'));await v27RefreshBulkStatuses(action.companyId);}
+      catch(err){toast(t('Els documents s’han descarregat però no s’ha pogut confirmar la recepció.'),true);console.error(err);}
+    }else toast(t('Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.'));
+  }catch(error){toast(error.message||t('No s’ha pogut descarregar el paquet ZIP.'),true);}
+}
+v27PerformSingleDownload = v31PerformSingleDownload;
+v27PerformZipDownload = v31PerformZipDownload;
+
+/* Intercept category cards and keep the selected group synchronized with the normal filters. */
+document.addEventListener('click',e=>{
+  const card=e.target.closest?.('[data-act="bulkCategoryJump"]');if(!card)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const requested=card.dataset.category||'';
+  if(state.profile?.role==='manager'){
+    const company=currentManagerCompany();if(!company)return;
+    const prior=state.bulkManagerFilters?.[company.id]||{};
+    const category=prior.category===requested?'':requested;
+    state.bulkManagerFilters[company.id]={month:$('#bulkManagerMonth')?.value??prior.month??'',category,status:$('#bulkManagerStatus')?.value??prior.status??'',pageCount:''};
+    renderManagerBulk(company).catch(err=>toast(err.message,true));
+  }else{
+    const companyId=state.profile?.company_id;if(!companyId)return;
+    const prior=state.bulkMineFilters?.[companyId]||{};
+    const category=prior.category===requested?'':requested;
+    state.bulkMineFilters[companyId]={month:$('#bulkMineMonth')?.value??prior.month??'',category,status:$('#bulkMineStatus')?.value??prior.status??'',pageCount:''};
+    renderBulkMineList().catch(err=>toast(err.message,true));
+  }
+},true);
+
+const v31BulkStyle=document.createElement('style');
+v31BulkStyle.textContent=`
+.v31-category-overview{margin:0 0 18px;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.v31-section-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:0 0 12px}.v31-section-heading h3{margin:0;font-size:1rem;color:var(--ink)}.v31-section-heading p{margin:2px 0 0;color:var(--ink2);font-size:.82rem}
+.v31-category-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.v31-category-card{appearance:none;display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;text-align:left;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--paper);color:var(--ink);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}.v31-category-card:hover{border-color:var(--brand);transform:translateY(-1px)}.v31-category-card:focus-visible{outline:3px solid var(--brand);outline-offset:2px}.v31-category-card.is-active{border-color:var(--brand);box-shadow:0 0 0 2px color-mix(in srgb,var(--brand) 18%,transparent);background:var(--surface)}.v31-category-name{font-size:.81rem;line-height:1.35;font-weight:750;overflow-wrap:anywhere}.v31-category-card strong{font-size:1.65rem;line-height:1.1}.v31-category-card small{font-size:.73rem;color:var(--ink2)}
+.v31-document-filters{margin:0 0 12px}.v31-document-details{margin-top:18px}.v31-document-groups{display:flex;flex-direction:column;gap:14px}.v31-classification-group{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--surface)}.v31-classification-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 15px;background:var(--paper);border-bottom:1px solid var(--line)}.v31-classification-heading h3{margin:0;font-size:.98rem;color:var(--ink)}.v31-classification-heading>span,.v31-month-heading>span{font-size:.75rem;color:var(--ink2);white-space:nowrap}.v31-month-block{padding:10px 12px}.v31-month-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 2px 9px;font-size:.84rem;color:var(--ink2)}.v31-document-row{align-items:center}.v31-document-main{flex:1;min-width:0}.v31-document-title{display:flex;flex-wrap:wrap;align-items:center;gap:9px}.v31-document-title .bulk-file-open{flex:1;min-width:160px;text-align:left}.v31-document-title .bulk-file-open b{overflow-wrap:anywhere}.v31-state-chip{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:.72rem;font-weight:800;line-height:1.25;white-space:nowrap}.v31-state-chip.is-uploaded{background:#fff3da;border:1px solid #efd19b;color:#734608}.v31-state-chip.is-received{background:#e3f7ee;border:1px solid #a9dfc7;color:#145b42}.v31-document-row.is-uploaded{border-left:3px solid #d99a39}.v31-document-row.is-received{border-left:3px solid #23966d}.v31-document-row .bulk-file-meta{display:block;margin-top:6px;line-height:1.5}.v31-receipt-date{font-size:.77rem;color:var(--ink2);margin-top:5px}.v31-document-row .bulk-row-actions{display:flex;flex-wrap:wrap;gap:7px}
+html[data-theme="dark"] .v31-category-overview,:root:not([data-theme="light"]) .v31-category-overview{background:#151f2b;border-color:#2b3b4d}html[data-theme="dark"] .v31-category-card,:root:not([data-theme="light"]) .v31-category-card{background:#172330;color:#edf4fc;border-color:#314357}html[data-theme="dark"] .v31-category-card.is-active,:root:not([data-theme="light"]) .v31-category-card.is-active{background:#1b3040;border-color:#46c4c4}html[data-theme="dark"] .v31-state-chip.is-uploaded,:root:not([data-theme="light"]) .v31-state-chip.is-uploaded{background:#392c16;color:#ffe4ae;border-color:#70562b}html[data-theme="dark"] .v31-state-chip.is-received,:root:not([data-theme="light"]) .v31-state-chip.is-received{background:#12382c;color:#d4ffeb;border-color:#2b775c}
+@media(max-width:900px){.v31-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v31-document-row{align-items:flex-start;flex-wrap:wrap}.v31-document-row>.bulk-category-pill{margin-top:6px}.v31-document-row .bulk-row-actions{width:100%}.v31-document-row .bulk-row-actions .btn{flex:1}}
+@media(max-width:520px){.v31-category-overview{padding:11px}.v31-category-grid{gap:7px}.v31-category-card{padding:10px}.v31-classification-heading{padding:11px}.v31-month-block{padding:8px}.v31-document-title .bulk-file-open{min-width:0;width:100%}.v31-section-heading{flex-direction:column}}
+`;
+document.head.appendChild(v31BulkStyle);
+
+</script>
+
+
+<script>
+/* v32: page-count subcategories, the Banks category, clearer ZIP folder structure, and centered layout. */
+(function(){
+  const v32Translations = {
+    ca: {
+      'Bancs':'Bancs', 'Pàgines de la factura':'Pàgines de la factura',
+      'Selecciona el nombre de pàgines…':'Selecciona el nombre de pàgines…',
+      'Una pàgina':'Una pàgina', 'Diverses pàgines':'Diverses pàgines',
+      'Classificació de pàgines':'Classificació de pàgines',
+      'Totes les pàgines':'Totes les pàgines',
+      'Pendent de classificar pàgines':'Pendent de classificar pàgines',
+      'Selecciona una o diverses pàgines abans de continuar.':'Selecciona si la factura té una pàgina o diverses pàgines abans de continuar.',
+      'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.':'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.',
+      'La factura té una pàgina':'La factura té una pàgina',
+      'La factura té diverses pàgines':'La factura té diverses pàgines',
+      'Tots els grups de pàgines':'Tots els grups de pàgines',
+      'Document sense classificació de pàgines':'Document sense classificació de pàgines',
+      'Pàgina única':'Pàgina única', 'Diverses pàgines':'Diverses pàgines',
+      'Documents de venda i compra per nombre de pàgines':'Documents de venda i compra per nombre de pàgines',
+      'Una pàgina':'Una pàgina', 'Diverses pàgines':'Diverses pàgines',
+      'Tots els documents':'Tots els documents'
+    },
+    es: {
+      'Bancs':'Bancos', 'Pàgines de la factura':'Páginas de la factura',
+      'Selecciona el nombre de pàgines…':'Selecciona el número de páginas…',
+      'Una pàgina':'Una página', 'Diverses pàgines':'Varias páginas',
+      'Classificació de pàgines':'Clasificación de páginas',
+      'Totes les pàgines':'Todas las páginas',
+      'Pendent de classificar pàgines':'Pendiente de clasificar las páginas',
+      'Selecciona una o diverses pàgines abans de continuar.':'Indica si la factura tiene una página o varias antes de continuar.',
+      'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.':'Primero selecciona la clasificación y, si es una factura de venta o de compra, indica el número de páginas.',
+      'La factura té una pàgina':'La factura tiene una página',
+      'La factura té diverses pàgines':'La factura tiene varias páginas',
+      'Tots els grups de pàgines':'Todos los grupos de páginas',
+      'Document sense classificació de pàgines':'Documento sin clasificación de páginas',
+      'Pàgina única':'Una página',
+      'Tots els documents':'Todos los documentos'
+    },
+    en: {
+      'Bancs':'Banks', 'Pàgines de la factura':'Invoice page count',
+      'Selecciona el nombre de pàgines…':'Select the number of pages…',
+      'Una pàgina':'One page', 'Diverses pàgines':'Multiple pages',
+      'Classificació de pàgines':'Page-count classification',
+      'Totes les pàgines':'All page counts',
+      'Pendent de classificar pàgines':'Page count not classified',
+      'Selecciona una o diverses pàgines abans de continuar.':'Indicate whether the invoice has one page or multiple pages before continuing.',
+      'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.':'First select a classification and, for sales or purchase invoices, specify the number of pages.',
+      'La factura té una pàgina':'The invoice has one page',
+      'La factura té diverses pàgines':'The invoice has multiple pages',
+      'Tots els grups de pàgines':'All page-count groups',
+      'Document sense classificació de pàgines':'Document without page-count classification',
+      'Pàgina única':'One page',
+      'Tots els documents':'All documents'
+    }
+  };
+  Object.keys(v32Translations).forEach(lang=>Object.assign(I18N[lang],v32Translations[lang]));
+
+  state.bulkUploadPageCount = state.bulkUploadPageCount || '';
+  const isInvoiceCategory = category => ['venta','compra'].includes(normalizeBulkCategory(category));
+  const normalizePageCount = value => ['una_pagina','varias_paginas'].includes(value) ? value : '';
+  const pageLabel = value => value==='una_pagina' ? t('Una pàgina') : value==='varias_paginas' ? t('Diverses pàgines') : t('Pendent de classificar pàgines');
+  const pageFolderLabel = value => value==='una_pagina' ? `01 - ${t('Una pàgina')}` : value==='varias_paginas' ? `02 - ${t('Diverses pàgines')}` : `99 - ${t('Pendent de classificar pàgines')}`;
+  const invoiceCategoryRank = value => ({venta:1,compra:2,otros:3,cierre_caja:4,bancos:5})[value] || 99;
+
+  function v32UploadPageOptions(value='') {
+    return `<option value="">${esc(t('Selecciona el nombre de pàgines…'))}</option><option value="una_pagina" ${value==='una_pagina'?'selected':''}>${esc(t('Una pàgina'))}</option><option value="varias_paginas" ${value==='varias_paginas'?'selected':''}>${esc(t('Diverses pàgines'))}</option>`;
+  }
+  function v32FilterPageOptions(value='') {
+    return `<option value="">${esc(t('Totes les pàgines'))}</option><option value="una_pagina" ${value==='una_pagina'?'selected':''}>${esc(t('Una pàgina'))}</option><option value="varias_paginas" ${value==='varias_paginas'?'selected':''}>${esc(t('Diverses pàgines'))}</option><option value="pendent" ${value==='pendent'?'selected':''}>${esc(t('Pendent de classificar pàgines'))}</option>`;
+  }
+  function v32PageMatches(doc, filter='') {
+    if(!filter) return true;
+    if(!isInvoiceCategory(doc.document_category)) return false;
+    const page=normalizePageCount(doc.page_count);
+    if(filter==='pendent') return !page;
+    return page===filter;
+  }
+  function v32ScopedDocs(docs, month='', category='', status='', pageCount='') {
+    return (docs||[]).filter(doc=>(!month||monthKeyFromDate(doc.created_at)===month)
+      &&(!category||normalizeBulkCategory(doc.document_category)===category)
+      &&v27BulkStatusMatches(doc,status)
+      &&v32PageMatches(doc,pageCount));
+  }
+  function v32SyncUploadGate(){
+    const categorySelect=$('#bulkUploadCategory');
+    const pageSelect=$('#bulkUploadPageCount');
+    const pageField=$('#bulkUploadPageCountField');
+    const input=$('#bulkPick');
+    const notice=$('#bulkClassifyNotice');
+    const uploadButton=$('[data-act="uploadBulk"]');
+    const files=input?[...input.files]:[];
+    const category=state.bulkUploadCategory||'';
+    const needsPage=isInvoiceCategory(category);
+    const pageCount=normalizePageCount(state.bulkUploadPageCount||'');
+    if(pageField)pageField.hidden=!needsPage;
+    if(categorySelect){categorySelect.value=category;categorySelect.disabled=files.length>0;}
+    if(pageSelect){pageSelect.value=needsPage?pageCount:'';pageSelect.disabled=!needsPage||files.length>0;}
+    const canPick=!!category&&(!needsPage||!!pageCount);
+    if(input)input.disabled=!canPick;
+    if(notice){
+      if(!category){notice.textContent=t('Selecciona una classificació per continuar.');notice.classList.remove('is-ready');notice.classList.add('is-required');notice.setAttribute('role','alert');}
+      else if(needsPage&&!pageCount){notice.textContent=t('Selecciona una o diverses pàgines abans de continuar.');notice.classList.remove('is-ready');notice.classList.add('is-required');notice.setAttribute('role','alert');}
+      else if(files.length){notice.textContent=`${t('Classificació aplicada')}: ${bulkCategoryLabel(category)}${needsPage?` · ${pageLabel(pageCount)}`:''}. ${t('Per canviar la classificació, treu tots els documents seleccionats.')}`;notice.classList.remove('is-required');notice.classList.add('is-ready');notice.setAttribute('role','status');}
+      else{notice.textContent=`${t('Classificació seleccionada')}: ${bulkCategoryLabel(category)}${needsPage?` · ${pageLabel(pageCount)}`:''}. ${t('Ara pots seleccionar els documents que vols pujar.')}`;notice.classList.remove('is-required');notice.classList.add('is-ready');notice.setAttribute('role','status');}
+    }
+    if(uploadButton)uploadButton.disabled=!canPick||files.length===0;
+  }
+  v30SyncBulkUploadGate = v32SyncUploadGate;
+
+  renderBulkQueue = function(files){
+    const q=$('#bulkQueue');if(!q)return;
+    const category=state.bulkUploadCategory||'';
+    const needsPage=isInvoiceCategory(category);
+    const pages=normalizePageCount(state.bulkUploadPageCount||'');
+    if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+    const activeTokens=new Set((files||[]).map(bulkFileToken));
+    for(const token of Object.keys(state.bulkCategoryByFile)){if(!activeTokens.has(token))delete state.bulkCategoryByFile[token];}
+    q.innerHTML=(files||[]).map((file,index)=>{
+      const token=bulkFileToken(file);
+      if(category)state.bulkCategoryByFile[token]=category;
+      const ext=(file.name.split('.').pop()||'').toUpperCase();
+      return `<div class="bulk-row bulk-queue-row v32-queue-row"><div class="bulk-queue-file"><b>${esc(file.name)}</b><small>${(file.size/1024/1024).toFixed(2)} MB · ${esc(ext)} <span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span>${needsPage?` <span class="v32-page-pill">${esc(pageLabel(pages))}</span>`:''}</small></div><button type="button" class="btn ghost bulk-remove-btn" data-act="removeBulkSelected" data-file-index="${index}" title="${esc(t('Treure de la selecció'))}" aria-label="${esc(t('Treure de la selecció'))}: ${esc(file.name)}">&times;</button></div>`;
+    }).join('');
+    q.dataset.count=String((files||[]).length);
+  };
+
+  replaceBulkSelectedFiles = function(files){
+    const input=$('#bulkPick');if(!input)return;
+    try{const transfer=new DataTransfer();(files||[]).forEach(file=>transfer.items.add(file));input.files=transfer.files;}catch(_){if(!(files||[]).length)input.value='';}
+    const actual=[...(input.files||[])];
+    if(!actual.length){
+      state.bulkUploadCategory='';state.bulkUploadPageCount='';state.bulkCategoryByFile=Object.create(null);
+      const cat=$('#bulkUploadCategory');if(cat)cat.value='';const pages=$('#bulkUploadPageCount');if(pages)pages.value='';
+    }else{
+      if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+      actual.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=state.bulkUploadCategory);
+    }
+    renderBulkQueue(actual);v32SyncUploadGate();
+  };
+
+  renderBulkCompany = async function(){
+    const box=$('#bulkCompany');if(!box)return;
+    state.bulkUploadCategory='';state.bulkUploadPageCount='';state.bulkCategoryByFile=Object.create(null);
+    const accept='.pdf,image/*,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif';
+    box.innerHTML=`<section class="hero bulk-upload"><div class="v32-centered-inner">
+      <div class="corporate-label">${esc(t('Bústia corporativa · Joan Nogue'))}</div><div class="eyebrow">${esc(t('Visió de càrrega de documents'))}</div><h1>${esc(t('Càrrega massiva de documents'))}</h1>
+      <p>${esc(t('Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.'))}</p>
+      <div class="bulk-drop">
+        <div class="bulk-classification-first">
+          <label class="field bulk-upload-category-field"><span>${esc(t('Classificació de la pujada'))}</span><select id="bulkUploadCategory">${bulkCategoryOptions('')}</select></label>
+          <label class="field bulk-upload-category-field v32-page-count-field" id="bulkUploadPageCountField" hidden><span>${esc(t('Pàgines de la factura'))}</span><select id="bulkUploadPageCount" disabled>${v32UploadPageOptions('')}</select></label>
+          <p id="bulkClassifyNotice" class="bulk-required-note is-required" role="alert" aria-live="polite">${esc(t('Selecciona una classificació per continuar.'))}</p>
+          <p class="vision-note">${esc(t('La classificació s’aplicarà a tots els documents d’aquesta selecció.'))}</p>
+        </div>
+        <label class="field bulk-pick-field"><span>${esc(t('Fitxers PDF, imatges, Word, Excel i altres documents'))}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice"></label>
+        <p class="vision-note">${esc(t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.'))}</p>
+        <p class="bulk-ticket-note">${esc(t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.'))}</p>
+        <div class="bulk-queue-heading">${esc(t('Documents preparats'))}</div><div id="bulkQueue" class="bulk-list"></div>
+        <div class="bulk-actions"><button class="btn primary" data-act="uploadBulk" disabled>${esc(t('Pujar documents'))}</button></div>
+      </div><p class="meta" id="bulkUploadStatus" role="status" aria-live="polite"></p>
+    </div></section>
+    <section class="hero bulk-uploaded v32-centered-section" style="margin-top:18px"><div class="v32-centered-inner">
+      <div class="eyebrow">${esc(t('Documents pujats'))}</div><div class="section-head v32-centered-heading" style="margin:0 0 10px"><h2 style="margin:0">${esc(t('Els meus documents'))}</h2><button class="btn" data-act="refreshBulkMine">${esc(t('Actualitzar'))}</button></div>
+      <p class="sub">${esc(t('Aquí pots comprovar quins documents ja has pujat i quan es van registrar. Fes clic al nom d’un document per obrir-lo.'))}</p>
+      <div id="bulkMineList" class="bulk-list"><div class="empty">${esc(t('Carregant…'))}</div></div>
+    </div></section>`;
+    const categorySelect=$('#bulkUploadCategory');
+    categorySelect?.addEventListener('change',e=>{
+      const input=$('#bulkPick');if(input?.files?.length){e.target.value=state.bulkUploadCategory||'';return;}
+      const next=BULK_DOCUMENT_CATEGORIES.some(c=>c.value===e.target.value)?e.target.value:'';
+      if(next!==state.bulkUploadCategory)state.bulkUploadPageCount='';
+      state.bulkUploadCategory=next;state.bulkCategoryByFile=Object.create(null);
+      const pages=$('#bulkUploadPageCount');if(pages)pages.value=state.bulkUploadPageCount;
+      v32SyncUploadGate();
+    });
+    $('#bulkUploadPageCount')?.addEventListener('change',e=>{
+      const input=$('#bulkPick');if(input?.files?.length){e.target.value=state.bulkUploadPageCount||'';return;}
+      state.bulkUploadPageCount=normalizePageCount(e.target.value);v32SyncUploadGate();
+    });
+    $('#bulkPick')?.addEventListener('change',e=>{
+      const input=e.target;const files=[...(input.files||[])];
+      const category=state.bulkUploadCategory||'';
+      if(!category||!BULK_DOCUMENT_CATEGORIES.some(c=>c.value===category)){
+        input.value='';renderBulkQueue([]);v32SyncUploadGate();const status=$('#bulkUploadStatus');if(status)status.textContent=t('Selecciona una classificació per continuar.');toast(t('Selecciona una classificació per continuar.'),true);return;
+      }
+      if(isInvoiceCategory(category)&&!normalizePageCount(state.bulkUploadPageCount)){
+        input.value='';renderBulkQueue([]);v32SyncUploadGate();const message=t('Selecciona una o diverses pàgines abans de continuar.');const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
+      }
+      if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+      files.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
+      renderBulkQueue(files);v32SyncUploadGate();
+    });
+    applyLanguage($('#bulkCompany'));v32SyncUploadGate();setupBulkRealtime(state.profile?.company_id);await renderBulkMineList();
+  };
+
+  const v32UploadBase = uploadBulkDocuments;
+  uploadBulkDocuments = async function(){
+    if(state.appMode!=='bulk'||!state.profile?.company_id)return;
+    const files=[...($('#bulkPick')?.files||[])];
+    const category=state.bulkUploadCategory||$('#bulkUploadCategory')?.value||'';
+    const pageCount=normalizePageCount(state.bulkUploadPageCount||$('#bulkUploadPageCount')?.value||'');
+    const status=$('#bulkUploadStatus');
+    if(!BULK_DOCUMENT_CATEGORIES.some(c=>c.value===category)){
+      const message=t('Selecciona una classificació per continuar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
+    }
+    if(isInvoiceCategory(category)&&!pageCount){
+      const message=t('Selecciona una o diverses pàgines abans de continuar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
+    }
+    if(!files.length){const message=t('Selecciona documents per pujar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;}
+    state.bulkUploadCategory=category;state.bulkUploadPageCount=isInvoiceCategory(category)?pageCount:'';
+    if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
+    files.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
+    await v32UploadBase();
+    const remaining=[...($('#bulkPick')?.files||[])];
+    if(!remaining.length){state.bulkUploadCategory='';state.bulkUploadPageCount='';state.bulkCategoryByFile=Object.create(null);const c=$('#bulkUploadCategory');if(c)c.value='';const p=$('#bulkUploadPageCount');if(p)p.value='';}
+    else remaining.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
+    renderBulkQueue(remaining);v32SyncUploadGate();
+  };
+
+  function v32PageFilterOptions(value=''){
+    return `<option value="">${esc(t('Totes les pàgines'))}</option><option value="una_pagina" ${value==='una_pagina'?'selected':''}>${esc(t('Una pàgina'))}</option><option value="varias_paginas" ${value==='varias_paginas'?'selected':''}>${esc(t('Diverses pàgines'))}</option><option value="pendent" ${value==='pendent'?'selected':''}>${esc(t('Pendent de classificar pàgines'))}</option>`;
+  }
+  function v32CategoryOverview(docs, selectedCategory='', selectedPageCount=''){
+    const items=BULK_DOCUMENT_CATEGORIES.map(cat=>{
+      const catDocs=(docs||[]).filter(doc=>normalizeBulkCategory(doc.document_category)===cat.value);
+      const active=selectedCategory===cat.value;
+      const name=esc(t(cat.label));
+      const pageSummary=isInvoiceCategory(cat.value)?`<div class="v32-page-counts"><span>${esc(t('Una pàgina'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina').length}</b></span><span>${esc(t('Diverses pàgines'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas').length}</b></span><span>${esc(t('Pendent de classificar pàgines'))}: <b>${catDocs.filter(d=>!normalizePageCount(d.page_count)).length}</b></span></div>`:'';
+      const pageShortcuts=isInvoiceCategory(cat.value)?`<div class="v32-page-subfilters"><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="una_pagina" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='una_pagina'?'is-active':''}">${esc(t('Una pàgina'))}</button><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="varias_paginas" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='varias_paginas'?'is-active':''}">${esc(t('Diverses pàgines'))}</button></div>`:'';
+      return `<div class="v32-category-card-wrap"><button type="button" class="v31-category-card ${active?'is-active':''}" data-act="bulkCategoryJump" data-category="${esc(cat.value)}" aria-pressed="${active?'true':'false'}"><span class="v31-category-name">${name}</span><strong>${catDocs.length}</strong><small>${esc(t('documents'))}</small></button>${pageSummary}${pageShortcuts}</div>`;
+    }).join('');
+    return `<section class="v31-category-overview v32-category-overview"><div class="v31-section-heading"><h3>${esc(t('Documents per classificació'))}</h3><p>${esc(t('Selecciona una categoria per filtrar els documents.'))}</p></div><div class="v31-category-grid v32-category-grid">${items}</div></section>`;
+  }
+
+  function v32DocumentGroupsHtml(docs, month='', category='', status='', pageCount='', withActions=false){
+    const scoped=v32ScopedDocs(docs,month,category,status,pageCount);
+    if(!scoped.length)return `<div class="empty">${esc(t('No hi ha documents amb aquests filtres.'))}</div>`;
+    return BULK_DOCUMENT_CATEGORIES.map(cat=>{
+      const catDocs=scoped.filter(doc=>normalizeBulkCategory(doc.document_category)===cat.value);
+      if(!catDocs.length)return '';
+      const pageGroups=isInvoiceCategory(cat.value)
+        ?[['una_pagina',catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina')],['varias_paginas',catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas')],['pendent',catDocs.filter(d=>!normalizePageCount(d.page_count))]].filter(g=>g[1].length)
+        :[['',catDocs]];
+      const pageHtml=pageGroups.map(([pageKey,pageDocs])=>{
+        const byMonth={};for(const doc of pageDocs){const key=monthKeyFromDate(doc.created_at)||'';(byMonth[key] ||= []).push(doc);}
+        const monthHtml=Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([key,items])=>{
+          items.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+          return `<div class="v31-month-block"><div class="v31-month-heading"><strong>${esc(monthLabelFromKey(key)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div><div class="bulk-list">${items.map(doc=>{
+            const received=!!doc.received_at;const stateClass=received?'is-received':'is-uploaded';
+            return `<article class="bulk-row v31-document-row ${stateClass}"><div class="v31-document-main"><div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span></div><small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>${isInvoiceCategory(cat.value)?`<div class="v32-doc-page-label">${esc(t('Classificació de pàgines'))}: <b>${esc(pageLabel(normalizePageCount(doc.page_count)))}</b></div>`:''}${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}</div><span class="bulk-category-pill" data-category="${esc(cat.value)}">${esc(t(cat.label))}</span><div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button>${withActions?`<button type="button" class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(doc.id)}">${esc(t('Descarregar'))}</button>`:''}</div></article>`;
+          }).join('')}</div></div>`;
+        }).join('');
+        const pageHeading=isInvoiceCategory(cat.value)?`<div class="v32-page-group-heading"><strong>${esc(pageLabel(pageKey==='pendent'?'':pageKey))}</strong><span>${pageDocs.length} ${esc(t('documents'))}</span></div>`:'';
+        return `${pageHeading}${monthHtml}`;
+      }).join('');
+      return `<section class="v31-classification-group"><div class="v31-classification-heading"><h3>${esc(t(cat.label))}</h3><span>${catDocs.length} ${esc(t('documents'))}</span></div>${pageHtml}</section>`;
+    }).join('');
+  }
+
+  function v32FilterSummary(docs, month='', category='', status='', pageCount=''){
+    const scoped=v32ScopedDocs(docs,month,category,status,pageCount);
+    const phrases=[];if(category)phrases.push(bulkCategoryLabel(category));if(pageCount)phrases.push(pageLabel(pageCount==='pendent'?'':pageCount));if(month)phrases.push(monthLabelFromKey(month));if(status)phrases.push(v31StatusLabel(status));
+    const suffix=phrases.length?' · '+esc(phrases.join(' · ')):'';return `${scoped.length} ${t('documents').toLowerCase()}${suffix}`;
+  }
+
+  renderBulkMineList = async function(){
+    const companyId=state.profile?.company_id;if(!companyId)return;
+    const docs=await loadBulkDocuments(companyId);const box=$('#bulkMineList');if(!box)return;
+    if(!state.bulkMineFilters)state.bulkMineFilters=Object.create(null);
+    const saved=state.bulkMineFilters[companyId]||{};
+    const month=saved.month??box.dataset.month??'';const category=saved.category??box.dataset.category??'';const status=['uploaded','received'].includes(saved.status)?saved.status:'';const pageCount=['una_pagina','varias_paginas','pendent'].includes(saved.pageCount)?saved.pageCount:'';
+    state.bulkMineFilters[companyId]={month,category,status,pageCount};box.dataset.month=month;box.dataset.category=category;box.dataset.status=status;box.dataset.pageCount=pageCount;
+    box.innerHTML=`${v32CategoryOverview(docs,category,pageCount)}<div class="filters bulk-filters v31-document-filters v32-document-filters"><label class="field"><span>${esc(t('Mes de pujada'))}</span><select id="bulkMineMonth">${bulkMonthOptions(docs,month)}</select></label><label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkMineCategory">${bulkCategoryFilterOptions(category)}</select></label><label class="field"><span>${esc(t('Classificació de pàgines'))}</span><select id="bulkMinePageCount">${v32FilterPageOptions(pageCount)}</select></label><label class="field"><span>${esc(t('Estat del document'))}</span><select id="bulkMineStatus">${v27StatusOptions(status)}</select></label></div><div class="bulk-period-note">${v32FilterSummary(docs,month,category,status,pageCount)}</div><section class="v31-document-details"><div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div><div class="v31-document-groups">${v32DocumentGroupsHtml(docs,month,category,status,pageCount,false)}</div></section>`;
+    state.bulkDocuments=docs;applyLanguage(box);
+  };
+
+  renderManagerBulk = async function(company){
+    const content=$('#managerContent');if(!content||!company)return;setupBulkRealtime(company.id);
+    if(!state.bulkManagerFilters)state.bulkManagerFilters=Object.create(null);
+    const docs=await loadBulkDocuments(company.id);const saved=state.bulkManagerFilters[company.id]||{};
+    const month=saved.month??'';const category=saved.category??'';const status=['uploaded','received'].includes(saved.status)?saved.status:'';const pageCount=['una_pagina','varias_paginas','pendent'].includes(saved.pageCount)?saved.pageCount:'';
+    state.bulkManagerFilters[company.id]={month,category,status,pageCount};
+    content.innerHTML=`<section class="hero manager-mode-card v32-centered-manager"><div class="v32-centered-inner"><div class="eyebrow">${esc(t('Visió 2 · Càrrega documental'))}</div><h2>${esc(t('Documents pujats i recepcionats'))}</h2><p>${esc(t('El client puja i classifica els documents; pots filtrar-los per tipus i descarregar-los quan els processis.'))}</p><div id="bulkManagerDashboard"></div></div></section>`;
+    const box=$('#bulkManagerDashboard');if(!box)return;box.dataset.month=month;box.dataset.category=category;box.dataset.status=status;box.dataset.pageCount=pageCount;
+    box.innerHTML=`${v32CategoryOverview(docs,category,pageCount)}<div class="filters bulk-filters v31-document-filters v32-document-filters"><label class="field"><span>${esc(t('Mes de pujada'))}</span><select id="bulkManagerMonth">${bulkMonthOptions(docs,month)}</select></label><label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkManagerCategory">${bulkCategoryFilterOptions(category)}</select></label><label class="field"><span>${esc(t('Classificació de pàgines'))}</span><select id="bulkManagerPageCount">${v32FilterPageOptions(pageCount)}</select></label><label class="field"><span>${esc(t('Estat del document'))}</span><select id="bulkManagerStatus">${v27StatusOptions(status)}</select></label><div class="field v31-zip-field"><span>&nbsp;</span><button type="button" class="btn primary" data-act="bulkZip" data-month="${esc(month)}" data-category="${esc(category)}" data-status="${esc(status)}">${esc(t('Descarregar visibles en ZIP'))}</button></div></div><div class="bulk-period-note">${v32FilterSummary(docs,month,category,status,pageCount)}</div><section class="v31-document-details"><div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div><div class="v31-document-groups">${v32DocumentGroupsHtml(docs,month,category,status,pageCount,true)}</div></section>`;
+    state.bulkDocuments=docs;applyLanguage(content);
+  };
+
+  /* Shortcuts for the one-page / multiple-page subfilters embedded in each invoice category. */
+  document.addEventListener('click',e=>{
+    const chip=e.target.closest?.('[data-act="bulkPageJump"]');if(!chip)return;
+    e.preventDefault();e.stopImmediatePropagation();const category=chip.dataset.category||'';const pageCount=chip.dataset.pageCount||'';
+    if(state.profile?.role==='manager'){
+      const company=currentManagerCompany();if(!company)return;const prior=state.bulkManagerFilters?.[company.id]||{};
+      state.bulkManagerFilters[company.id]={month:$('#bulkManagerMonth')?.value??prior.month??'',category,pageCount:prior.category===category&&prior.pageCount===pageCount?'':pageCount,status:$('#bulkManagerStatus')?.value??prior.status??''};
+      renderManagerBulk(company).catch(err=>toast(err.message,true));
+    }else{
+      const companyId=state.profile?.company_id;if(!companyId)return;const prior=state.bulkMineFilters?.[companyId]||{};
+      state.bulkMineFilters[companyId]={month:$('#bulkMineMonth')?.value??prior.month??'',category,pageCount:prior.category===category&&prior.pageCount===pageCount?'':pageCount,status:$('#bulkMineStatus')?.value??prior.status??''};
+      renderBulkMineList().catch(err=>toast(err.message,true));
+    }
+  },true);
+
+  downloadAllBulkDocuments = async function(companyId,companyName,month='',category='',status){
+    const saved=state.bulkManagerFilters?.[companyId]||{};if(status===undefined)status=saved.status||'';
+    const pageCount=saved.pageCount||'';const allDocs=await loadBulkDocuments(companyId);
+    const docs=v32ScopedDocs(allDocs,month,category,status,pageCount);
+    if(!docs.length){toast(t('No hi ha documents amb aquests filtres.'),true);return;}
+    v27ShowDownloadConfirmation({kind:'zip',companyId,companyName,docs,docIds:docs.map(d=>d.id)});
+  };
+
+  async function v32PerformZipDownload(action,confirmReceived){
+    if(!window.JSZip){toast(t('JSZip no està disponible.'),true);return;}
+    try{
+      const zip=new JSZip();let i=0;
+      const ordered=[...action.docs].sort((a,b)=>{
+        const ca=normalizeBulkCategory(a.document_category),cb=normalizeBulkCategory(b.document_category);
+        return invoiceCategoryRank(ca)-invoiceCategoryRank(cb)||String(a.page_count||'').localeCompare(String(b.page_count||''))||String(a.file_name||'').localeCompare(String(b.file_name||''));
+      });
+      for(const doc of ordered){
+        const {data,error}=await sb.storage.from('invoices').createSignedUrl(doc.file_path,240);
+        if(error||!data?.signedUrl)throw error||new Error(`${doc.file_name}: ${t('No s’ha pogut descarregar el document.')}`);
+        const response=await fetch(data.signedUrl);if(!response.ok)throw new Error(`${doc.file_name}: HTTP ${response.status}`);
+        const category=normalizeBulkCategory(doc.document_category);
+        const categoryLabel=BULK_DOCUMENT_CATEGORIES.find(c=>c.value===category)?.label||'Altres';
+        const categoryFolder=`${String(invoiceCategoryRank(category)).padStart(2,'0')} - ${safeName(t(categoryLabel))}`;
+        const pageFolder=isInvoiceCategory(category)?`${pageFolderLabel(normalizePageCount(doc.page_count)?doc.page_count:'pendent')}`:'';
+        const path=[categoryFolder,pageFolder,safeName(doc.file_name)].filter(Boolean).join('/');
+        zip.file(path,await response.blob());i++;
+      }
+      const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+      await v27DownloadBlob(blob,`documents_${safeName(action.companyName||'empresa')}_${new Date().toISOString().slice(0,10)}.zip`);
+      if(confirmReceived){try{await v31RecordReceipt(action.docIds);toast(t('Recepció confirmada'));await v27RefreshBulkStatuses(action.companyId);}catch(err){toast(t('Els documents s’han descarregat però no s’ha pogut confirmar la recepció.'),true);console.error(err);}}
+      else toast(`${i} ${t('documents descarregats en ZIP')}`);
+    }catch(error){toast(error.message||t('No s’ha pogut descarregar el paquet ZIP.'),true);}
+  }
+  v27PerformZipDownload=v32PerformZipDownload;
+
+  const v32CenterStyle=document.createElement('style');
+  v32CenterStyle.textContent=`
+    /* Center page blocks consistently while keeping long document names and tables readable. */
+    .wrap{max-width:1320px;margin-inline:auto}
+    #view>*,#managerContent>*{margin-left:auto;margin-right:auto}
+    #view>.hero,#view>.work,#view>.mode-grid,#view>.filters,#view>.history-filters,#view>.summary,#view>.bar,#view>.tablewrap,#view>.pnl,#view>.expense-card,#managerContent>.hero{width:100%;max-width:1220px}
+    #view>.section-head,#view>.bar,#view>.summary,.wrap>.section-head{justify-content:center;text-align:center}
+    #view>.hero h1,#view>.hero h2,#view>.hero h3,#managerContent>.hero h1,#managerContent>.hero h2{text-align:center;margin-left:auto;margin-right:auto}
+    #view>.hero>div>p,#managerContent>.hero>div>p{margin-left:auto;margin-right:auto}
+    #view>.hero .row-actions,#view>.hero .actions,#managerContent>.hero .row-actions,#managerContent>.hero .actions{justify-content:center}
+    .mode-grid{justify-content:center}
+    .v32-centered-inner{width:100%;max-width:1160px;margin-inline:auto;text-align:center}
+    .v32-centered-inner>p{margin-inline:auto;max-width:70ch}
+    .v32-centered-manager,.v32-centered-section{width:100%;max-width:1220px;margin-inline:auto}
+    .v32-centered-manager>.v32-centered-inner{max-width:100%}
+    .v32-centered-heading{justify-content:center;align-items:center;flex-wrap:wrap}
+    .v32-centered-heading h2{text-align:center}
+    .v32-category-overview{width:100%;max-width:1160px;margin:0 auto 18px;text-align:center}
+    .v32-category-grid{grid-template-columns:repeat(auto-fit,minmax(170px,210px));justify-content:center;align-items:stretch;gap:12px}
+    .v32-category-card-wrap{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--paper);padding:9px;display:flex;flex-direction:column;gap:8px;align-items:stretch}
+    .v32-category-card-wrap .v31-category-card{width:100%;height:100%;align-items:center;text-align:center;border:0;background:transparent;padding:7px}
+    .v32-category-card-wrap .v31-category-card.is-active{background:var(--surface)}
+    .v32-page-counts{display:flex;flex-direction:column;gap:3px;font-size:.69rem;line-height:1.35;color:var(--ink2);text-align:center}
+    .v32-page-counts span{overflow-wrap:anywhere}
+    .v32-page-subfilters{display:flex;flex-wrap:wrap;justify-content:center;gap:5px}
+    .v32-page-filter-chip{border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:var(--surface);color:var(--ink);font-size:.7rem;line-height:1.25;cursor:pointer}
+    .v32-page-filter-chip.is-active,.v32-page-filter-chip:hover{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-dark)}
+    .v32-document-filters{justify-content:center;max-width:1160px;margin:0 auto 12px}
+    .v32-document-filters .field{min-width:180px;max-width:260px}
+    .v32-page-count-field[hidden]{display:none!important}
+    .v32-page-pill{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:.72rem;font-weight:700;background:var(--paper);color:var(--ink2)}
+    .v32-doc-page-label{margin-top:5px;font-size:.78rem;color:var(--ink2)}
+    .v32-page-group-heading{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:9px 12px;margin:8px 12px 0;border-radius:10px;background:var(--paper);color:var(--ink);border:1px solid var(--line);text-align:center}
+    .v32-page-group-heading strong{font-size:.86rem}.v32-page-group-heading span{font-size:.75rem;color:var(--ink2)}
+    .v31-document-details{width:100%;max-width:1160px;margin:18px auto 0}
+    .v31-document-details>.v31-section-heading{justify-content:center;align-items:center;text-align:center}
+    .v31-document-details>.v31-section-heading h3{text-align:center}
+    .bulk-classification-first,.bulk-pick-field,.bulk-queue-heading,.bulk-actions{max-width:760px;margin-left:auto;margin-right:auto}
+    .bulk-actions{justify-content:center}
+    .bulk-upload-category-field{margin-left:auto;margin-right:auto;text-align:left}
+    .v32-centered-inner .bulk-drop{width:100%;max-width:100%;margin-inline:auto;text-align:left}
+    .v32-centered-inner .bulk-queue-heading{text-align:center}
+    .v31-classification-heading{justify-content:center;text-align:center;flex-wrap:wrap}
+    .v31-month-heading{justify-content:center;flex-wrap:wrap;text-align:center}
+    .footer-brand{text-align:center}.footer-contact{justify-content:center}
+    @media(max-width:760px){.wrap{max-width:100%}.v32-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.v32-category-card-wrap{padding:6px}.v32-document-filters .field{max-width:none;width:100%}.v32-centered-inner{max-width:100%}.v32-centered-inner .bulk-drop{padding:10px}.v32-page-counts{font-size:.65rem}}
+    @media(max-width:440px){.v32-category-grid{grid-template-columns:1fr 1fr}.v32-page-filter-chip{font-size:.66rem;padding:5px 6px}}
+    html[data-theme="dark"] .v32-page-filter-chip,:root:not([data-theme="light"]) .v32-page-filter-chip{background:#172330;color:#edf4fc;border-color:#314357}
+    html[data-theme="dark"] .v32-page-filter-chip.is-active,:root:not([data-theme="light"]) .v32-page-filter-chip.is-active{background:#1b3040;color:#d2ffff;border-color:#46c4c4}
+    html[data-theme="dark"] .v32-category-card-wrap,:root:not([data-theme="light"]) .v32-category-card-wrap{background:#121c27;border-color:#314357}
+    html[data-theme="dark"] .v32-page-pill,:root:not([data-theme="light"]) .v32-page-pill{background:#172330;color:#c8d8e8;border-color:#314357}
+  `;
+  document.head.appendChild(v32CenterStyle);
+})();
 </script>
 
 </body>
