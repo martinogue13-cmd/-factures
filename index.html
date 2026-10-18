@@ -4462,9 +4462,9 @@ const V31_BULK_I18N = {
     'Detall dels documents':'Detall dels documents',
     'No hi ha documents amb aquests filtres.':'No hi ha documents amb aquests filtres.',
     'Confirmació de recepció':'Confirmació de recepció',
-    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».':'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».',
-    'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.':'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.',
-    'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.':'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.',
+    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».':'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».',
+    'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.':'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.',
+    'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.':'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.',
     'El document s’ha descarregat però no s’ha pogut confirmar la recepció.':'El document s’ha descarregat però no s’ha pogut confirmar la recepció.',
     'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.':'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.',
     'No s’ha pogut registrar la recepció a Supabase.':'No s’ha pogut registrar la recepció a Supabase.',
@@ -4479,9 +4479,9 @@ const V31_BULK_I18N = {
     'Detall dels documents':'Detalle de los documentos',
     'No hi ha documents amb aquests filtres.':'No hay documentos con estos filtros.',
     'Confirmació de recepció':'Confirmación de recepción',
-    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».':'Marca la casilla si confirmas que has recibido estos documentos. Si no, seguirán con el estado «Subido».',
-    'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.':'Si marcas la casilla, el documento pasará a «Recepcionado» tanto para el gestor como para el cliente.',
-    'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.':'Descarga completada. El estado seguirá siendo «Subido» hasta que confirmes la recepción.',
+    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».':'Marca la casilla si confirmas que has recibido estos documentos. Si no, seguirán con el estado «Subido».',
+    'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.':'Si marcas la casilla, el documento pasará a «Recepcionado» tanto para el gestor como para el cliente.',
+    'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.':'Descarga completada. El estado seguirá siendo «Subido» hasta que confirmes la recepción.',
     'El document s’ha descarregat però no s’ha pogut confirmar la recepció.':'El documento se ha descargado, pero no se pudo confirmar la recepción.',
     'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.':'Los documentos se han descargado, pero no se pudo confirmar la recepción.',
     'No s’ha pogut registrar la recepció a Supabase.':'No se pudo registrar la recepción en Supabase.',
@@ -4496,9 +4496,9 @@ const V31_BULK_I18N = {
     'Detall dels documents':'Document details',
     'No hi ha documents amb aquests filtres.':'No documents match these filters.',
     'Confirmació de recepció':'Receipt confirmation',
-    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».':'Check the box if you confirm receipt of these documents. Otherwise, they will remain in the “Uploaded” state.',
-    'Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.':'If checked, the document will be marked “Received” for both the manager and the client.',
-    'Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.':'Download complete. The status remains “Uploaded” until you confirm receipt.',
+    'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».':'Check the box if you confirm receipt of these documents. Otherwise, they will remain in the “Uploaded” state.',
+    'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.':'If checked, the document will be marked “Received” for both the manager and the client.',
+    'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.':'Download complete. The status remains “Uploaded” until you confirm receipt.',
     'El document s’ha descarregat però no s’ha pogut confirmar la recepció.':'The document was downloaded, but receipt could not be confirmed.',
     'Els documents s’han descarregat però no s’ha pogut confirmar la recepció.':'The documents were downloaded, but receipt could not be confirmed.',
     'No s’ha pogut registrar la recepció a Supabase.':'Receipt could not be recorded in Supabase.',
@@ -4513,15 +4513,15 @@ Object.keys(V31_BULK_I18N).forEach(lang=>Object.assign(I18N[lang],V31_BULK_I18N[
 function v31StatusOf(doc){ return doc?.received_at ? 'received' : 'uploaded'; }
 v27StatusOf = v31StatusOf;
 v28ManagerStatus = v31StatusOf;
-function v31StatusLabel(status){ return status==='received' ? t('Recepcionat') : status==='uploaded' ? t('Pujat') : t('Tots els estats'); }
+function v31StatusLabel(status){ return status==='received' ? t('Recepcionat correctament') : status==='uploaded' ? t('Pendent de validació') : t('Tots els estats'); }
 v27StatusLabel = v31StatusLabel;
 v27StatusOptions = function(selected=''){
-  return `<option value="">${esc(t('Tots els estats'))}</option><option value="uploaded" ${selected==='uploaded'?'selected':''}>${esc(t('Pujat'))}</option><option value="received" ${selected==='received'?'selected':''}>${esc(t('Recepcionat'))}</option>`;
+  return `<option value="">${esc(t('Tots els estats'))}</option><option value="uploaded" ${selected==='uploaded'?'selected':''}>${esc(t('Pendent de validació'))}</option><option value="received" ${selected==='received'?'selected':''}>${esc(t('Recepcionat correctament'))}</option>`;
 };
 v27BulkStatusMatches = function(doc,status){ return !status || v31StatusOf(doc)===status; };
 v27BulkWorkflow = function(doc){
   const received=!!doc?.received_at;
-  return `<div class="v31-status-line"><span class="v31-state-chip ${received?'is-received':'is-uploaded'}"><b>${esc(t(received?'Recepcionat':'Pujat'))}</b></span>${received?`<span class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</span>`:''}</div>`;
+  return `<div class="v31-status-line"><span class="v31-state-chip ${received?'is-received':'is-uploaded'}"><b>${esc(t(received?'Recepcionat correctament':'Pendent de validació'))}</b></span>${received?`<span class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</span>`:''}</div>`;
 };
 
 function v31CategoryOverview(docs, selectedCategory=''){
@@ -4547,7 +4547,7 @@ function v31DocumentGroupsHtml(docs, month='', category='', status='', withActio
         const stateClass=received?'is-received':'is-uploaded';
         return `<article class="bulk-row v31-document-row ${stateClass}">
           <div class="v31-document-main">
-            <div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span></div>
+            <div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat correctament':'Pendent de validació'))}</span></div>
             <small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>
             ${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}
           </div>
@@ -4603,7 +4603,7 @@ v27ShowDownloadConfirmation = function(action){
   const title=t('Confirmació de recepció');
   const description=single?`${t('Estàs a punt de descarregar:')} <b>${esc(action.doc.file_name)}</b>`:`${t('Estàs a punt de descarregar els documents inclosos en aquest ZIP')} <b>(${action.docs.length})</b>`;
   const checkboxLabel=single?t('Confirmo que he rebut aquest document.'):t('Confirmo que he rebut tots els documents inclosos en aquest ZIP.');
-  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>${esc(title)}</h2></div><button class="btn ghost" data-act="bulkCancelReceipt">${esc(t('Cancel·lar'))}</button></div><div class="notice" style="margin-top:14px">${description}</div><p class="sub" style="margin:12px 0">${esc(t('Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pujat».'))}</p><label class="v27-confirm-check"><input type="checkbox" id="bulkReceiptConfirm"><span>${esc(checkboxLabel)}</span></label><p class="meta">${esc(t('Si marques la casella, el document passarà a «Recepcionat» tant per al gestor com per al client.'))}</p><div class="actions"><button class="btn" data-act="bulkCancelReceipt">${esc(t('Cancel·lar'))}</button><button class="btn primary" data-act="bulkConfirmDownload">${esc(single?t('Descarregar document'):t('Descarregar documents'))}</button></div>`;
+  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>${esc(title)}</h2></div><button class="btn ghost" data-act="bulkCancelReceipt">${esc(t('Cancel·lar'))}</button></div><div class="notice" style="margin-top:14px">${description}</div><p class="sub" style="margin:12px 0">${esc(t('Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».'))}</p><label class="v27-confirm-check"><input type="checkbox" id="bulkReceiptConfirm"><span>${esc(checkboxLabel)}</span></label><p class="meta">${esc(t('Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.'))}</p><div class="actions"><button class="btn" data-act="bulkCancelReceipt">${esc(t('Cancel·lar'))}</button><button class="btn primary" data-act="bulkConfirmDownload">${esc(single?t('Descarregar document'):t('Descarregar documents'))}</button></div>`;
   if(!$('#dlg').open)$('#dlg').showModal();applyLanguage($('#dlgBody'));
 };
 
@@ -4630,7 +4630,7 @@ async function v31PerformSingleDownload(action,confirmReceived){
     if(confirmReceived){
       try{await v31RecordReceipt([action.doc.id]);toast(t('Recepció confirmada'));await v27RefreshBulkStatuses(action.companyId);}
       catch(err){toast(t('El document s’ha descarregat però no s’ha pogut confirmar la recepció.'),true);console.error(err);}
-    }else toast(t('Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.'));
+    }else toast(t('Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.'));
   }catch(error){toast(error.message||t('No s’ha pogut descarregar el document.'),true);}
 }
 async function v31PerformZipDownload(action,confirmReceived){
@@ -4642,7 +4642,7 @@ async function v31PerformZipDownload(action,confirmReceived){
     if(confirmReceived){
       try{await v31RecordReceipt(action.docIds);toast(t('Recepció confirmada'));await v27RefreshBulkStatuses(action.companyId);}
       catch(err){toast(t('Els documents s’han descarregat però no s’ha pogut confirmar la recepció.'),true);console.error(err);}
-    }else toast(t('Descàrrega completada. L’estat continua sent «Pujat» fins que confirmis la recepció.'));
+    }else toast(t('Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.'));
   }catch(error){toast(error.message||t('No s’ha pogut descarregar el paquet ZIP.'),true);}
 }
 v27PerformSingleDownload = v31PerformSingleDownload;
@@ -4961,7 +4961,7 @@ document.head.appendChild(v31BulkStyle);
           items.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
           return `<div class="v31-month-block"><div class="v31-month-heading"><strong>${esc(monthLabelFromKey(key)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div><div class="bulk-list">${items.map(doc=>{
             const received=!!doc.received_at;const stateClass=received?'is-received':'is-uploaded';
-            return `<article class="bulk-row v31-document-row v43-document-row ${stateClass}"><div class="v31-document-main"><div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button></div><small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>${(withActions||doc.page_count)?`<div class="v32-doc-page-label">${esc(t('Classificació de pàgines'))}: <b>${esc(pageLabel(normalizePageCount(doc.page_count)))}</b></div>`:''}${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}</div><div class="v43-document-badges"><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span><span class="bulk-category-pill" data-category="${esc(cat.value)}">${esc(t(cat.label))}</span></div><div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button>${withActions?`<button type="button" class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(doc.id)}">${esc(t('Descarregar'))}</button>`:''}</div></article>`;
+            return `<article class="bulk-row v31-document-row v43-document-row ${stateClass}"><div class="v31-document-main"><div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button></div><small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>${(withActions||doc.page_count)?`<div class="v32-doc-page-label">${esc(t('Classificació de pàgines'))}: <b>${esc(pageLabel(normalizePageCount(doc.page_count)))}</b></div>`:''}${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}</div><div class="v43-document-badges"><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat correctament':'Pendent de validació'))}</span><span class="bulk-category-pill" data-category="${esc(cat.value)}">${esc(t(cat.label))}</span></div><div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button>${withActions?`<button type="button" class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(doc.id)}">${esc(t('Descarregar'))}</button>`:''}</div></article>`;
           }).join('')}</div></div>`;
         }).join('');
         const pageHeading=withActions&&pageKey?`<div class="v32-page-group-heading"><strong>${esc(t(pageLabel(pageKey==='pendent'?'':pageKey)))}</strong><span>${pageDocs.length} ${esc(t('documents'))}</span></div>`:'';
@@ -5716,7 +5716,7 @@ dialog { border:1px solid var(--line); border-radius:24px; box-shadow:0 28px 90p
               <small class="bulk-file-meta">${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))} · ${sizeMb} MB</small>
               ${received&&doc.received_at?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}
             </div>
-            <div class="v43-document-badges"><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span><span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span></div>
+            <div class="v43-document-badges"><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat correctament':'Pendent de validació'))}</span><span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span></div>
             <div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button></div>
           </article>`;
         }).join('')}</div>
@@ -5858,6 +5858,31 @@ dialog { border:1px solid var(--line); border-radius:24px; box-shadow:0 28px 90p
   .hero.bulk-uploaded.v32-centered-section > .v32-centered-inner { padding: 0; }
 }
 </style>
+
+<script id="v45-status-labels">
+/* v45: clearer document status names, translated in the selected UI language. */
+Object.assign(I18N.ca, {
+  'Pendent de validació':'Pendent de validació',
+  'Recepcionat correctament':'Recepcionat correctament',
+  'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».':'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».',
+  'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.':'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.',
+  'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.':'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.'
+});
+Object.assign(I18N.es, {
+  'Pendent de validació':'Pendiente de validación',
+  'Recepcionat correctament':'Recepcionado correctamente',
+  'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».':'Marca la casilla si confirmas que has recibido estos documentos. Si no, seguirán con el estado «Pendiente de validación».',
+  'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.':'Si marcas la casilla, el documento pasará a «Recepcionado correctamente» tanto para el gestor como para el cliente.',
+  'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.':'Descarga completada. El estado seguirá como «Pendiente de validación» hasta que confirmes la recepción.'
+});
+Object.assign(I18N.en, {
+  'Pendent de validació':'Pending validation',
+  'Recepcionat correctament':'Received successfully',
+  'Marca la casella si confirmes que has rebut aquests documents. Si no, continuaran amb l’estat «Pendent de validació».':'Check the box to confirm receipt. Otherwise, the status will remain “Pending validation”.',
+  'Si marques la casella, el document passarà a «Recepcionat correctament» tant per al gestor com per al client.':'If checked, the status will change to “Received successfully” for both the manager and the client.',
+  'Descàrrega completada. L’estat continua sent «Pendent de validació» fins que confirmis la recepció.':'Download complete. The status will remain “Pending validation” until you confirm receipt.'
+});
+</script>
 
 </body>
 </html>
