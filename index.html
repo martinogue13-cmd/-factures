@@ -1912,7 +1912,7 @@ async function uploadBulkDocuments(){
       const path=`${state.profile.company_id}/bulk/${id}/${safeName(file.name)}`;
       const {error:up}=await sb.storage.from('invoices').upload(path,file,{upsert:false,contentType:v27MimeForBulkFile(file)});
       if(up) throw new Error(`${file.name}: ${up.message}`);
-      const {error:ins}=await sb.from('bulk_documents').insert({id,company_id:state.profile.company_id,file_path:path,file_name:file.name,file_type:v27MimeForBulkFile(file)||file.type||null,file_size:file.size,document_category:normalizeBulkCategory(category),page_count:(['venta','compra'].includes(normalizeBulkCategory(category))?(state.bulkUploadPageCount||null):null),uploaded_by:state.user?.id||null});
+      const {error:ins}=await sb.from('bulk_documents').insert({id,company_id:state.profile.company_id,file_path:path,file_name:file.name,file_type:v27MimeForBulkFile(file)||file.type||null,file_size:file.size,document_category:normalizeBulkCategory(category),page_count:(state.bulkUploadPageCount||null),uploaded_by:state.user?.id||null});
       if(ins){await sb.storage.from('invoices').remove([path]).catch(()=>{});throw new Error(`${file.name}: ${ins.message}`);}
       done++; if(status) status.textContent=`${done}/${filesToUpload.length} ${t('documents pujats')}`;
     }
@@ -4688,14 +4688,16 @@ document.head.appendChild(v31BulkStyle);
 (function(){
   const v32Translations = {
     ca: {
-      'Bancs':'Bancs', 'Pàgines de la factura':'Pàgines de la factura',
+      'Bancs':'Bancs', 'Nombre de pàgines del document':'Nombre de pàgines del document',
+      'Indica si el document té una pàgina o diverses abans de continuar.':'Indica si el document té una pàgina o diverses abans de continuar.',
+      'Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.',
       'Selecciona el nombre de pàgines…':'Selecciona el nombre de pàgines…',
       'Una pàgina':'Una pàgina', 'Diverses pàgines':'Diverses pàgines',
       'Classificació de pàgines':'Classificació de pàgines',
       'Totes les pàgines':'Totes les pàgines',
       'Pendent de classificar pàgines':'Pendent de classificar pàgines',
       'Selecciona una o diverses pàgines abans de continuar.':'Selecciona si la factura té una pàgina o diverses pàgines abans de continuar.',
-      'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.':'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.',
+      'Primer selecciona la classificació i indica si el document té una pàgina o diverses.':'Primer selecciona la classificació i indica si el document té una pàgina o diverses.',
       'La factura té una pàgina':'La factura té una pàgina',
       'La factura té diverses pàgines':'La factura té diverses pàgines',
       'Tots els grups de pàgines':'Tots els grups de pàgines',
@@ -4707,14 +4709,16 @@ document.head.appendChild(v31BulkStyle);
       'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.'
     },
     es: {
-      'Bancs':'Bancos', 'Pàgines de la factura':'Páginas de la factura',
+      'Bancs':'Bancos', 'Nombre de pàgines del document':'Número de páginas del documento',
+      'Indica si el document té una pàgina o diverses abans de continuar.':'Indica si el documento tiene una página o varias antes de continuar.',
+      'Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'Para los documentos de varias páginas, no se permite hacer una foto ni seleccionar imágenes de la galería. Elige un PDF u otro documento.',
       'Selecciona el nombre de pàgines…':'Selecciona el número de páginas…',
       'Una pàgina':'Una página', 'Diverses pàgines':'Varias páginas',
       'Classificació de pàgines':'Clasificación de páginas',
       'Totes les pàgines':'Todas las páginas',
       'Pendent de classificar pàgines':'Pendiente de clasificar las páginas',
       'Selecciona una o diverses pàgines abans de continuar.':'Indica si la factura tiene una página o varias antes de continuar.',
-      'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.':'Primero selecciona la clasificación y, si es una factura de venta o de compra, indica el número de páginas.',
+      'Primer selecciona la classificació i indica si el document té una pàgina o diverses.':'Primero selecciona la clasificación e indica si el documento tiene una página o varias.',
       'La factura té una pàgina':'La factura tiene una página',
       'La factura té diverses pàgines':'La factura tiene varias páginas',
       'Tots els grups de pàgines':'Todos los grupos de páginas',
@@ -4724,14 +4728,16 @@ document.head.appendChild(v31BulkStyle);
       'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'Para las facturas de varias páginas, no se permite hacer una foto ni seleccionar imágenes de la galería. Elige un PDF u otro documento.'
     },
     en: {
-      'Bancs':'Banks', 'Pàgines de la factura':'Invoice page count',
+      'Bancs':'Banks', 'Nombre de pàgines del document':'Document page count',
+      'Indica si el document té una pàgina o diverses abans de continuar.':'Indicate whether the document has one page or multiple pages before continuing.',
+      'Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'For multi-page documents, taking a photo or selecting images from the gallery is not allowed. Choose a PDF or another document.',
       'Selecciona el nombre de pàgines…':'Select the number of pages…',
       'Una pàgina':'One page', 'Diverses pàgines':'Multiple pages',
       'Classificació de pàgines':'Page-count classification',
       'Totes les pàgines':'All page counts',
       'Pendent de classificar pàgines':'Page count not classified',
       'Selecciona una o diverses pàgines abans de continuar.':'Indicate whether the invoice has one page or multiple pages before continuing.',
-      'Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.':'First select a classification and, for sales or purchase invoices, specify the number of pages.',
+      'Primer selecciona la classificació i indica si el document té una pàgina o diverses.':'First select a classification and indicate whether the document has one page or multiple pages.',
       'La factura té una pàgina':'The invoice has one page',
       'La factura té diverses pàgines':'The invoice has multiple pages',
       'Tots els grups de pàgines':'All page-count groups',
@@ -4752,7 +4758,7 @@ document.head.appendChild(v31BulkStyle);
   const V32_BULK_ACCEPT_WITH_IMAGES = '.pdf,image/*,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif';
   const V32_BULK_ACCEPT_NO_IMAGES = '.pdf,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip';
   const v32IsImageFile = file => /^image\//i.test(String(file?.type||'')) || /\.(?:jpe?g|png|gif|webp|bmp|tiff?|heic|heif|avif)$/i.test(String(file?.name||''));
-  const v32IsMultiPageInvoiceUpload = () => isInvoiceCategory(state.bulkUploadCategory||$('#bulkUploadCategory')?.value||'') && normalizePageCount(state.bulkUploadPageCount||$('#bulkUploadPageCount')?.value||'') === 'varias_paginas';
+  const v32IsMultiPageDocumentUpload = () => !!(state.bulkUploadCategory||$('#bulkUploadCategory')?.value||'') && normalizePageCount(state.bulkUploadPageCount||$('#bulkUploadPageCount')?.value||'') === 'varias_paginas';
 
   function v32UploadPageOptions(value='') {
     return `<option value="">${esc(t('Selecciona el nombre de pàgines…'))}</option><option value="una_pagina" ${value==='una_pagina'?'selected':''}>${esc(t('Una pàgina'))}</option><option value="varias_paginas" ${value==='varias_paginas'?'selected':''}>${esc(t('Diverses pàgines'))}</option>`;
@@ -4762,7 +4768,6 @@ document.head.appendChild(v31BulkStyle);
   }
   function v32PageMatches(doc, filter='') {
     if(!filter) return true;
-    if(!isInvoiceCategory(doc.document_category)) return false;
     const page=normalizePageCount(doc.page_count);
     if(filter==='pendent') return !page;
     return page===filter;
@@ -4782,7 +4787,7 @@ document.head.appendChild(v31BulkStyle);
     const uploadButton=$('[data-act="uploadBulk"]');
     const files=input?[...input.files]:[];
     const category=state.bulkUploadCategory||'';
-    const needsPage=isInvoiceCategory(category);
+    const needsPage=!!category;
     const pageCount=normalizePageCount(state.bulkUploadPageCount||'');
     const restrictImages=needsPage&&pageCount==='varias_paginas';
     if(input){input.accept=restrictImages?V32_BULK_ACCEPT_NO_IMAGES:V32_BULK_ACCEPT_WITH_IMAGES;input.removeAttribute('capture');}
@@ -4795,7 +4800,7 @@ document.head.appendChild(v31BulkStyle);
     if(input)input.disabled=!canPick;
     if(notice){
       if(!category){notice.textContent=t('Selecciona una classificació per continuar.');notice.classList.remove('is-ready');notice.classList.add('is-required');notice.setAttribute('role','alert');}
-      else if(needsPage&&!pageCount){notice.textContent=t('Selecciona una o diverses pàgines abans de continuar.');notice.classList.remove('is-ready');notice.classList.add('is-required');notice.setAttribute('role','alert');}
+      else if(needsPage&&!pageCount){notice.textContent=t('Indica si el document té una pàgina o diverses abans de continuar.');notice.classList.remove('is-ready');notice.classList.add('is-required');notice.setAttribute('role','alert');}
       else if(files.length){notice.textContent=`${t('Classificació aplicada')}: ${bulkCategoryLabel(category)}${needsPage?` · ${pageLabel(pageCount)}`:''}. ${t('Per canviar la classificació, treu tots els documents seleccionats.')}`;notice.classList.remove('is-required');notice.classList.add('is-ready');notice.setAttribute('role','status');}
       else{notice.textContent=`${t('Classificació seleccionada')}: ${bulkCategoryLabel(category)}${needsPage?` · ${pageLabel(pageCount)}`:''}. ${t('Ara pots seleccionar els documents que vols pujar.')}`;notice.classList.remove('is-required');notice.classList.add('is-ready');notice.setAttribute('role','status');}
     }
@@ -4806,7 +4811,7 @@ document.head.appendChild(v31BulkStyle);
   renderBulkQueue = function(files){
     const q=$('#bulkQueue');if(!q)return;
     const category=state.bulkUploadCategory||'';
-    const needsPage=isInvoiceCategory(category);
+    const needsPage=!!category;
     const pages=normalizePageCount(state.bulkUploadPageCount||'');
     if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
     const activeTokens=new Set((files||[]).map(bulkFileToken));
@@ -4840,16 +4845,16 @@ document.head.appendChild(v31BulkStyle);
     const accept='.pdf,image/*,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif';
     box.innerHTML=`<section class="hero bulk-upload"><div class="v32-centered-inner">
       <div class="corporate-label">${esc(t('Bústia corporativa · Joan Nogue'))}</div><div class="eyebrow">${esc(t('Visió de càrrega de documents'))}</div><h1>${esc(t('Càrrega massiva de documents'))}</h1>
-      <p>${esc(t('Primer selecciona la classificació i, si és una factura de venda o de compra, indica el nombre de pàgines.'))}</p>
+      <p>${esc(t('Primer selecciona la classificació i indica si el document té una pàgina o diverses.'))}</p>
       <div class="bulk-drop">
         <div class="bulk-classification-first">
           <label class="field bulk-upload-category-field"><span>${esc(t('Classificació de la pujada'))}</span><select id="bulkUploadCategory">${bulkCategoryOptions('')}</select></label>
-          <label class="field bulk-upload-category-field v32-page-count-field" id="bulkUploadPageCountField" hidden><span>${esc(t('Pàgines de la factura'))}</span><select id="bulkUploadPageCount" disabled>${v32UploadPageOptions('')}</select></label>
+          <label class="field bulk-upload-category-field v32-page-count-field" id="bulkUploadPageCountField" hidden><span>${esc(t('Nombre de pàgines del document'))}</span><select id="bulkUploadPageCount" disabled>${v32UploadPageOptions('')}</select></label>
           <p id="bulkClassifyNotice" class="bulk-required-note is-required" role="alert" aria-live="polite">${esc(t('Selecciona una classificació per continuar.'))}</p>
           <p class="vision-note">${esc(t('La classificació s’aplicarà a tots els documents d’aquesta selecció.'))}</p>
         </div>
         <label class="field bulk-pick-field"><span>${esc(t('Fitxers PDF, imatges, Word, Excel i altres documents'))}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice bulkMultiPageImageNote"></label>
-        <p id="bulkMultiPageImageNote" class="bulk-required-note is-required" role="status" hidden>${esc(t('Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.'))}</p>
+        <p id="bulkMultiPageImageNote" class="bulk-required-note is-required" role="status" hidden>${esc(t('Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.'))}</p>
         <p class="vision-note">${esc(t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.'))}</p>
         <div class="bulk-queue-heading">${esc(t('Documents preparats'))}</div><div id="bulkQueue" class="bulk-list"></div>
         <div class="bulk-actions"><button class="btn primary" data-act="uploadBulk" disabled>${esc(t('Pujar documents'))}</button></div>
@@ -4879,17 +4884,17 @@ document.head.appendChild(v31BulkStyle);
       if(!category||!BULK_DOCUMENT_CATEGORIES.some(c=>c.value===category)){
         input.value='';renderBulkQueue([]);v32SyncUploadGate();const status=$('#bulkUploadStatus');if(status)status.textContent=t('Selecciona una classificació per continuar.');toast(t('Selecciona una classificació per continuar.'),true);return;
       }
-      if(isInvoiceCategory(category)&&!normalizePageCount(state.bulkUploadPageCount)){
-        input.value='';renderBulkQueue([]);v32SyncUploadGate();const message=t('Selecciona una o diverses pàgines abans de continuar.');const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
+      if(!normalizePageCount(state.bulkUploadPageCount)){
+        input.value='';renderBulkQueue([]);v32SyncUploadGate();const message=t('Indica si el document té una pàgina o diverses abans de continuar.');const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
       }
-      if(isInvoiceCategory(category)&&normalizePageCount(state.bulkUploadPageCount)==='varias_paginas') {
+      if(normalizePageCount(state.bulkUploadPageCount)==='varias_paginas') {
         const imageFiles=files.filter(v32IsImageFile);
         if(imageFiles.length){
           const acceptedFiles=files.filter(file=>!v32IsImageFile(file));
           try{const transfer=new DataTransfer();acceptedFiles.forEach(file=>transfer.items.add(file));input.files=transfer.files;}catch(_){input.value='';}
           const remaining=[...(input.files||[])];
           renderBulkQueue(remaining);v32SyncUploadGate();
-          const message=t('Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.');const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
+          const message=t('Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.');const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
         }
       }
       if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
@@ -4909,14 +4914,14 @@ document.head.appendChild(v31BulkStyle);
     if(!BULK_DOCUMENT_CATEGORIES.some(c=>c.value===category)){
       const message=t('Selecciona una classificació per continuar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
     }
-    if(isInvoiceCategory(category)&&!pageCount){
-      const message=t('Selecciona una o diverses pàgines abans de continuar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
+    if(!pageCount){
+      const message=t('Indica si el document té una pàgina o diverses abans de continuar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
     }
-    if(isInvoiceCategory(category)&&pageCount==='varias_paginas'&&files.some(v32IsImageFile)){
-      const message=t('Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
+    if(pageCount==='varias_paginas'&&files.some(v32IsImageFile)){
+      const message=t('Per a documents de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
     }
     if(!files.length){const message=t('Selecciona documents per pujar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;}
-    state.bulkUploadCategory=category;state.bulkUploadPageCount=isInvoiceCategory(category)?pageCount:'';
+    state.bulkUploadCategory=category;state.bulkUploadPageCount=pageCount;
     if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
     files.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
     await v32UploadBase();
@@ -4934,8 +4939,8 @@ document.head.appendChild(v31BulkStyle);
       const catDocs=(docs||[]).filter(doc=>normalizeBulkCategory(doc.document_category)===cat.value);
       const active=selectedCategory===cat.value;
       const name=esc(t(cat.label));
-      const pageSummary=showPageSubfilters&&isInvoiceCategory(cat.value)?`<div class="v32-page-counts"><span>${esc(t('Una pàgina'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina').length}</b></span><span>${esc(t('Diverses pàgines'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas').length}</b></span><span>${esc(t('Pendent de classificar pàgines'))}: <b>${catDocs.filter(d=>!normalizePageCount(d.page_count)).length}</b></span></div>`:'';
-      const pageShortcuts=showPageSubfilters&&isInvoiceCategory(cat.value)?`<div class="v32-page-subfilters"><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="una_pagina" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='una_pagina'?'is-active':''}">${esc(t('Una pàgina'))}</button><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="varias_paginas" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='varias_paginas'?'is-active':''}">${esc(t('Diverses pàgines'))}</button></div>`:'';
+      const pageSummary=showPageSubfilters?`<div class="v32-page-counts"><span>${esc(t('Una pàgina'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina').length}</b></span><span>${esc(t('Diverses pàgines'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas').length}</b></span><span>${esc(t('Pendent de classificar pàgines'))}: <b>${catDocs.filter(d=>!normalizePageCount(d.page_count)).length}</b></span></div>`:'';
+      const pageShortcuts=showPageSubfilters?`<div class="v32-page-subfilters"><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="una_pagina" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='una_pagina'?'is-active':''}">${esc(t('Una pàgina'))}</button><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="varias_paginas" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='varias_paginas'?'is-active':''}">${esc(t('Diverses pàgines'))}</button></div>`:'';
       return `<div class="v32-category-card-wrap"><button type="button" class="v31-category-card ${active?'is-active':''}" data-act="bulkCategoryJump" data-category="${esc(cat.value)}" aria-pressed="${active?'true':'false'}"><span class="v31-category-name">${name}</span><strong>${catDocs.length}</strong><small>${esc(t('documents'))}</small></button>${pageSummary}${pageShortcuts}</div>`;
     }).join('');
     return `<section class="v31-category-overview v32-category-overview"><div class="v31-section-heading"><h3>${esc(t('Documents per classificació'))}</h3><p>${esc(t('Selecciona una categoria per filtrar els documents.'))}</p></div><div class="v31-category-grid v32-category-grid">${items}</div></section>`;
@@ -4947,7 +4952,7 @@ document.head.appendChild(v31BulkStyle);
     return BULK_DOCUMENT_CATEGORIES.map(cat=>{
       const catDocs=scoped.filter(doc=>normalizeBulkCategory(doc.document_category)===cat.value);
       if(!catDocs.length)return '';
-      const pageGroups=isInvoiceCategory(cat.value)
+      const pageGroups=withActions
         ?[['una_pagina',catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina')],['varias_paginas',catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas')],['pendent',catDocs.filter(d=>!normalizePageCount(d.page_count))]].filter(g=>g[1].length)
         :[['',catDocs]];
       const pageHtml=pageGroups.map(([pageKey,pageDocs])=>{
@@ -4956,10 +4961,10 @@ document.head.appendChild(v31BulkStyle);
           items.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
           return `<div class="v31-month-block"><div class="v31-month-heading"><strong>${esc(monthLabelFromKey(key)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div><div class="bulk-list">${items.map(doc=>{
             const received=!!doc.received_at;const stateClass=received?'is-received':'is-uploaded';
-            return `<article class="bulk-row v31-document-row ${stateClass}"><div class="v31-document-main"><div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span></div><small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>${isInvoiceCategory(cat.value)?`<div class="v32-doc-page-label">${esc(t('Classificació de pàgines'))}: <b>${esc(pageLabel(normalizePageCount(doc.page_count)))}</b></div>`:''}${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}</div><span class="bulk-category-pill" data-category="${esc(cat.value)}">${esc(t(cat.label))}</span><div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button>${withActions?`<button type="button" class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(doc.id)}">${esc(t('Descarregar'))}</button>`:''}</div></article>`;
+            return `<article class="bulk-row v31-document-row v43-document-row ${stateClass}"><div class="v31-document-main"><div class="v31-document-title"><button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button></div><small class="bulk-file-meta"><span>${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))}</span> · ${((Number(doc.file_size||0)/1024/1024)||0).toFixed(2)} MB</small>${(withActions||doc.page_count)?`<div class="v32-doc-page-label">${esc(t('Classificació de pàgines'))}: <b>${esc(pageLabel(normalizePageCount(doc.page_count)))}</b></div>`:''}${received?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}</div><div class="v43-document-badges"><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span><span class="bulk-category-pill" data-category="${esc(cat.value)}">${esc(t(cat.label))}</span></div><div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button>${withActions?`<button type="button" class="btn primary" data-act="bulkDownload" data-bulk-id="${esc(doc.id)}">${esc(t('Descarregar'))}</button>`:''}</div></article>`;
           }).join('')}</div></div>`;
         }).join('');
-        const pageHeading=isInvoiceCategory(cat.value)?`<div class="v32-page-group-heading"><strong>${esc(pageLabel(pageKey==='pendent'?'':pageKey))}</strong><span>${pageDocs.length} ${esc(t('documents'))}</span></div>`:'';
+        const pageHeading=withActions&&pageKey?`<div class="v32-page-group-heading"><strong>${esc(t(pageLabel(pageKey==='pendent'?'':pageKey)))}</strong><span>${pageDocs.length} ${esc(t('documents'))}</span></div>`:'';
         return `${pageHeading}${monthHtml}`;
       }).join('');
       return `<section class="v31-classification-group"><div class="v31-classification-heading"><h3>${esc(t(cat.label))}</h3><span>${catDocs.length} ${esc(t('documents'))}</span></div>${pageHtml}</section>`;
@@ -5035,7 +5040,7 @@ document.head.appendChild(v31BulkStyle);
         const category=normalizeBulkCategory(doc.document_category);
         const categoryLabel=BULK_DOCUMENT_CATEGORIES.find(c=>c.value===category)?.label||'Altres';
         const categoryFolder=`${String(invoiceCategoryRank(category)).padStart(2,'0')} - ${safeName(t(categoryLabel))}`;
-        const pageFolder=isInvoiceCategory(category)?`${pageFolderLabel(normalizePageCount(doc.page_count)?doc.page_count:'pendent')}`:'';
+        const pageFolder=`${pageFolderLabel(normalizePageCount(doc.page_count)?doc.page_count:'pendent')}`;
         const path=[categoryFolder,pageFolder,safeName(doc.file_name)].filter(Boolean).join('/');
         zip.file(path,await response.blob());i++;
       }
@@ -5621,6 +5626,70 @@ dialog { border:1px solid var(--line); border-radius:24px; box-shadow:0 28px 90p
   #bulkMineList .v40-month-heading { padding:11px 12px; }
 }
 </style>
+
+<style id="v43-document-badge-alignment">
+/* Keep status and classification badges in one shared, vertically centered line. */
+.v43-document-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center !important;
+  column-gap: 14px;
+  row-gap: 8px;
+  flex-wrap: initial !important;
+}
+.v43-document-row > .v31-document-main {
+  min-width: 0;
+  width: 100%;
+  align-self: center;
+}
+.v43-document-row .v31-document-title {
+  display: flex;
+  align-items: center !important;
+  gap: 10px;
+  min-width: 0;
+}
+.v43-document-row .v31-document-title .bulk-file-open {
+  min-width: 0;
+  width: auto;
+  flex: 1 1 auto;
+}
+.v43-document-row .v31-document-title .v31-state-chip { margin-top: 0 !important; }
+.v43-document-badges {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 0;
+  align-self: center;
+}
+.v43-document-badges .v31-state-chip,
+.v43-document-badges .bulk-category-pill {
+  margin: 0 !important;
+  align-self: center;
+  white-space: nowrap;
+}
+.v43-document-row > .bulk-row-actions {
+  width: auto !important;
+  align-self: center;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .v43-document-row { grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; }
+  .v43-document-row > .v31-document-main { grid-column: 1 / -1; }
+  .v43-document-badges { grid-column: 1; grid-row: 2; }
+  .v43-document-row > .bulk-row-actions { grid-column: 2; grid-row: 2; width: auto !important; }
+}
+@media (max-width: 420px) {
+  .v43-document-row { column-gap: 8px; }
+  .v43-document-badges { gap: 5px; }
+  .v43-document-badges .v31-state-chip,
+  .v43-document-badges .bulk-category-pill { white-space: normal; text-align: center; }
+}
+</style>
 <script id="v40-customer-history">
 (() => {
   function v40CustomerHistoryRows(docs, selectedMonth='', selectedCategory='') {
@@ -5639,16 +5708,15 @@ dialog { border:1px solid var(--line); border-radius:24px; box-shadow:0 28px 90p
           const received=Boolean(doc.received_at);
           const stateClass=received?'is-received':'is-uploaded';
           const sizeMb=((Number(doc.file_size||0)/1024/1024)||0).toFixed(2);
-          return `<article class="bulk-row v31-document-row ${stateClass}">
+          return `<article class="bulk-row v31-document-row v43-document-row ${stateClass}">
             <div class="v31-document-main">
               <div class="v31-document-title">
                 <button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button>
-                <span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span>
               </div>
               <small class="bulk-file-meta">${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))} · ${sizeMb} MB</small>
               ${received&&doc.received_at?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}
             </div>
-            <span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span>
+            <div class="v43-document-badges"><span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span><span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span></div>
             <div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button></div>
           </article>`;
         }).join('')}</div>
