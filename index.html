@@ -1037,6 +1037,28 @@ html[data-theme="dark"] .pnl-table table,html[data-theme="dark"] .tablewrap tabl
 }
 
 </style>
+
+<style id="bulk-layout-fix-v37">
+/* v37: the upload page uses a single full-width content column, not the two-column generic hero grid. */
+.hero.bulk-upload { display:block !important; grid-template-columns:minmax(0,1fr) !important; width:100%; max-width:960px; margin-inline:auto; text-align:center; }
+.hero.bulk-upload > div { width:100%; min-width:0; max-width:none; }
+.hero.bulk-upload .bulk-drop { display:block; width:100%; max-width:none; margin:24px auto 0; }
+.hero.bulk-upload .bulk-classification-first { width:100%; max-width:none; margin-inline:0; }
+.hero.bulk-upload .bulk-pick-field,
+.hero.bulk-upload .bulk-ticket-note,
+.hero.bulk-upload .vision-note,
+.hero.bulk-upload .bulk-queue-heading,
+.hero.bulk-upload #bulkQueue { width:100%; max-width:none; }
+.hero.bulk-upload #bulkQueue { text-align:left; }
+.hero.bulk-upload .bulk-upload-category-field { width:100%; max-width:100%; }
+@media (max-width:760px) {
+  .hero.bulk-upload { padding:22px 17px; }
+  .hero.bulk-upload .bulk-drop { padding:16px 12px; }
+}
+@media (max-width:460px) {
+  .hero.bulk-upload { padding:19px 13px; }
+}
+</style>
 </head>
 <body>
 <header class="top"><div class="top-in">
@@ -1597,7 +1619,7 @@ function bulkSummaryNote(summary, selectedMonth='', selectedCategory=''){
 async function renderBulkCompany(){
   const box=$('#bulkCompany'); if(!box)return;
   box.innerHTML=`<section class="hero bulk-upload"><div><div class="corporate-label">${t('Bústia corporativa · Joan Nogue')}</div><div class="eyebrow">${t('Visió de càrrega de documents')}</div><h1>${t('Càrrega massiva de documents')}</h1><p>${t('Selecciona diversos documents i indica la classificació de cadascun abans de pujar-los.')}</p>
-    <div class="bulk-drop"><label class="field"><span>${t('Fitxers PDF o imatges')}</span><input id="bulkPick" type="file" accept="application/pdf,image/*,.pdf" multiple></label><p class="vision-note">${t('Pots seleccionar diversos documents alhora.')}</p><p class="bulk-ticket-note">${t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.')}</p><div class="bulk-queue-heading">${t('Documents preparats')}</div><div id="bulkQueue" class="bulk-list"></div><div class="bulk-actions"><button class="btn primary" data-act="uploadBulk">${t('Pujar documents')}</button></div></div>
+    <div class="bulk-drop"><label class="field"><span>${t('Fitxers PDF o imatges')}</span><input id="bulkPick" type="file" accept="application/pdf,image/*,.pdf" multiple></label><p class="vision-note">${t('Pots seleccionar diversos documents alhora.')}</p><div class="bulk-queue-heading">${t('Documents preparats')}</div><div id="bulkQueue" class="bulk-list"></div><div class="bulk-actions"><button class="btn primary" data-act="uploadBulk">${t('Pujar documents')}</button></div></div>
     <p class="meta" id="bulkUploadStatus" role="status" aria-live="polite"></p>
   </div></section>
   <section class="hero bulk-uploaded" style="margin-top:18px"><div>
@@ -1612,34 +1634,59 @@ async function renderBulkCompany(){
 }
 
 async function renderBulkMineList(){
-  const docs=await loadBulkDocuments(state.profile.company_id);
-  const box=$('#bulkMineList'); if(!box)return;
-  if(!state.bulkManagerFilters)state.bulkManagerFilters=Object.create(null);
-  const savedFilters=state.bulkManagerFilters[company.id]||{};
-  const selected=savedFilters.month||box.dataset.month||'';
-  const selectedCategory=savedFilters.category||box.dataset.category||'';
-  const s=bulkSummary(docs,selected,selectedCategory);
+  const box=$('#bulkMineList');
+  const companyId=state.profile?.company_id;
+  if(!box||!companyId)return;
+
+  let docs=[];
+  try{
+    docs=await loadBulkDocuments(companyId)||[];
+  }catch(error){
+    console.error('Could not load company documents:',error);
+    box.innerHTML=`<div class="empty">${esc(t('No s’han pogut carregar els documents.'))}</div>`;
+    return;
+  }
+
+  if(!state.bulkClientFilters)state.bulkClientFilters=Object.create(null);
+  if(!state.bulkClientFilters[companyId]){
+    state.bulkClientFilters[companyId]={
+      month:box.dataset.month||'',
+      category:box.dataset.category||''
+    };
+  }
+  const savedFilters=state.bulkClientFilters[companyId];
+  const selected=savedFilters.month??'';
+  const selectedCategory=savedFilters.category??'';
+  const summary=bulkSummary(docs,selected,selectedCategory);
+
   box.innerHTML=`
     <div class="bulk-summary">
-      <div class="bulk-stat"><span>${t('Documents pujats')}</span><strong>${s.scopedCount}</strong><small>${selectedCategory?esc(bulkCategoryLabel(selectedCategory)):selected?t('mes seleccionat'):t('tots els mesos')}</small></div>
-      <div class="bulk-stat"><span>${t('Aquest mes')}</span><strong>${s.thisMonth}</strong><small>${esc(monthLabelFromKey(monthKeyFromDate(new Date())))}</small></div>
-      <div class="bulk-stat"><span>${t('Mesos amb documents')}</span><strong>${s.months}</strong><small>${t('històric disponible')}</small></div>
-      <div class="bulk-stat"><span>${t('Última pujada')}</span><strong class="bulk-last">${esc(s.last)}</strong><small>${t('document registrat més recent')}</small></div>
+      <div class="bulk-stat"><span>${t('Documents pujats')}</span><strong>${summary.scopedCount}</strong><small>${selectedCategory?esc(bulkCategoryLabel(selectedCategory)):selected?t('mes seleccionat'):t('tots els mesos')}</small></div>
+      <div class="bulk-stat"><span>${t('Aquest mes')}</span><strong>${summary.thisMonth}</strong><small>${esc(monthLabelFromKey(monthKeyFromDate(new Date())))}</small></div>
+      <div class="bulk-stat"><span>${t('Mesos amb documents')}</span><strong>${summary.months}</strong><small>${t('històric disponible')}</small></div>
+      <div class="bulk-stat"><span>${t('Última pujada')}</span><strong class="bulk-last">${esc(summary.last)}</strong><small>${t('document registrat més recent')}</small></div>
     </div>
     <div class="filters bulk-filters">
       <label class="field"><span>${t('Mes de pujada')}</span><select id="bulkMineMonth">${bulkMonthOptions(docs,selected)}</select></label>
       <label class="field"><span>${t('Classificació del document')}</span><select id="bulkMineCategory">${bulkCategoryFilterOptions(selectedCategory)}</select></label>
     </div>
-    <div class="bulk-period-note">${esc(bulkSummaryNote(s,selected,selectedCategory))}</div>
+    <div class="bulk-period-note">${esc(bulkSummaryNote(summary,selected,selectedCategory))}</div>
     <div class="bulk-months">${bulkGroupedRows(docs,selected,false,selectedCategory)}</div>`;
+
   $('#bulkMineMonth')?.addEventListener('change',e=>{
+    state.bulkClientFilters[companyId].month=e.target.value;
     box.dataset.month=e.target.value;
     renderBulkMineList();
   });
+  $('#bulkMineCategory')?.addEventListener('change',e=>{
+    state.bulkClientFilters[companyId].category=e.target.value;
+    box.dataset.category=e.target.value;
+    renderBulkMineList();
+  });
+
   state.bulkDocuments=docs;
   applyLanguage(box);
 }
-
 function renderManualForm(){
   const initial={currency:'EUR',record_type:'factura',invoice_type:'',expense_breakdown:{}};
   $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><div class="eyebrow">Visió de gestió manual</div><h1>Entrada manual</h1><p>Selecciona el tipus de registre i introdueix-ne les dades.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button></div></div></div><div><h2>Dades del registre</h2><p class="sub">Les factures rebudes i emeses han d’incloure obligatòriament el PDF o la imatge original. Les despeses poden guardar-se amb o sense adjunt.</p><div class="fields" id="manualForm">${fieldsHTML(initial,true)}</div><div style="margin-top:14px"><label class="field"><span id="manualFileLabel">Fitxer de factura (obligatori)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta" id="manualFileMeta">Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
@@ -3897,7 +3944,7 @@ renderBulkQueue = function(files){
 
 renderBulkCompany = async function(){
   const box=$('#bulkCompany');if(!box)return;const accept='.pdf,image/*,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif';
-  box.innerHTML=`<section class="hero bulk-upload"><div><div class="corporate-label">${t('Bústia corporativa · Joan Nogue')}</div><div class="eyebrow">${t('Visió de càrrega de documents')}</div><h1>${t('Càrrega massiva de documents')}</h1><p>${t('Selecciona diversos documents i indica la classificació de cadascun abans de pujar-los.')}</p><div class="bulk-drop"><label class="field"><span>${t('Fitxers PDF, imatges, Word, Excel i altres documents')}</span><input id="bulkPick" type="file" accept="${accept}" multiple></label><p class="vision-note">${t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.')}</p><p class="bulk-ticket-note">${t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.')}</p><div class="bulk-queue-heading">${t('Documents preparats')}</div><div id="bulkQueue" class="bulk-list"></div><div class="bulk-actions"><button class="btn primary" data-act="uploadBulk">${t('Pujar documents')}</button></div></div><p class="meta" id="bulkUploadStatus" role="status" aria-live="polite"></p></div></section>
+  box.innerHTML=`<section class="hero bulk-upload"><div><div class="corporate-label">${t('Bústia corporativa · Joan Nogue')}</div><div class="eyebrow">${t('Visió de càrrega de documents')}</div><h1>${t('Càrrega massiva de documents')}</h1><p>${t('Selecciona diversos documents i indica la classificació de cadascun abans de pujar-los.')}</p><div class="bulk-drop"><label class="field"><span>${t('Fitxers PDF, imatges, Word, Excel i altres documents')}</span><input id="bulkPick" type="file" accept="${accept}" multiple></label><p class="vision-note">${t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.')}</p><div class="bulk-queue-heading">${t('Documents preparats')}</div><div id="bulkQueue" class="bulk-list"></div><div class="bulk-actions"><button class="btn primary" data-act="uploadBulk">${t('Pujar documents')}</button></div></div><p class="meta" id="bulkUploadStatus" role="status" aria-live="polite"></p></div></section>
   <section class="hero bulk-uploaded" style="margin-top:18px"><div><div class="eyebrow">${t('Documents pujats')}</div><div class="section-head" style="margin:0 0 10px"><h2 style="margin:0">${t('Els meus documents')}</h2><button class="btn" data-act="refreshBulkMine">${t('Actualitzar')}</button></div><p class="sub">${t('Aquí pots comprovar quins documents ja has pujat i quan es van registrar. Fes clic al nom d’un document per obrir-lo.')}</p><div id="bulkMineList" class="bulk-list"><div class="empty">${esc(t('Carregant…'))}</div></div></div></section>`;
   $('#bulkPick')?.addEventListener('change',e=>renderBulkQueue([...(e.target.files||[])]));
   applyLanguage($('#bulkCompany'));setupBulkRealtime(state.profile?.company_id);await renderBulkMineList();
@@ -4318,7 +4365,6 @@ renderBulkCompany = async function(){
       </div>
       <label class="field bulk-pick-field"><span>${t('Fitxers PDF, imatges, Word, Excel i altres documents')}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice"></label>
       <p class="vision-note">${t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.')}</p>
-      <p class="bulk-ticket-note">${t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.')}</p>
       <div class="bulk-queue-heading">${t('Documents preparats')}</div><div id="bulkQueue" class="bulk-list"></div>
       <div class="bulk-actions"><button class="btn primary" data-act="uploadBulk" disabled>${t('Pujar documents')}</button></div>
     </div>
@@ -4805,7 +4851,6 @@ document.head.appendChild(v31BulkStyle);
         <label class="field bulk-pick-field"><span>${esc(t('Fitxers PDF, imatges, Word, Excel i altres documents'))}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice bulkMultiPageImageNote"></label>
         <p id="bulkMultiPageImageNote" class="bulk-required-note is-required" role="status" hidden>${esc(t('Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.'))}</p>
         <p class="vision-note">${esc(t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.'))}</p>
-        <p class="bulk-ticket-note">${esc(t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.'))}</p>
         <div class="bulk-queue-heading">${esc(t('Documents preparats'))}</div><div id="bulkQueue" class="bulk-list"></div>
         <div class="bulk-actions"><button class="btn primary" data-act="uploadBulk" disabled>${esc(t('Pujar documents'))}</button></div>
       </div><p class="meta" id="bulkUploadStatus" role="status" aria-live="polite"></p>
