@@ -5688,5 +5688,108 @@ dialog { border:1px solid var(--line); border-radius:24px; box-shadow:0 28px 90p
 })();
 </script>
 
+<script id="v41-generic-camera-photo-names">
+(function(){
+  // Some mobile browsers give every newly captured photo the same generic name
+  // (for example image.jpg). Rename only generic image names so each capture is
+  // distinguishable, while preserving meaningful filenames and duplicate checks.
+  const IMAGE_EXTENSIONS = new Set(['jpg','jpeg','png','gif','webp','bmp','tif','tiff','heic','heif','avif']);
+  function extensionOf(name){
+    const dot=String(name||'').lastIndexOf('.');
+    return dot>=0?String(name).slice(dot+1).toLowerCase():'';
+  }
+  function isImageFile(file){
+    return !!file && ((/^image\//i).test(String(file.type||'')) || IMAGE_EXTENSIONS.has(extensionOf(file.name)));
+  }
+  function isGenericImageName(file){
+    if(!isImageFile(file)) return false;
+    const name=String(file.name||'');
+    const dot=name.lastIndexOf('.');
+    const base=(dot>=0?name.slice(0,dot):name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    const compact=base.replace(/[^a-z0-9]/g,'');
+    // Typical repeated names from camera capture/file-picker providers.
+    return /^(?:image|photo|picture|camera|capturedimage|capturedphoto|unknown|unnamed|file|upload|download|blob)\d*$/.test(compact) || compact==='img';
+  }
+  function photoExtension(file){
+    const ext=extensionOf(file.name);
+    if(IMAGE_EXTENSIONS.has(ext)) return ext;
+    const mime=String(file.type||'').toLowerCase();
+    const byMime={'image/jpeg':'jpg','image/png':'png','image/gif':'gif','image/webp':'webp','image/bmp':'bmp','image/tiff':'tiff','image/heic':'heic','image/heif':'heif','image/avif':'avif'};
+    return byMime[mime]||'jpg';
+  }
+  function timestamp(){
+    const d=new Date();
+    const pad=n=>String(n).padStart(2,'0');
+    return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  }
+  function randomSuffix(){
+    try{ if(window.crypto && typeof window.crypto.randomUUID==='function') return window.crypto.randomUUID().slice(0,8); }catch(_){}
+    return Math.random().toString(36).slice(2,10).padEnd(8,'0');
+  }
+  function renamedFile(file){
+    const name=`IMG_${timestamp()}_${randomSuffix()}.${photoExtension(file)}`;
+    return new File([file], name, {type:file.type||`image/${photoExtension(file)==='jpg'?'jpeg':photoExtension(file)}`, lastModified:file.lastModified||Date.now()});
+  }
+  document.addEventListener('change', function(event){
+    const input=event.target;
+    if(!input || input.id!=='bulkPick' || !input.files || !input.files.length) return;
+    const files=Array.from(input.files);
+    if(!files.some(isGenericImageName)) return;
+    try{
+      const transfer=new DataTransfer();
+      files.forEach(file=>transfer.items.add(isGenericImageName(file)?renamedFile(file):file));
+      input.files=transfer.files;
+      // The application's existing change handler runs after this capture listener
+      // and will display/store the renamed files and use their unique names for dupe checks.
+    }catch(_){
+      // Keep the original names if the browser does not allow FileList replacement.
+      // Normal duplicate checking continues to work in that browser.
+    }
+  }, true);
+})();
+</script>
+
+
+<style id="v42-center-customer-history">
+/* v42: render the uploaded-document history as one full-width column inside its white card.
+   The base .hero uses a two-column grid, which left the history content constrained to column one. */
+.hero.bulk-uploaded.v32-centered-section {
+  display: block !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  width: 100%;
+  max-width: 1220px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+.hero.bulk-uploaded.v32-centered-section > .v32-centered-inner {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+.hero.bulk-uploaded.v32-centered-section #bulkMineList,
+.hero.bulk-uploaded.v32-centered-section #bulkMineList > *,
+.hero.bulk-uploaded.v32-centered-section #bulkMineList .v40-customer-history,
+.hero.bulk-uploaded.v32-centered-section #bulkMineList .v40-customer-documents,
+.hero.bulk-uploaded.v32-centered-section #bulkMineList .v40-month-group {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.hero.bulk-uploaded.v32-centered-section #bulkMineList .v40-customer-filter-row {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+@media (max-width: 700px) {
+  .hero.bulk-uploaded.v32-centered-section { padding: 18px 14px; }
+  .hero.bulk-uploaded.v32-centered-section > .v32-centered-inner { padding: 0; }
+}
+</style>
+
 </body>
 </html>
