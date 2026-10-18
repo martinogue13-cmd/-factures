@@ -5884,5 +5884,71 @@ Object.assign(I18N.en, {
 });
 </script>
 
+
+
+<style id="v46-manager-bulk-alignment">
+/* v46: align the manager's Model 2 dashboard to the full white card, not a single grid column. */
+#managerContent > .hero.manager-mode-card.v32-centered-manager {
+  display: block !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  width: 100%;
+  max-width: 1160px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager > .v32-centered-inner {
+  display: block !important;
+  width: 100%;
+  max-width: none !important;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard {
+  display: block;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 18px 0 0;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > .v31-category-overview,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > .v32-category-overview,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > .filters,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > .bulk-period-note,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > .v31-document-details,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > #bulkManagerList,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard > .bulk-months {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin-left: 0;
+  margin-right: 0;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-category-grid {
+  width: 100%;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters {
+  display: grid;
+  width: 100%;
+  max-width: none;
+  justify-content: stretch;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-details {
+  margin-top: 18px;
+}
+@media (max-width: 700px) {
+  #managerContent > .hero.manager-mode-card.v32-centered-manager { padding: 18px 14px; }
+  #managerContent > .hero.manager-mode-card.v32-centered-manager > .v32-centered-inner { padding: 0; }
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard { margin-top: 14px; }
+}
+</style>
+
 </body>
 </html>
