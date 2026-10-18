@@ -5948,6 +5948,68 @@ Object.assign(I18N.en, {
   #managerContent > .hero.manager-mode-card.v32-centered-manager > .v32-centered-inner { padding: 0; }
   #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard { margin-top: 14px; }
 }
+
+
+/* v47: keep the manager's Model 2 filters on one aligned horizontal row on desktop. */
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: stretch;
+  gap: 10px;
+  padding: clamp(12px, 1.5vw, 18px);
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .field,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .field {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .field select,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .field select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .v31-zip-field,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .v31-zip-field {
+  flex: 0 0 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .v31-zip-field .btn,
+#managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .v31-zip-field .btn {
+  white-space: nowrap;
+  min-height: 42px;
+}
+@media (max-width: 760px) {
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters,
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters {
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .field:not(.v31-zip-field),
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .field:not(.v31-zip-field) {
+    flex: 1 1 calc(50% - 10px);
+    min-width: min(145px, 100%);
+  }
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .v31-zip-field,
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .v31-zip-field {
+    flex: 1 1 100%;
+  }
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v32-document-filters > .v31-zip-field .btn,
+  #managerContent > .hero.manager-mode-card.v32-centered-manager #bulkManagerDashboard .v31-document-filters > .v31-zip-field .btn {
+    width: 100%;
+  }
+}
+
 </style>
 
 </body>
