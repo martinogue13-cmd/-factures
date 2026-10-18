@@ -5582,5 +5582,111 @@ dialog { border:1px solid var(--line); border-radius:24px; box-shadow:0 28px 90p
 </script>
 
 
+
+<style id="v40-customer-history-layout">
+/* v40: simplified customer document history; month/category filters remain visible. */
+.bulk-uploaded { width:100%; max-width:1220px; margin-inline:auto; box-sizing:border-box; }
+.bulk-uploaded > .v32-centered-inner { width:100%; max-width:none; margin:0; text-align:left; }
+.bulk-uploaded .v32-centered-heading { justify-content:space-between; text-align:left; }
+.bulk-uploaded .v32-centered-heading h2 { text-align:left; margin:0; }
+#bulkMineList { display:block; width:100%; max-width:none; min-width:0; margin:14px 0 0; box-sizing:border-box; }
+#bulkMineList .v40-customer-history { width:100%; max-width:none; display:flex; flex-direction:column; gap:14px; box-sizing:border-box; }
+#bulkMineList .v40-customer-filter-row { width:100%; max-width:none; margin:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:15px; border:1px solid var(--line); border-radius:15px; background:var(--surface); box-sizing:border-box; }
+#bulkMineList .v40-customer-filter-row .field { min-width:0; width:100%; max-width:none; margin:0; text-align:left; }
+#bulkMineList .v40-customer-count { margin:0; color:var(--ink2); font-size:.88rem; line-height:1.5; }
+#bulkMineList .v40-customer-documents { width:100%; max-width:none; margin:0; padding:18px; border:1px solid var(--line); border-radius:17px; background:var(--surface); box-sizing:border-box; }
+#bulkMineList .v40-customer-documents .v31-section-heading { justify-content:flex-start; text-align:left; margin:0 0 12px; }
+#bulkMineList .v40-customer-documents .v31-section-heading h3 { text-align:left; }
+#bulkMineList .v40-month-group { width:100%; max-width:none; margin:0 0 14px; border:1px solid var(--line); border-radius:13px; overflow:hidden; background:var(--surface); box-sizing:border-box; }
+#bulkMineList .v40-month-group:last-child { margin-bottom:0; }
+#bulkMineList .v40-month-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 15px; background:var(--paper); border-bottom:1px solid var(--line); }
+#bulkMineList .v40-month-heading strong { text-transform:capitalize; }
+#bulkMineList .v40-month-heading span { white-space:nowrap; color:var(--ink2); font-size:.82rem; }
+#bulkMineList .v40-month-group .bulk-list { width:100%; margin:0; padding:0; }
+#bulkMineList .v40-month-group .v31-document-row { width:100%; max-width:none; margin:0; box-sizing:border-box; }
+#bulkMineList .v40-month-group .v31-document-row + .v31-document-row { border-top:1px solid var(--line); }
+#bulkMineList .v40-customer-empty { width:100%; padding:24px 18px; border:1px dashed var(--line); border-radius:13px; text-align:center; color:var(--ink2); background:var(--paper); box-sizing:border-box; }
+:root[data-theme="dark"] #bulkMineList .v40-customer-filter-row,
+:root[data-theme="dark"] #bulkMineList .v40-customer-documents,
+:root[data-theme="dark"] #bulkMineList .v40-month-group { background:var(--surface); border-color:var(--line); }
+:root[data-theme="dark"] #bulkMineList .v40-month-heading { background:color-mix(in srgb,var(--brand-soft) 55%,var(--surface)); border-color:var(--line); }
+:root:not([data-theme="light"]) #bulkMineList .v40-customer-filter-row,
+:root:not([data-theme="light"]) #bulkMineList .v40-customer-documents,
+:root:not([data-theme="light"]) #bulkMineList .v40-month-group { background:var(--surface); border-color:var(--line); }
+:root:not([data-theme="light"]) #bulkMineList .v40-month-heading { background:color-mix(in srgb,var(--brand-soft) 55%,var(--surface)); border-color:var(--line); }
+@media(max-width:700px) {
+  .bulk-uploaded > .v32-centered-inner { padding:0; }
+  #bulkMineList .v40-customer-filter-row { grid-template-columns:1fr; padding:13px; }
+  #bulkMineList .v40-customer-documents { padding:13px 10px; }
+  #bulkMineList .v40-month-heading { padding:11px 12px; }
+}
+</style>
+<script id="v40-customer-history">
+(() => {
+  function v40CustomerHistoryRows(docs, selectedMonth='', selectedCategory='') {
+    const scoped=(docs||[])
+      .filter(doc=>!selectedCategory || normalizeBulkCategory(doc.document_category)===selectedCategory)
+      .filter(doc=>!selectedMonth || monthKeyFromDate(doc.created_at)===selectedMonth)
+      .sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+    if(!scoped.length) return `<div class="v40-customer-empty">${esc(t('No hi ha documents en aquest període.'))}</div>`;
+    const byMonth=new Map();
+    for(const doc of scoped){const key=monthKeyFromDate(doc.created_at)||'';if(!byMonth.has(key))byMonth.set(key,[]);byMonth.get(key).push(doc);}
+    return [...byMonth.entries()].sort((a,b)=>b[0].localeCompare(a[0])).map(([key,items])=>`
+      <section class="v40-month-group">
+        <header class="v40-month-heading"><strong>${esc(monthLabelFromKey(key)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></header>
+        <div class="bulk-list">${items.map(doc=>{
+          const category=normalizeBulkCategory(doc.document_category);
+          const received=Boolean(doc.received_at);
+          const stateClass=received?'is-received':'is-uploaded';
+          const sizeMb=((Number(doc.file_size||0)/1024/1024)||0).toFixed(2);
+          return `<article class="bulk-row v31-document-row ${stateClass}">
+            <div class="v31-document-main">
+              <div class="v31-document-title">
+                <button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}" aria-label="${esc(t('Obrir'))}: ${esc(doc.file_name)}"><b>${esc(doc.file_name)}</b></button>
+                <span class="v31-state-chip ${stateClass}">${esc(t(received?'Recepcionat':'Pujat'))}</span>
+              </div>
+              <small class="bulk-file-meta">${esc(t('Pujat el'))}: ${esc(fmtStamp(doc.created_at))} · ${sizeMb} MB</small>
+              ${received&&doc.received_at?`<div class="v31-receipt-date">${esc(t('Recepcionat el'))}: ${esc(fmtStamp(doc.received_at))}</div>`:''}
+            </div>
+            <span class="bulk-category-pill" data-category="${esc(category)}">${esc(bulkCategoryLabel(category))}</span>
+            <div class="bulk-row-actions"><button type="button" class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(doc.id)}">${esc(t('Obrir'))}</button></div>
+          </article>`;
+        }).join('')}</div>
+      </section>`).join('');
+  }
+
+  renderBulkMineList = async function(){
+    const companyId=state.profile?.company_id;
+    if(!companyId) return;
+    const docs=await loadBulkDocuments(companyId);
+    const box=$('#bulkMineList');
+    if(!box) return;
+    if(!state.bulkMineFilters) state.bulkMineFilters=Object.create(null);
+    const saved=state.bulkMineFilters[companyId]||{};
+    const month=saved.month??box.dataset.month??'';
+    const category=saved.category??box.dataset.category??'';
+    state.bulkMineFilters[companyId]={month,category,status:'',pageCount:''};
+    box.dataset.month=month;box.dataset.category=category;box.dataset.status='';box.dataset.pageCount='';
+    const scoped=docs.filter(doc=>(!month||monthKeyFromDate(doc.created_at)===month)&&(!category||normalizeBulkCategory(doc.document_category)===category));
+    const monthLabel=month?monthLabelFromKey(month):'';
+    const countLabel=month?`${t('del mes')} ${monthLabel}`:t('tots els mesos');
+    const countText=`${t('Mostrant')} ${scoped.length} ${t('documents').toLowerCase()} · ${countLabel}${category?' · '+bulkCategoryLabel(category):''}`;
+    box.innerHTML=`<div class="v40-customer-history">
+      <div class="filters bulk-filters v40-customer-filter-row">
+        <label class="field"><span>${esc(t('Mes de pujada'))}</span><select id="bulkMineMonth">${bulkMonthOptions(docs,month)}</select></label>
+        <label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkMineCategory">${bulkCategoryFilterOptions(category)}</select></label>
+      </div>
+      <p class="v40-customer-count">${esc(countText)}</p>
+      <section class="v40-customer-documents">
+        <div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div>
+        <div class="v40-customer-months">${v40CustomerHistoryRows(docs,month,category)}</div>
+      </section>
+    </div>`;
+    state.bulkDocuments=docs;
+    applyLanguage(box);
+  };
+})();
+</script>
+
 </body>
 </html>
