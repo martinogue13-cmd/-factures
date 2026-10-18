@@ -4638,7 +4638,7 @@ document.head.appendChild(v31BulkStyle);
 
 
 <script>
-/* v32: page-count subcategories, the Banks category, clearer ZIP folder structure, and centered layout. */
+/* v32 + v33: page-count subcategories, Banks, centered layout, and no image/camera uploads for multi-page invoices. */
 (function(){
   const v32Translations = {
     ca: {
@@ -4657,7 +4657,8 @@ document.head.appendChild(v31BulkStyle);
       'Pàgina única':'Pàgina única', 'Diverses pàgines':'Diverses pàgines',
       'Documents de venda i compra per nombre de pàgines':'Documents de venda i compra per nombre de pàgines',
       'Una pàgina':'Una pàgina', 'Diverses pàgines':'Diverses pàgines',
-      'Tots els documents':'Tots els documents'
+      'Tots els documents':'Tots els documents',
+      'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.'
     },
     es: {
       'Bancs':'Bancos', 'Pàgines de la factura':'Páginas de la factura',
@@ -4673,7 +4674,8 @@ document.head.appendChild(v31BulkStyle);
       'Tots els grups de pàgines':'Todos los grupos de páginas',
       'Document sense classificació de pàgines':'Documento sin clasificación de páginas',
       'Pàgina única':'Una página',
-      'Tots els documents':'Todos los documentos'
+      'Tots els documents':'Todos los documentos',
+      'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'Para las facturas de varias páginas, no se permite hacer una foto ni seleccionar imágenes de la galería. Elige un PDF u otro documento.'
     },
     en: {
       'Bancs':'Banks', 'Pàgines de la factura':'Invoice page count',
@@ -4689,7 +4691,8 @@ document.head.appendChild(v31BulkStyle);
       'Tots els grups de pàgines':'All page-count groups',
       'Document sense classificació de pàgines':'Document without page-count classification',
       'Pàgina única':'One page',
-      'Tots els documents':'All documents'
+      'Tots els documents':'All documents',
+      'Per a factures de diverses pàgines, no es permet fer una foto ni seleccionar imatges de la galeria. Tria un PDF o un altre document.':'For multi-page invoices, taking a photo or selecting images from the gallery is not allowed. Choose a PDF or another document.'
     }
   };
   Object.keys(v32Translations).forEach(lang=>Object.assign(I18N[lang],v32Translations[lang]));
@@ -4700,6 +4703,10 @@ document.head.appendChild(v31BulkStyle);
   const pageLabel = value => value==='una_pagina' ? t('Una pàgina') : value==='varias_paginas' ? t('Diverses pàgines') : t('Pendent de classificar pàgines');
   const pageFolderLabel = value => value==='una_pagina' ? `01 - ${t('Una pàgina')}` : value==='varias_paginas' ? `02 - ${t('Diverses pàgines')}` : `99 - ${t('Pendent de classificar pàgines')}`;
   const invoiceCategoryRank = value => ({venta:1,compra:2,otros:3,cierre_caja:4,bancos:5})[value] || 99;
+  const V32_BULK_ACCEPT_WITH_IMAGES = '.pdf,image/*,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif';
+  const V32_BULK_ACCEPT_NO_IMAGES = '.pdf,.doc,.docx,.docm,.xls,.xlsx,.xlsm,.xlsb,.csv,.tsv,.ods,.odt,.rtf,.txt,.md,.ppt,.pptx,.pptm,.odp,.xml,.json,.pages,.numbers,.zip';
+  const v32IsImageFile = file => /^image\//i.test(String(file?.type||'')) || /\.(?:jpe?g|png|gif|webp|bmp|tiff?|heic|heif|avif)$/i.test(String(file?.name||''));
+  const v32IsMultiPageInvoiceUpload = () => isInvoiceCategory(state.bulkUploadCategory||$('#bulkUploadCategory')?.value||'') && normalizePageCount(state.bulkUploadPageCount||$('#bulkUploadPageCount')?.value||'') === 'varias_paginas';
 
   function v32UploadPageOptions(value='') {
     return `<option value="">${esc(t('Selecciona el nombre de pàgines…'))}</option><option value="una_pagina" ${value==='una_pagina'?'selected':''}>${esc(t('Una pàgina'))}</option><option value="varias_paginas" ${value==='varias_paginas'?'selected':''}>${esc(t('Diverses pàgines'))}</option>`;
@@ -4731,6 +4738,10 @@ document.head.appendChild(v31BulkStyle);
     const category=state.bulkUploadCategory||'';
     const needsPage=isInvoiceCategory(category);
     const pageCount=normalizePageCount(state.bulkUploadPageCount||'');
+    const restrictImages=needsPage&&pageCount==='varias_paginas';
+    if(input){input.accept=restrictImages?V32_BULK_ACCEPT_NO_IMAGES:V32_BULK_ACCEPT_WITH_IMAGES;input.removeAttribute('capture');}
+    const imageRestrictionNote=$('#bulkMultiPageImageNote');
+    if(imageRestrictionNote)imageRestrictionNote.hidden=!restrictImages;
     if(pageField)pageField.hidden=!needsPage;
     if(categorySelect){categorySelect.value=category;categorySelect.disabled=files.length>0;}
     if(pageSelect){pageSelect.value=needsPage?pageCount:'';pageSelect.disabled=!needsPage||files.length>0;}
@@ -4791,7 +4802,8 @@ document.head.appendChild(v31BulkStyle);
           <p id="bulkClassifyNotice" class="bulk-required-note is-required" role="alert" aria-live="polite">${esc(t('Selecciona una classificació per continuar.'))}</p>
           <p class="vision-note">${esc(t('La classificació s’aplicarà a tots els documents d’aquesta selecció.'))}</p>
         </div>
-        <label class="field bulk-pick-field"><span>${esc(t('Fitxers PDF, imatges, Word, Excel i altres documents'))}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice"></label>
+        <label class="field bulk-pick-field"><span>${esc(t('Fitxers PDF, imatges, Word, Excel i altres documents'))}</span><input id="bulkPick" type="file" accept="${accept}" multiple disabled aria-describedby="bulkClassifyNotice bulkMultiPageImageNote"></label>
+        <p id="bulkMultiPageImageNote" class="bulk-required-note is-required" role="status" hidden>${esc(t(key))}</p>
         <p class="vision-note">${esc(t('Pots seleccionar diversos documents alhora. Mida màxima: 25 MB per fitxer.'))}</p>
         <p class="bulk-ticket-note">${esc(t('El tiquet de tancament de caixa és un resum de les vendes presencials de la botiga, no una factura individual.'))}</p>
         <div class="bulk-queue-heading">${esc(t('Documents preparats'))}</div><div id="bulkQueue" class="bulk-list"></div>
@@ -4825,6 +4837,16 @@ document.head.appendChild(v31BulkStyle);
       if(isInvoiceCategory(category)&&!normalizePageCount(state.bulkUploadPageCount)){
         input.value='';renderBulkQueue([]);v32SyncUploadGate();const message=t('Selecciona una o diverses pàgines abans de continuar.');const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
       }
+      if(isInvoiceCategory(category)&&normalizePageCount(state.bulkUploadPageCount)==='varias_paginas') {
+        const imageFiles=files.filter(v32IsImageFile);
+        if(imageFiles.length){
+          const acceptedFiles=files.filter(file=>!v32IsImageFile(file));
+          try{const transfer=new DataTransfer();acceptedFiles.forEach(file=>transfer.items.add(file));input.files=transfer.files;}catch(_){input.value='';}
+          const remaining=[...(input.files||[])];
+          renderBulkQueue(remaining);v32SyncUploadGate();
+          const message=t(key);const status=$('#bulkUploadStatus');if(status)status.textContent=message;toast(message,true);return;
+        }
+      }
       if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
       files.forEach(file=>state.bulkCategoryByFile[bulkFileToken(file)]=category);
       renderBulkQueue(files);v32SyncUploadGate();
@@ -4845,6 +4867,9 @@ document.head.appendChild(v31BulkStyle);
     if(isInvoiceCategory(category)&&!pageCount){
       const message=t('Selecciona una o diverses pàgines abans de continuar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
     }
+    if(isInvoiceCategory(category)&&pageCount==='varias_paginas'&&files.some(v32IsImageFile)){
+      const message=t(key);if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;
+    }
     if(!files.length){const message=t('Selecciona documents per pujar.');if(status)status.textContent=message;toast(message,true);v32SyncUploadGate();return;}
     state.bulkUploadCategory=category;state.bulkUploadPageCount=isInvoiceCategory(category)?pageCount:'';
     if(!state.bulkCategoryByFile)state.bulkCategoryByFile=Object.create(null);
@@ -4859,13 +4884,13 @@ document.head.appendChild(v31BulkStyle);
   function v32PageFilterOptions(value=''){
     return `<option value="">${esc(t('Totes les pàgines'))}</option><option value="una_pagina" ${value==='una_pagina'?'selected':''}>${esc(t('Una pàgina'))}</option><option value="varias_paginas" ${value==='varias_paginas'?'selected':''}>${esc(t('Diverses pàgines'))}</option><option value="pendent" ${value==='pendent'?'selected':''}>${esc(t('Pendent de classificar pàgines'))}</option>`;
   }
-  function v32CategoryOverview(docs, selectedCategory='', selectedPageCount=''){
+  function v32CategoryOverview(docs, selectedCategory='', selectedPageCount='', showPageSubfilters=true){
     const items=BULK_DOCUMENT_CATEGORIES.map(cat=>{
       const catDocs=(docs||[]).filter(doc=>normalizeBulkCategory(doc.document_category)===cat.value);
       const active=selectedCategory===cat.value;
       const name=esc(t(cat.label));
-      const pageSummary=isInvoiceCategory(cat.value)?`<div class="v32-page-counts"><span>${esc(t('Una pàgina'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina').length}</b></span><span>${esc(t('Diverses pàgines'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas').length}</b></span><span>${esc(t('Pendent de classificar pàgines'))}: <b>${catDocs.filter(d=>!normalizePageCount(d.page_count)).length}</b></span></div>`:'';
-      const pageShortcuts=isInvoiceCategory(cat.value)?`<div class="v32-page-subfilters"><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="una_pagina" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='una_pagina'?'is-active':''}">${esc(t('Una pàgina'))}</button><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="varias_paginas" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='varias_paginas'?'is-active':''}">${esc(t('Diverses pàgines'))}</button></div>`:'';
+      const pageSummary=showPageSubfilters&&isInvoiceCategory(cat.value)?`<div class="v32-page-counts"><span>${esc(t('Una pàgina'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='una_pagina').length}</b></span><span>${esc(t('Diverses pàgines'))}: <b>${catDocs.filter(d=>normalizePageCount(d.page_count)==='varias_paginas').length}</b></span><span>${esc(t('Pendent de classificar pàgines'))}: <b>${catDocs.filter(d=>!normalizePageCount(d.page_count)).length}</b></span></div>`:'';
+      const pageShortcuts=showPageSubfilters&&isInvoiceCategory(cat.value)?`<div class="v32-page-subfilters"><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="una_pagina" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='una_pagina'?'is-active':''}">${esc(t('Una pàgina'))}</button><button type="button" data-act="bulkPageJump" data-category="${esc(cat.value)}" data-page-count="varias_paginas" class="v32-page-filter-chip ${selectedCategory===cat.value&&selectedPageCount==='varias_paginas'?'is-active':''}">${esc(t('Diverses pàgines'))}</button></div>`:'';
       return `<div class="v32-category-card-wrap"><button type="button" class="v31-category-card ${active?'is-active':''}" data-act="bulkCategoryJump" data-category="${esc(cat.value)}" aria-pressed="${active?'true':'false'}"><span class="v31-category-name">${name}</span><strong>${catDocs.length}</strong><small>${esc(t('documents'))}</small></button>${pageSummary}${pageShortcuts}</div>`;
     }).join('');
     return `<section class="v31-category-overview v32-category-overview"><div class="v31-section-heading"><h3>${esc(t('Documents per classificació'))}</h3><p>${esc(t('Selecciona una categoria per filtrar els documents.'))}</p></div><div class="v31-category-grid v32-category-grid">${items}</div></section>`;
@@ -4907,9 +4932,11 @@ document.head.appendChild(v31BulkStyle);
     const docs=await loadBulkDocuments(companyId);const box=$('#bulkMineList');if(!box)return;
     if(!state.bulkMineFilters)state.bulkMineFilters=Object.create(null);
     const saved=state.bulkMineFilters[companyId]||{};
-    const month=saved.month??box.dataset.month??'';const category=saved.category??box.dataset.category??'';const status=['uploaded','received'].includes(saved.status)?saved.status:'';const pageCount=['una_pagina','varias_paginas','pendent'].includes(saved.pageCount)?saved.pageCount:'';
+    /* The customer only needs the document-classification filter. Page-count,
+       month and status remain available to the manager but are not customer filters. */
+    const month='';const category=saved.category??box.dataset.category??'';const status='';const pageCount='';
     state.bulkMineFilters[companyId]={month,category,status,pageCount};box.dataset.month=month;box.dataset.category=category;box.dataset.status=status;box.dataset.pageCount=pageCount;
-    box.innerHTML=`${v32CategoryOverview(docs,category,pageCount)}<div class="filters bulk-filters v31-document-filters v32-document-filters"><label class="field"><span>${esc(t('Mes de pujada'))}</span><select id="bulkMineMonth">${bulkMonthOptions(docs,month)}</select></label><label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkMineCategory">${bulkCategoryFilterOptions(category)}</select></label><label class="field"><span>${esc(t('Classificació de pàgines'))}</span><select id="bulkMinePageCount">${v32FilterPageOptions(pageCount)}</select></label><label class="field"><span>${esc(t('Estat del document'))}</span><select id="bulkMineStatus">${v27StatusOptions(status)}</select></label></div><div class="bulk-period-note">${v32FilterSummary(docs,month,category,status,pageCount)}</div><section class="v31-document-details"><div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div><div class="v31-document-groups">${v32DocumentGroupsHtml(docs,month,category,status,pageCount,false)}</div></section>`;
+    box.innerHTML=`${v32CategoryOverview(docs,category,'',false)}<div class="filters bulk-filters v31-document-filters v32-document-filters v34-customer-document-filters"><label class="field"><span>${esc(t('Classificació del document'))}</span><select id="bulkMineCategory">${bulkCategoryFilterOptions(category)}</select></label></div><div class="bulk-period-note">${v32FilterSummary(docs,'',category,'','')}</div><section class="v31-document-details"><div class="v31-section-heading"><h3>${esc(t('Detall dels documents'))}</h3></div><div class="v31-document-groups">${v32DocumentGroupsHtml(docs,'',category,'','',false)}</div></section>`;
     state.bulkDocuments=docs;applyLanguage(box);
   };
 
@@ -5028,6 +5055,13 @@ document.head.appendChild(v31BulkStyle);
     html[data-theme="dark"] .v32-page-pill,:root:not([data-theme="light"]) .v32-page-pill{background:#172330;color:#c8d8e8;border-color:#314357}
   `;
   document.head.appendChild(v32CenterStyle);
+  const v34CustomerFilterStyle=document.createElement('style');
+  v34CustomerFilterStyle.textContent=`
+    .v34-customer-document-filters{display:flex;justify-content:center;max-width:520px;margin:0 auto 12px}
+    .v34-customer-document-filters .field{width:100%;max-width:420px;min-width:240px}
+    @media(max-width:540px){.v34-customer-document-filters .field{min-width:0;max-width:100%}}
+  `;
+  document.head.appendChild(v34CustomerFilterStyle);
 })();
 </script>
 
