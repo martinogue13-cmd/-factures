@@ -808,6 +808,13 @@ td{padding:12px 13px}
   box-shadow:0 8px 18px rgba(16,36,58,.06);
 }
 .bulk-row b{font-weight:650}
+.bulk-file-open{display:flex;flex:1;min-width:0;flex-direction:column;align-items:flex-start;gap:4px;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.bulk-file-open b{text-decoration:underline;text-decoration-color:var(--brand);text-underline-offset:3px;overflow-wrap:anywhere}
+.bulk-file-open:hover b{color:var(--brand)}
+.bulk-file-open:focus-visible{outline:2px solid var(--brand);outline-offset:4px;border-radius:4px}
+.bulk-file-open small{line-height:1.45}
+.bulk-row-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+@media (max-width:760px){.bulk-file-open{width:100%}.bulk-row-actions{width:100%;flex-wrap:wrap}.bulk-row-actions .btn{flex:1}}
 
 .footer-brand{
   padding-bottom:30px;
@@ -1000,6 +1007,35 @@ html[data-theme="dark"] .pnl-table table,html[data-theme="dark"] .tablewrap tabl
 @media (max-width:480px){:root:not([data-theme="light"]) .bulk-summary{grid-template-columns:1fr}}
 
 }
+</style>
+<style>
+/* v22 supplier/customer management and accounting fields */
+.v22-counterparty{display:contents}
+.v22-counterparty .field-help{grid-column:1/-1}
+.field-help{display:block;color:var(--muted);font-size:.78rem;line-height:1.45;margin-top:4px}
+.v22-supplier-match{grid-column:1/-1;margin-top:-6px;min-height:1px}
+.partner-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 16px}
+.v22-partner-count{font-size:.84rem;color:var(--muted);margin:8px 0}
+.v22-partner-form{margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel, var(--surface))}
+.v22-partner-form h3{margin:0 0 12px;font-size:1rem}
+.v22-partner-table{max-width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.v22-partner-table table{width:100%;border-collapse:collapse;min-width:700px}
+.v22-partner-table th,.v22-partner-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:.84rem}
+.v22-partner-table th{background:var(--paper);font-size:.76rem;letter-spacing:.02em}
+.v22-partner-table td small{display:block;color:var(--muted);margin-top:3px}
+.v22-partner-table tr:last-child td{border-bottom:0}
+#dlg{width:min(1040px,calc(100vw - 24px));max-width:1040px;max-height:calc(100dvh - 24px);overflow:auto}
+#dlg .dpad{padding:20px}
+#dlg .fields{align-items:start}
+#manualForm .field input[readonly],#detailForm .field input[readonly]{opacity:.88}
+#manualForm [data-counterparty="customer"] .btn{width:max-content;max-width:100%}
+@media(max-width:760px){
+  #dlg .dpad{padding:14px}
+  .partner-toolbar .btn{flex:1 1 auto}
+  .v22-partner-form{padding:12px}
+  .v22-partner-table table{min-width:660px}
+}
+
 </style>
 </head>
 <body>
@@ -1358,7 +1394,11 @@ const I18N = {
   }
 };
 
-Object.assign(I18N.ca,{  'Selecciona una empresa':'Selecciona una empresa','Gestió manual':'Gestió manual','Càrrega documental':'Càrrega documental','Visió 1 · Gestió manual':'Visió 1 · Gestió manual','Visió 2 · Càrrega documental':'Visió 2 · Càrrega documental','Visió 1 · Gestió manual i comptable':'Visió 1 · Gestió manual i comptable','Gestionar empresa':'Gestionar empresa','Canviar d’empresa':'Canviar d’empresa','Com l’has de gestionar':'Com l’has de gestionar','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.','Descarrega els documents.':'Descarrega els documents.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Utilitza el ZIP per portar-los a la teva carpeta local.','No hi ha Pèrdues i Guanys ni revisió de camps.':'No hi ha Pèrdues i Guanys ni revisió de camps.','Aquesta empresa treballa amb informació comptable detallada.':'Aquesta empresa treballa amb informació comptable detallada.','Revisa i corregeix les factures i despeses.':'Revisa i corregeix les factures i despeses.','Consulta el detall de cada registre.':'Consulta el detall de cada registre.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Utilitza Pèrdues i Guanys per veure el resultat econòmic.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.','Documents per descarregar':'Documents per descarregar'});Object.assign(I18N.es,{  'Selecciona una empresa':'Selecciona una empresa','Gestió manual':'Gestión manual','Càrrega documental':'Carga documental','Visió 1 · Gestió manual':'Visión 1 · Gestión manual','Visió 2 · Càrrega documental':'Visión 2 · Carga documental','Visió 1 · Gestió manual i comptable':'Visión 1 · Gestión manual y contable','Gestionar empresa':'Gestionar empresa','Canviar d’empresa':'Cambiar de empresa','Com l’has de gestionar':'Cómo debes gestionarla','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'Esta empresa solo te entrega documentos. No es necesario clasificarlos ni revisar datos contables.','Descarrega els documents.':'Descarga los documentos.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Usa el ZIP para llevarlos a tu carpeta local.','No hi ha Pèrdues i Guanys ni revisió de camps.':'No hay Pérdidas y Ganancias ni revisión de campos.','Aquesta empresa treballa amb informació comptable detallada.':'Esta empresa se gestiona con información contable detallada.','Revisa i corregeix les factures i despeses.':'Revisa y corrige las facturas y gastos.','Consulta el detall de cada registre.':'Consulta el detalle de cada registro.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Usa Pérdidas y Ganancias para ver el resultado económico.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'Esta empresa se gestiona solo como repositorio documental: descarga los archivos y llévalos a tu carpeta local.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'Esta empresa se gestiona con detalle: revisión de registros, filtros, exportación y Pérdidas y Ganancias.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'El cliente solo sube documentos. Tú simplemente los descargas y los llevas a tu carpeta local.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Selecciona una empresa y la plataforma te mostrará exactamente cómo debes gestionarla.','Documents per descarregar':'Documentos para descargar'});Object.assign(I18N.en,{  'Selecciona una empresa':'Select a company','Gestió manual':'Manual management','Càrrega documental':'Document upload','Visió 1 · Gestió manual':'View 1 · Manual management','Visió 2 · Càrrega documental':'View 2 · Document upload','Visió 1 · Gestió manual i comptable':'View 1 · Manual accounting management','Gestionar empresa':'Manage company','Canviar d’empresa':'Change company','Com l’has de gestionar':'How you should manage it','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'This company only provides documents. No accounting classification or field review is needed.','Descarrega els documents.':'Download the documents.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Use the ZIP to move them to your local folder.','No hi ha Pèrdues i Guanys ni revisió de camps.':'There is no Profit & Loss or field review.','Aquesta empresa treballa amb informació comptable detallada.':'This company is managed with detailed accounting information.','Revisa i corregeix les factures i despeses.':'Review and correct invoices and expenses.','Consulta el detall de cada registre.':'Open each record in detail.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Use Profit & Loss to review the economic result.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'This company is managed only as a document repository: download the files and move them to your local folder.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'This company is managed in detail: review records, filters, exports and Profit & Loss.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'The client only uploads documents. You simply download them and move them to your local folder.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Select a company and the platform will show you exactly how to manage it.','Documents per descarregar':'Documents to download'});function t(text){
+Object.assign(I18N.ca,{  'Selecciona una empresa':'Selecciona una empresa','Gestió manual':'Gestió manual','Càrrega documental':'Càrrega documental','Visió 1 · Gestió manual':'Visió 1 · Gestió manual','Visió 2 · Càrrega documental':'Visió 2 · Càrrega documental','Visió 1 · Gestió manual i comptable':'Visió 1 · Gestió manual i comptable','Gestionar empresa':'Gestionar empresa','Canviar d’empresa':'Canviar d’empresa','Com l’has de gestionar':'Com l’has de gestionar','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.','Descarrega els documents.':'Descarrega els documents.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Utilitza el ZIP per portar-los a la teva carpeta local.','No hi ha Pèrdues i Guanys ni revisió de camps.':'No hi ha Pèrdues i Guanys ni revisió de camps.','Aquesta empresa treballa amb informació comptable detallada.':'Aquesta empresa treballa amb informació comptable detallada.','Revisa i corregeix les factures i despeses.':'Revisa i corregeix les factures i despeses.','Consulta el detall de cada registre.':'Consulta el detall de cada registre.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Utilitza Pèrdues i Guanys per veure el resultat econòmic.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.','Documents per descarregar':'Documents per descarregar'});Object.assign(I18N.es,{  'Selecciona una empresa':'Selecciona una empresa','Gestió manual':'Gestión manual','Càrrega documental':'Carga documental','Visió 1 · Gestió manual':'Visión 1 · Gestión manual','Visió 2 · Càrrega documental':'Visión 2 · Carga documental','Visió 1 · Gestió manual i comptable':'Visión 1 · Gestión manual y contable','Gestionar empresa':'Gestionar empresa','Canviar d’empresa':'Cambiar de empresa','Com l’has de gestionar':'Cómo debes gestionarla','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'Esta empresa solo te entrega documentos. No es necesario clasificarlos ni revisar datos contables.','Descarrega els documents.':'Descarga los documentos.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Usa el ZIP para llevarlos a tu carpeta local.','No hi ha Pèrdues i Guanys ni revisió de camps.':'No hay Pérdidas y Ganancias ni revisión de campos.','Aquesta empresa treballa amb informació comptable detallada.':'Esta empresa se gestiona con información contable detallada.','Revisa i corregeix les factures i despeses.':'Revisa y corrige las facturas y gastos.','Consulta el detall de cada registre.':'Consulta el detalle de cada registro.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Usa Pérdidas y Ganancias para ver el resultado económico.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'Esta empresa se gestiona solo como repositorio documental: descarga los archivos y llévalos a tu carpeta local.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'Esta empresa se gestiona con detalle: revisión de registros, filtros, exportación y Pérdidas y Ganancias.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'El cliente solo sube documentos. Tú simplemente los descargas y los llevas a tu carpeta local.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Selecciona una empresa y la plataforma te mostrará exactamente cómo debes gestionarla.','Documents per descarregar':'Documentos para descargar'});Object.assign(I18N.en,{  'Selecciona una empresa':'Select a company','Gestió manual':'Manual management','Càrrega documental':'Document upload','Visió 1 · Gestió manual':'View 1 · Manual management','Visió 2 · Càrrega documental':'View 2 · Document upload','Visió 1 · Gestió manual i comptable':'View 1 · Manual accounting management','Gestionar empresa':'Manage company','Canviar d’empresa':'Change company','Com l’has de gestionar':'How you should manage it','Aquesta empresa només et lliura documents. No cal classificar-los ni revisar dades comptables.':'This company only provides documents. No accounting classification or field review is needed.','Descarrega els documents.':'Download the documents.','Utilitza el ZIP per portar-los a la teva carpeta local.':'Use the ZIP to move them to your local folder.','No hi ha Pèrdues i Guanys ni revisió de camps.':'There is no Profit & Loss or field review.','Aquesta empresa treballa amb informació comptable detallada.':'This company is managed with detailed accounting information.','Revisa i corregeix les factures i despeses.':'Review and correct invoices and expenses.','Consulta el detall de cada registre.':'Open each record in detail.','Utilitza Pèrdues i Guanys per veure el resultat econòmic.':'Use Profit & Loss to review the economic result.','Aquesta empresa es gestiona només com a repositori documental: descarrega els fitxers i porta’ls a la carpeta local.':'This company is managed only as a document repository: download the files and move them to your local folder.','Aquesta empresa es gestiona amb detall: revisió de registres, filtres, exportació i Pèrdues i Guanys.':'This company is managed in detail: review records, filters, exports and Profit & Loss.','El client només puja documents. Tu simplement els descarregues i els portes a la carpeta local.':'The client only uploads documents. You simply download them and move them to your local folder.','Selecciona una empresa i la plataforma t’ensenyarà exactament com l’has de gestionar.':'Select a company and the platform will show you exactly how to manage it.','Documents per descarregar':'Documents to download'});Object.assign(I18N.ca,{'Obrir':'Obrir','Fes clic al nom d’un document per obrir-lo.':'Fes clic al nom d’un document per obrir-lo.','Obrint document…':'Obrint document…','Permet les finestres emergents per obrir el document.':'Permet les finestres emergents per obrir el document.','No s’ha pogut obrir el document.':'No s’ha pogut obrir el document.'});
+Object.assign(I18N.es,{'Obrir':'Abrir','Fes clic al nom d’un document per obrir-lo.':'Haz clic en el nombre de un documento para abrirlo.','Obrint document…':'Abriendo documento…','Permet les finestres emergents per obrir el document.':'Permite las ventanas emergentes para abrir el documento.','No s’ha pogut obrir el document.':'No se ha podido abrir el documento.'});
+Object.assign(I18N.en,{'Obrir':'Open','Fes clic al nom d’un document per obrir-lo.':'Click a document name to open it.','Obrint document…':'Opening document…','Permet les finestres emergents per obrir el document.':'Allow pop-ups to open the document.','No s’ha pogut obrir el document.':'Could not open the document.'});
+
+function t(text){
   return (I18N[CURRENT_LANG] && I18N[CURRENT_LANG][text]) || text;
 }
 function trDynamic(text){
@@ -1508,8 +1548,8 @@ function bulkGroupedRows(docs, month='', withActions=false){
       <div class="bulk-month-head"><strong>${esc(monthLabelFromKey(k)||t('Mes no disponible'))}</strong><span>${items.length} ${esc(t('documents'))}</span></div>
       <div class="bulk-list">
         ${items.map(d=>`<div class="bulk-row">
-          <span><b>${esc(d.file_name)}</b><small>${fmtStamp(d.created_at)} · ${((Number(d.file_size||0)/1024/1024)||0).toFixed(2)} MB</small></span>
-          ${withActions?`<button class="btn" data-act="bulkDownload" data-bulk-id="${esc(d.id)}">${t('Descarregar')}</button>`:`<span class="chip">${esc(t('Pujat'))}</span>`}
+          <button type="button" class="bulk-file-open" data-act="bulkOpen" data-bulk-id="${esc(d.id)}" aria-label="${esc(t('Obrir'))}: ${esc(d.file_name)}"><b>${esc(d.file_name)}</b><small>${fmtStamp(d.created_at)} · ${((Number(d.file_size||0)/1024/1024)||0).toFixed(2)} MB</small></button>
+          ${withActions?`<div class="bulk-row-actions"><button class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(d.id)}">${t('Obrir')}</button><button class="btn" data-act="bulkDownload" data-bulk-id="${esc(d.id)}">${t('Descarregar')}</button></div>`:`<button class="btn ghost" data-act="bulkOpen" data-bulk-id="${esc(d.id)}">${t('Obrir')}</button>`}
         </div>`).join('')}
       </div>
     </div>`).join('');
@@ -1524,7 +1564,7 @@ async function renderBulkCompany(){
   <section class="hero bulk-uploaded" style="margin-top:18px"><div>
     <div class="eyebrow">Documents pujats</div>
     <div class="section-head" style="margin:0 0 10px"><h2 style="margin:0">Els meus documents</h2><button class="btn" data-act="refreshBulkMine">Actualitzar</button></div>
-    <p class="sub">Aquí pots comprovar quins documents ja has pujat i quan es van registrar.</p>
+    <p class="sub">Aquí pots comprovar quins documents ja has pujat i quan es van registrar. ${t('Fes clic al nom d’un document per obrir-lo.')}</p>
     <div id="bulkMineList" class="bulk-list"><div class="empty">${esc(t('Carregant…'))}</div></div>
   </div></section>`;
   $('#bulkPick')?.addEventListener('change',e=>{
@@ -1748,6 +1788,17 @@ async function loadBulkDocuments(companyId){
   if(r.error){toast(r.error.message,true);return []}
   return r.data||[];
 }
+async function openBulkDocument(doc){
+  // Open a tab synchronously from the click event so the browser does not block the popup.
+  const previewWindow=window.open('about:blank','_blank');
+  if(!previewWindow){toast(t('Permet les finestres emergents per obrir el document.'),true);return;}
+  previewWindow.document.title=t('Obrint document…');
+  previewWindow.document.body.textContent=t('Obrint document…');
+  const {data,error}=await sb.storage.from('invoices').createSignedUrl(doc.file_path,300);
+  if(error||!data?.signedUrl){previewWindow.close();toast(error?.message||t('No s’ha pogut obrir el document.'),true);return;}
+  previewWindow.location.href=data.signedUrl;
+}
+
 async function downloadBulkDocument(doc){
   const {data,error}=await sb.storage.from('invoices').createSignedUrl(doc.file_path,120);
   if(error){toast(error.message,true);return;}
@@ -2275,6 +2326,9 @@ document.addEventListener('click', async e=>{
     else if(a==='clearManagerCompany'){state.filters.company='';state.filters.type='';state.filters.status='';state.filters.from='';state.filters.to='';state.filters.q='';managerView();}
     else if(a==='uploadBulk') await uploadBulkDocuments();
     else if(a==='refreshBulkMine') await renderBulkMineList();
+    else if(a==='bulkOpen'){
+      const doc=state.bulkDocuments.find(d=>d.id===el.dataset.bulkId); if(doc) await openBulkDocument(doc);
+    }
     else if(a==='bulkDownload'){
       const doc=state.bulkDocuments.find(d=>d.id===el.dataset.bulkId); if(doc) await downloadBulkDocument(doc);
     }
@@ -2293,6 +2347,458 @@ document.addEventListener('input',e=>{
 });
 initLanguage();
 init().catch(e=>fatal(e.message||'No s’ha pogut iniciar l’aplicació')).finally(()=>applyLanguage(document));
+</script>
+<script>
+/* v22: gestión de proveedores/clientes, libros contables y exportación detallada. */
+state.suppliers = state.suppliers || [];
+state.customers = state.customers || [];
+state.partnerType = state.partnerType || 'suppliers';
+state.partnerCompanyId = state.partnerCompanyId || null;
+state.partnerRows = state.partnerRows || [];
+state.partnerEditing = state.partnerEditing || null;
+state.partnerReturnToEntry = false;
+
+const V22_INCOME_CONCEPTS = [
+  'Venta de mercaderías',
+  'Prestación de servicios',
+  'Arrendamientos y cánones',
+  'Otros ingresos',
+  'Caja del día'
+];
+
+function v22NormalizeTaxId(v){ return String(v||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,''); }
+function v22CompanyForForm(v={}){ return v.company_id || (state.profile?.role==='manager' ? currentManagerCompany()?.id : state.profile?.company_id) || state.profile?.company_id || ''; }
+function v22PartnerList(type, companyId){
+  const src=type==='suppliers'?state.suppliers:state.customers;
+  return (src||[]).filter(x=>!companyId||x.company_id===companyId).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+}
+async function v22LoadPartners(companyId){
+  if(!companyId) throw new Error('No s’ha pogut determinar l’empresa.');
+  const [sr,cr]=await Promise.all([
+    sb.from('suppliers').select('*').eq('company_id',companyId).order('name',{ascending:true}),
+    sb.from('customers').select('*').eq('company_id',companyId).order('name',{ascending:true})
+  ]);
+  if(sr.error) throw sr.error;
+  if(cr.error) throw cr.error;
+  state.suppliers=(state.suppliers||[]).filter(x=>x.company_id!==companyId).concat(sr.data||[]);
+  state.customers=(state.customers||[]).filter(x=>x.company_id!==companyId).concat(cr.data||[]);
+  return {suppliers:sr.data||[],customers:cr.data||[]};
+}
+function v22FindSupplier(companyId,taxId,name){
+  const list=v22PartnerList('suppliers',companyId), tid=v22NormalizeTaxId(taxId), nm=String(name||'').trim().toLocaleLowerCase();
+  if(tid)return list.find(x=>v22NormalizeTaxId(x.tax_id)===tid)||null;
+  if(nm)return list.find(x=>String(x.name||'').trim().toLocaleLowerCase()===nm)||null;
+  return null;
+}
+function v22FindCustomer(companyId,taxId,name){
+  const list=v22PartnerList('customers',companyId), tid=v22NormalizeTaxId(taxId), nm=String(name||'').trim().toLocaleLowerCase();
+  if(tid)return list.find(x=>v22NormalizeTaxId(x.tax_id)===tid)||null;
+  if(nm)return list.find(x=>String(x.name||'').trim().toLocaleLowerCase()===nm)||null;
+  return null;
+}
+function v22CustomerForRecord(v={},companyId){
+  const list=v22PartnerList('customers',companyId);
+  if(v.customer_id){const byId=list.find(x=>x.id===v.customer_id);if(byId)return byId;}
+  return v22FindCustomer(companyId,v.supplier_tax_id,v.supplier_name);
+}
+function v22ConceptOptions(v={},editable=true){
+  const rt=v.record_type==='gasto'?'gasto':'factura';
+  const typ=v.invoice_type||'';
+  const choices=(rt==='gasto'||typ==='recibida')?EXPENSE_CATEGORIES.map(([k,l])=>l):(v.income_kind==='caja_dia'?['Caja del día']:V22_INCOME_CONCEPTS.filter(l=>l!=='Caja del día'));
+  const current=String(v.concept||'');
+  let html='<option value="">Selecciona un concepte…</option>';
+  if(current && !choices.includes(current)) html+=`<option value="${esc(current)}" selected>${esc(current)}</option>`;
+  html+=choices.map(l=>`<option value="${esc(l)}" ${current===l?'selected':''}>${esc(l)}</option>`).join('');
+  return `<label class="field wide"><span>Concepte <b aria-hidden="true">*</b></span><select data-k="concept" ${editable?'':'disabled'} required>${html}</select></label>`;
+}
+function v22CurrencyField(v={},editable=true){
+  const code=normalizeCurrency(v.currency||'EUR');
+  const opts=[['EUR','EUR — Euro'],['USD','USD — Dòlar nord-americà'],['GBP','GBP — Lliura esterlina'],['CHF','CHF — Franc suís'],['CAD','CAD — Dòlar canadenc'],['AUD','AUD — Dòlar australià'],['JPY','JPY — Ien japonès']];
+  return `<label class="field"><span>Moneda</span><select data-k="currency" ${editable?'':'disabled'}>${opts.map(([c,l])=>`<option value="${c}" ${code===c?'selected':''}>${l}</option>`).join('')}</select></label>`;
+}
+function v22InvoiceTypeField(v={},editable=true){
+  const rt=v.record_type==='gasto'?'gasto':'factura', typ=v.invoice_type||'';
+  if(!editable){
+    return `<label class="field"><span>Tipus de registre</span><input type="text" value="${rt==='gasto'?'Despesa':'Factura'}" readonly></label><input type="hidden" data-k="record_type" value="${rt}"><input type="hidden" data-k="invoice_type" value="${esc(typ)}">`;
+  }
+  return `<label class="field"><span>Tipus de registre <b aria-hidden="true">*</b></span><select data-k="record_type" required><option value="factura" ${rt==='factura'?'selected':''}>Factura</option><option value="gasto" ${rt==='gasto'?'selected':''}>Despesa / rebut</option></select></label>
+  <label class="field" data-invoice-type-field><span>Tipus de factura <b aria-hidden="true">*</b></span><select data-k="invoice_type" ${rt==='gasto'?'disabled':'required'}><option value="">Selecciona el tipus</option><option value="recibida" ${typ==='recibida'?'selected':''}>Factura rebuda</option><option value="emitida" ${typ==='emitida'?'selected':''}>Factura emesa / ingrés</option></select></label>`;
+}
+function v22CustomerField(v={},editable=true,companyId=''){
+  const list=v22PartnerList('customers',companyId), selected=v22CustomerForRecord(v,companyId)?.id||v.customer_id||'';
+  const options=`<option value="">${list.length?'Selecciona un client…':'Cap client donat d’alta'}</option>`+list.map(c=>`<option value="${esc(c.id)}" ${selected===c.id?'selected':''}>${esc(c.name)}${c.tax_id?' · '+esc(c.tax_id):''}</option>`).join('');
+  return `<div class="v22-counterparty" data-counterparty="customer">
+    <label class="field wide"><span>Client (alta prèvia) <b aria-hidden="true">*</b></span><select data-k="customer_id" ${editable?'':'disabled'}>${options}</select><small class="field-help">Per emetre una factura, primer cal donar d’alta el client.</small></label>
+    <input type="hidden" data-customer-counterparty-name value="${esc(v.supplier_name||v22CustomerForRecord(v,companyId)?.name||'')}">
+    <input type="hidden" data-customer-counterparty-tax value="${esc(v.supplier_tax_id||v22CustomerForRecord(v,companyId)?.tax_id||'')}">
+    <div class="field-help v22-no-customer" ${list.length?'hidden':''}>No hi ha clients. Fes servir «Gestionar clients» abans de registrar la factura.</div>
+    <button type="button" class="btn ghost" data-act="manageCustomers" data-company-id="${esc(companyId)}">Gestionar clients</button>
+  </div>`;
+}
+function v22SupplierFields(v={},editable=true){
+  return `<div class="v22-counterparty" data-counterparty="supplier">
+    <label class="field"><span>NIF / CIF del proveïdor</span><input data-k="supplier_tax_id" value="${esc(v.supplier_tax_id||'')}" ${editable?'':'readonly'} autocomplete="off"></label>
+    <label class="field"><span>Nom del proveïdor / beneficiari <b aria-hidden="true">*</b></span><input data-k="supplier_name" value="${esc(v.supplier_name||'')}" ${editable?'':'readonly'} required></label>
+    <input type="hidden" data-k="supplier_id" value="${esc(v.supplier_id||'')}">
+    <div class="field-help v22-supplier-match" aria-live="polite"></div>
+  </div>`;
+}
+function v22IncomeKindField(v={},editable=true){
+  const kind=v.income_kind==='caja_dia'?'caja_dia':'factura';
+  return `<label class="field wide" data-income-kind-field><span>Tipus d’ingrés</span><select data-k="income_kind" ${editable?'':'disabled'}><option value="factura" ${kind==='factura'?'selected':''}>Factura emesa a un client</option><option value="caja_dia" ${kind==='caja_dia'?'selected':''}>Caja del día / venda de caixa</option></select><small class="field-help">«Caja del día» registra les vendes de caixa sense emetre una factura individual ni seleccionar client.</small></label>`;
+}
+function v22Field(v,k,label,type='text',wide=false,editable=true,readOnly=false){
+  const val=v[k]??''; const ro=(!editable||readOnly)?'readonly':'';
+  return `<label class="field ${wide?'wide':''}"><span>${label}</span><input type="${type}" data-k="${k}" value="${esc(val)}" ${ro} ${type==='number'?'step="0.01"':''}></label>`;
+}
+window.fieldsHTML = function(v={},editable=true){
+  const rt=v.record_type==='gasto'?'gasto':'factura', typ=v.invoice_type||'', companyId=v22CompanyForForm(v);
+  const companyPartnerType=(rt==='gasto'||typ==='recibida')?'supplier':'customer';
+  const legacy=JSON.stringify(v.expense_breakdown||{});
+  return `${v22InvoiceTypeField(v,editable)}
+    ${v22IncomeKindField(v,editable)}
+    ${v22SupplierFields(v,editable)}
+    ${v22CustomerField(v,editable,companyId)}
+    ${v22Field(v,'invoice_number','Núm. de factura','text',false,editable)}
+    ${v22Field(v,'invoice_date','Data de la factura','date',false,editable)}
+    ${v22ConceptOptions(v,editable)}
+    ${v22CurrencyField(v,editable)}
+    ${v22Field(v,'base','Base imposable','number',false,editable)}
+    ${v22Field(v,'vat_rate','IVA (%)','number',false,editable)}
+    ${v22Field(v,'vat_amount','Quota d’IVA','number',false,editable,true)}
+    ${v22Field(v,'irpf_rate','IRPF (%)','number',false,editable)}
+    ${v22Field(v,'irpf_amount','Quota d’IRPF','number',false,editable,true)}
+    ${v22Field(v,'total','Total factura','number',false,editable,true)}
+    <input type="hidden" data-k="legacy_expense_breakdown" value="${esc(legacy)}">
+    <input type="hidden" data-k="expense_total_legacy" value="${esc(v.expense_total??'')}">`;
+};
+window.readFields = function(root){
+  const o={};
+  root?.querySelectorAll('[data-k]').forEach(x=>{o[x.dataset.k]=String(x.value??'').trim()||null;});
+  o.currency=normalizeCurrency(o.currency);
+  o.record_type=o.record_type==='gasto'?'gasto':'factura';
+  o.invoice_type=(o.invoice_type==='emitida'||o.invoice_type==='recibida')?o.invoice_type:null;
+  o.income_kind=o.income_kind==='caja_dia'?'caja_dia':'factura';
+  ['base','vat_rate','vat_amount','irpf_rate','irpf_amount','total'].forEach(k=>{
+    if(o[k]!==null && o[k]!==undefined){const n=Number(String(o[k]).replace(',','.'));o[k]=Number.isFinite(n)?n:null;}else o[k]=null;
+  });
+  const oldBreakdown=(()=>{try{return JSON.parse(o.legacy_expense_breakdown||'{}')||{};}catch{return {};}})();
+  const oldExpenseTotal=o.expense_total_legacy;
+  delete o.legacy_expense_breakdown; delete o.expense_total_legacy;
+  const isExpense=o.record_type==='gasto'||o.invoice_type==='recibida';
+  if(isExpense){
+    const category=EXPENSE_CATEGORIES.find(([k,l])=>l===o.concept);
+    if(category && Number(o.base)>0){o.expense_breakdown={[category[0]]:Number(o.base)};o.expense_total=Number(o.base);}
+    else if(Object.keys(oldBreakdown).length){o.expense_breakdown=oldBreakdown;o.expense_total=Number(oldExpenseTotal||Object.values(oldBreakdown).reduce((s,x)=>s+Number(x||0),0));}
+    else{o.expense_breakdown={};o.expense_total=Number(o.base||0);}
+  }else{o.expense_breakdown={};o.expense_total=0;}
+  if(o.invoice_type==='emitida'){
+    o.record_type='factura';
+    if(o.income_kind!=='caja_dia'){
+      const cid=root.dataset.companyId||state.profile?.company_id||currentManagerCompany()?.id;
+      const customer=v22PartnerList('customers',cid).find(c=>c.id===o.customer_id);
+      if(customer){o.supplier_name=customer.name||null;o.supplier_tax_id=customer.tax_id||null;}
+      o.supplier_id=null;
+    }
+    if(o.income_kind==='caja_dia'){
+      o.customer_id=null; o.supplier_id=null; o.supplier_name=null; o.supplier_tax_id=null;
+      o.invoice_number=o.invoice_number||null;
+      o.concept='Caja del día';
+    }
+  }else{o.customer_id=null; o.income_kind='factura';}
+  if(o.record_type==='gasto'||o.invoice_type==='recibida'){o.customer_id=null;o.income_kind='factura';}
+  return o;
+};
+function v22InstallConceptOptions(root){
+  if(!root)return;
+  const rt=root.querySelector('[data-k="record_type"]')?.value||'factura';
+  const typ=rt==='gasto'?'':(root.querySelector('[data-k="invoice_type"]')?.value||'');
+  const kind=root.querySelector('[data-k="income_kind"]')?.value||'factura';
+  const sel=root.querySelector('[data-k="concept"]'); if(!sel)return;
+  const old=sel.value;
+  const current=typ==='emitida'&&kind==='caja_dia'?'Caja del día':old;
+  const choices=(rt==='gasto'||typ==='recibida')?EXPENSE_CATEGORIES.map(([k,l])=>l):(kind==='caja_dia'?['Caja del día']:V22_INCOME_CONCEPTS.filter(l=>l!=='Caja del día'));
+  let html='<option value="">Selecciona un concepte…</option>';
+  if(current&&!choices.includes(current))html+=`<option value="${esc(current)}" selected>${esc(current)}</option>`;
+  html+=choices.map(l=>`<option value="${esc(l)}" ${l===current?'selected':''}>${esc(l)}</option>`).join('');
+  sel.innerHTML=html;
+  if(typ==='emitida'&&kind==='caja_dia')sel.value='Caja del día';
+}
+window.updateManualFormMode = function(){
+  const form=$('#manualForm'); if(!form)return;
+  v22UpdateFormMode(form);
+  const rt=form.querySelector('[data-k="record_type"]')?.value||'factura';
+  const typ=form.querySelector('[data-k="invoice_type"]')?.value||'';
+  const kind=form.querySelector('[data-k="income_kind"]')?.value||'factura';
+  const cash=rt==='factura'&&typ==='emitida'&&kind==='caja_dia';
+  const file=$('#manualFile'), label=$('#manualFileLabel'), meta=$('#manualFileMeta');
+  const requiresFile=rt==='factura'&&!cash;
+  if(file)file.required=requiresFile;
+  if(label)label.textContent=requiresFile?'Fitxer de factura (obligatori)':'Fitxer de justificant (opcional)';
+  if(meta)meta.textContent=cash?'Les vendes de caixa no necessiten una factura adjunta. Pots afegir un resum diari si el tens.':requiresFile?'Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.':'La despesa o el rebut pot guardar-se sense adjunt.';
+};
+function v22UpdateFormMode(root){
+  if(!root)return;
+  const rt=root.querySelector('[data-k="record_type"]')?.value||'factura';
+  const typ=rt==='gasto'?'':(root.querySelector('[data-k="invoice_type"]')?.value||'');
+  const kind=root.querySelector('[data-k="income_kind"]')?.value||'factura';
+  const isIncome=rt==='factura'&&typ==='emitida';
+  const useCustomer=isIncome&&kind!=='caja_dia';
+  const sup=root.querySelector('[data-counterparty="supplier"]');
+  const cust=root.querySelector('[data-counterparty="customer"]');
+  const typeField=root.querySelector('[data-invoice-type-field]');
+  const kindField=root.querySelector('[data-income-kind-field]');
+  if(typeField)typeField.style.display=rt==='gasto'?'none':'';
+  const typSel=root.querySelector('[data-k="invoice_type"]');if(typSel)typSel.disabled=rt==='gasto';
+  if(kindField)kindField.style.display=isIncome?'':'none';
+  if(sup)sup.style.display=(rt==='gasto'||typ==='recibida')?'':'none';
+  if(cust)cust.style.display=useCustomer?'':'none';
+  const csel=root.querySelector('[data-k="customer_id"]');if(csel)csel.required=useCustomer;
+  const kindSel=root.querySelector('[data-k="income_kind"]');if(kindSel)kindSel.disabled=!isIncome;
+  v22InstallConceptOptions(root);
+  v22CalculateTotals(root);
+}
+function v22CalculateTotals(root){
+  if(!root)return;
+  const get=k=>{const x=root.querySelector(`[data-k="${k}"]`);return x?Number(String(x.value||'').replace(',','.')):0;};
+  const set=(k,n)=>{const x=root.querySelector(`[data-k="${k}"]`);if(x)x.value=Number.isFinite(n)?(Math.round(n*100)/100).toFixed(2):'';};
+  const base=get('base'), vr=get('vat_rate'), ir=get('irpf_rate');
+  set('vat_amount',base*vr/100); set('irpf_amount',base*ir/100); set('total',base+base*vr/100-base*ir/100);
+}
+function v22ResolveSupplier(root){
+  const input=root?.querySelector('[data-k="supplier_tax_id"]'); if(!input)return;
+  const cid=v22CompanyForForm({company_id:root.dataset.companyId||''});
+  const tax=input.value; const nm=root.querySelector('[data-counterparty="supplier"] [data-k="supplier_name"]')?.value||'';
+  const hit=v22FindSupplier(cid,tax,nm);
+  const idInput=root.querySelector('[data-counterparty="supplier"] [data-k="supplier_id"]');
+  if(idInput)idInput.value=hit?.id||'';
+  const note=root.querySelector('.v22-supplier-match');
+  if(hit){
+    const nameInput=root.querySelector('[data-counterparty="supplier"] [data-k="supplier_name"]');if(nameInput)nameInput.value=hit.name||'';
+    const concept=root.querySelector('[data-k="concept"]');if(concept&&hit.usual_concept){const exists=[...concept.options].some(o=>o.value===hit.usual_concept);if(exists)concept.value=hit.usual_concept;}
+    const vat=root.querySelector('[data-k="vat_rate"]');if(vat&&hit.default_vat_rate!==null&&hit.default_vat_rate!==undefined)vat.value=hit.default_vat_rate;
+    const irpf=root.querySelector('[data-k="irpf_rate"]');if(irpf&&hit.default_irpf_rate!==null&&hit.default_irpf_rate!==undefined)irpf.value=hit.default_irpf_rate;
+    if(note)note.textContent=`Proveïdor reconegut: ${hit.name}. S’han recuperat les dades habituals.`;
+  }else{if(note)note.textContent=tax?'Aquest NIF no consta als proveïdors d’aquesta empresa. En desar podràs donar-lo d’alta o continuar.':'';}
+  v22CalculateTotals(root);
+}
+function v22PopulateCustomer(root){
+  const select=root?.querySelector('[data-k="customer_id"]');if(!select)return;
+  const cid=v22CompanyForForm({company_id:root.dataset.companyId||''});
+  const customer=v22PartnerList('customers',cid).find(x=>x.id===select.value);
+  const name=root.querySelector('[data-counterparty="customer"] [data-customer-counterparty-name]');
+  const tax=root.querySelector('[data-counterparty="customer"] [data-customer-counterparty-tax]');
+  if(name)name.value=customer?.name||'';
+  if(tax)tax.value=customer?.tax_id||'';
+  if(customer){
+    const vat=root.querySelector('[data-k="vat_rate"]');if(vat&&customer.default_vat_rate!==null&&customer.default_vat_rate!==undefined)vat.value=customer.default_vat_rate;
+    const irpf=root.querySelector('[data-k="irpf_rate"]');if(irpf&&customer.default_irpf_rate!==null&&customer.default_irpf_rate!==undefined)irpf.value=customer.default_irpf_rate;
+  }
+  v22CalculateTotals(root);
+}
+window.renderManualForm = async function(){
+  try{await v22LoadPartners(state.profile.company_id);}catch(e){toast('No s’han pogut carregar proveïdors i clients: '+(e.message||e),true);}
+  const initial={company_id:state.profile.company_id,currency:'EUR',record_type:'factura',invoice_type:'recibida',income_kind:'factura',expense_breakdown:{}};
+  $('#view').innerHTML=`<section class="work"><div><div class="hero" style="display:block"><div class="eyebrow">Visió de gestió manual</div><h1>Entrada manual</h1><p>Registra factures i despeses amb conceptes normalitzats, IVA i retenció d’IRPF.</p><div class="actions"><button class="btn" data-act="backCapture">Tornar</button><button class="btn" data-act="manageSuppliers" data-company-id="${esc(state.profile.company_id)}">Gestionar proveïdors</button><button class="btn" data-act="manageCustomers" data-company-id="${esc(state.profile.company_id)}">Gestionar clients</button></div></div></div><div><h2>Dades del registre</h2><p class="sub">Les factures rebudes i les factures emeses a un client requereixen fitxer original. Les despeses i la caixa del dia poden guardar-se sense adjunt.</p><div class="fields" id="manualForm" data-company-id="${esc(state.profile.company_id)}">${fieldsHTML(initial,true)}</div><div style="margin-top:14px"><label class="field"><span id="manualFileLabel">Fitxer de factura (obligatori)</span><input id="manualFile" type="file" accept=".pdf,image/*"></label><p class="meta" id="manualFileMeta">Per a les factures rebudes i emeses has d’adjuntar un PDF o una imatge.</p></div><p class="err" id="manualErr"></p><div class="actions"><button class="btn primary" data-act="saveManual">Desar registre</button><button class="btn" data-act="backCapture">Cancel·lar</button></div></div></section>`;
+  window.updateManualFormMode();
+  applyLanguage($('#view'));
+};
+window.renderCapture = function(){
+  $('#capture').innerHTML=`<section class="hero"><div><div class="corporate-label">Bústia corporativa · Joan Nogue</div><div class="eyebrow">Visió de gestió manual</div><h1>Registra una factura o una despesa</h1><p>Introducció manual de dades fiscals, proveïdors i clients.</p><div class="mode-grid" style="grid-template-columns:1fr"><div class="mode-card primary-mode"><h3>Introduir les dades manualment</h3><p>Selecciona factura rebuda, factura emesa, despesa o caixa del dia. Les dades habituals de proveïdors s’omplen a partir del NIF.</p><div class="mode-action"><button class="btn primary" data-act="manualMode">Introduir les dades</button><button class="btn" data-act="manageSuppliers" data-company-id="${esc(state.profile.company_id)}">Gestionar proveïdors</button><button class="btn" data-act="manageCustomers" data-company-id="${esc(state.profile.company_id)}">Gestionar clients</button></div></div></div></div>${RECEIPT}</section>`;
+  applyLanguage($('#capture'));
+};
+window.renderManagerManual = function(){
+  const content=$('#managerContent'); if(!content)return;
+  const cid=currentManagerCompany()?.id||'';
+  content.innerHTML=`<div class="partner-toolbar"><button class="btn" data-act="manageSuppliers" data-company-id="${esc(cid)}">Proveïdors de l’empresa</button><button class="btn" data-act="manageCustomers" data-company-id="${esc(cid)}">Clients de l’empresa</button></div>
+  <div class="filters">
+    <label class="field"><span>Tipus</span><select data-f="type"><option value="">Tots els tipus</option><option value="recibida">Factura rebuda</option><option value="emitida">Factura emesa</option><option value="gasto">Despesa / rebut</option></select></label>
+    <label class="field"><span>Estat</span><select data-f="status"><option value="">Tots</option><option value="pendiente">Pendent</option><option value="revisada">Revisada</option></select></label>
+    <label class="field"><span>Des de</span><input type="date" data-f="from"></label><label class="field"><span>Fins a</span><input type="date" data-f="to"></label>
+    <label class="field grow"><span>Cercar client, emissor, NIF o núm.</span><input type="search" data-f="q"></label>
+  </div><section id="pnl"></section><div id="summary" class="summary"></div><div class="bar"><span class="sub" id="countTxt" style="margin:0"></span><div class="row-actions"><button class="btn primary" data-act="export">Exportar libros a Excel</button></div></div><div id="tbl"></div>`;
+  document.querySelectorAll('[data-f]').forEach(el=>{if(el.dataset.f!=='company')el.value=state.filters[el.dataset.f]||''});
+  renderProfitLossManager();renderManagerTable();applyLanguage(content);
+};
+
+window.saveManual = async function(skipUnknownPartnerCheck=false){
+  const form=$('#manualForm'),err=$('#manualErr');if(!form||!err)return;
+  const d=readFields(form); d.company_id=state.profile.company_id;
+  const rt=d.record_type, typ=d.invoice_type, cash=rt==='factura'&&typ==='emitida'&&d.income_kind==='caja_dia';
+  if(rt==='factura'&&!typ){err.textContent=t('Selecciona si és una factura rebuda o emesa.');return;}
+  if(typ==='emitida'&&!cash){const customer=v22PartnerList('customers',d.company_id).find(c=>c.id===d.customer_id);if(!customer){err.textContent='Abans de registrar una factura emesa, dona d’alta i selecciona el client.';return;}}
+  if((rt==='gasto'||typ==='recibida')&&!d.supplier_name){err.textContent='Indica el proveïdor o beneficiari.';return;}
+  if(!(Number(d.base)>0)){err.textContent='Introdueix una base imposable superior a zero.';return;}
+  if(!d.concept){err.textContent='Selecciona un concepte de la llista.';return;}
+  const file=$('#manualFile')?.files?.[0]||null;
+  if(rt==='factura'&&!cash&&!file){err.textContent='Les factures rebudes i emeses a un client requereixen un fitxer PDF o imatge.';return;}
+  if(file&&file.size>25*1024*1024){err.textContent=t('El fitxer supera el límit de 25 MB.');return;}
+  if((rt==='gasto'||typ==='recibida')&&!skipUnknownPartnerCheck){
+    const supplier=v22FindSupplier(d.company_id,d.supplier_tax_id,d.supplier_name);
+    if(!supplier){v22OpenUnknownSupplier(d);return;}
+    d.supplier_id=supplier.id;
+    d.supplier_name=supplier.name||d.supplier_name;
+    d.supplier_tax_id=supplier.tax_id||d.supplier_tax_id;
+  }
+  const btn=$('[data-act="saveManual"]');if(btn){btn.disabled=true;btn.textContent='Desant…';}
+  const baseRec={company_id:d.company_id,record_type:rt,invoice_type:rt==='gasto'?null:typ,income_kind:cash?'caja_dia':'factura',supplier_id:(rt==='gasto'||typ==='recibida')?(d.supplier_id||null):null,customer_id:typ==='emitida'&&!cash?(d.customer_id||null):null,supplier_name:cash?'Caja del día':d.supplier_name,supplier_tax_id:cash?null:d.supplier_tax_id,invoice_number:d.invoice_number,invoice_date:d.invoice_date,currency:d.currency,concept:cash?'Caja del día':d.concept,base:d.base,vat_rate:d.vat_rate,vat_amount:d.vat_amount,irpf_rate:d.irpf_rate,irpf_amount:d.irpf_amount,total:d.total,expense_breakdown:d.expense_breakdown||{},expense_total:Number(d.expense_total||0),status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
+  const {data:ins,error}=await sb.from('invoices').insert(baseRec).select().single();
+  if(error){err.textContent=error.message;if(btn){btn.disabled=false;btn.textContent='Desar registre';}return;}
+  if(file){
+    const finalPath=`${state.profile.company_id}/${ins.id}/${safeName(file.name)}`;
+    const {error:up}=await sb.storage.from('invoices').upload(finalPath,file,{upsert:false});
+    if(up){await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar el fitxer original: '+up.message;if(btn){btn.disabled=false;btn.textContent='Desar registre';}return;}
+    const {error:patch}=await sb.from('invoices').update({file_path:finalPath}).eq('id',ins.id);
+    if(patch){await sb.storage.from('invoices').remove([finalPath]).catch(()=>{});await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No s’ha pogut guardar la ruta del fitxer: '+patch.message;if(btn){btn.disabled=false;btn.textContent='Desar registre';}return;}
+  }
+  toast('Registre guardat correctament');state.pendingFile=null;state.view='mine';state.newEntryType='';await loadData();renderCompanyShell();
+};
+function v22OpenUnknownSupplier(d){
+  state.unknownSupplierDraft={...d};
+  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>Proveïdor no donat d’alta</h2><p class="sub">No s’ha trobat cap proveïdor amb aquest NIF o nom. Decideix com vols continuar.</p></div><button class="btn ghost" data-act="partnerClose">Tancar</button></div><div class="notice bad"><b>${esc(d.supplier_tax_id||'Sense NIF')}</b> · ${esc(d.supplier_name||'Sense nom')}<p>Vols donar-lo d’alta al llistat de proveïdors d’aquesta empresa o registrar el moviment sense crear-lo?</p></div><div class="actions"><button class="btn primary" data-act="unknownAdd">Donar d’alta proveïdor</button><button class="btn" data-act="unknownContinue">Continuar sense donar-lo d’alta</button></div>`;
+  if(!$('#dlg').open)$('#dlg').showModal();applyLanguage($('#dlgBody'));
+}
+async function v22OpenPartners(type,companyId,prefill=null){
+  const cid=companyId||state.profile?.company_id||currentManagerCompany()?.id;
+  if(!cid){toast('Selecciona una empresa primer.',true);return;}
+  state.partnerType=type==='customers'?'customers':'suppliers';state.partnerCompanyId=cid;state.partnerEditing=null;state.partnerPrefill=prefill;state.partnerReturnToEntry=!!prefill?.fromUnknown;
+  try{await v22LoadPartners(cid);}catch(e){toast('No s’han pogut carregar els llistats. Executa primer la migració SQL v22: '+(e.message||e),true);return;}
+  v22RenderPartnersDialog();
+}
+function v22PartnerTitle(){return state.partnerType==='suppliers'?'Proveïdors':'Clients';}
+function v22PartnerFormHTML(item=null,prefill=null){
+  const supplier=state.partnerType==='suppliers';const p={...(prefill||{}),...(item||{})};
+  const country=p.country||'España';
+  const countryOptions=[['España','Espanya'],['Andorra','Andorra'],['Francia','França'],['Portugal','Portugal'],['Italia','Itàlia'],['Reino Unido','Regne Unit'],['Otro','Altres']];
+  const common=`<label class="field"><span>NIF / CIF</span><input data-pk="tax_id" value="${esc(p.tax_id||'')}"></label><label class="field"><span>Nom <b aria-hidden="true">*</b></span><input data-pk="name" value="${esc(p.name||'')}" required></label><label class="field"><span>País <b aria-hidden="true">*</b></span><select data-pk="country" required>${countryOptions.map(([value,label])=>`<option value="${esc(value)}" ${country===value?'selected':''}>${esc(label)}</option>`).join('')}</select></label><label class="field"><span>Codi postal</span><input data-pk="postal_code" value="${esc(p.postal_code||'')}"></label><label class="field"><span>Adreça</span><input data-pk="address" value="${esc(p.address||'')}"></label><label class="field"><span>Correu electrònic</span><input type="email" data-pk="email" value="${esc(p.email||'')}"></label><label class="field"><span>Telèfon</span><input data-pk="phone" value="${esc(p.phone||'')}"></label>`;
+  const extra=supplier?`<label class="field wide"><span>Concepte habitual</span><select data-pk="usual_concept"><option value="">Sense concepte habitual</option>${EXPENSE_CATEGORIES.map(([k,l])=>`<option value="${esc(l)}" ${p.usual_concept===l?'selected':''}>${esc(l)}</option>`).join('')}</select></label>`:'';
+  const rates=`<label class="field"><span>% IVA habitual</span><input type="number" step="0.01" data-pk="default_vat_rate" value="${esc(p.default_vat_rate??'')}"></label><label class="field"><span>% IRPF habitual</span><input type="number" step="0.01" data-pk="default_irpf_rate" value="${esc(p.default_irpf_rate??'')}"></label>`;
+  return `<div class="v22-partner-form"><h3>${item?'Editar':'Afegir'} ${supplier?'proveïdor':'client'}</h3><div class="fields">${common}${extra}${rates}</div><p class="err" id="partnerErr"></p><div class="actions"><button type="button" class="btn primary" data-act="savePartner">Desar</button><button type="button" class="btn" data-act="partnerCancelForm">Cancel·lar</button></div></div>`;
+}
+function v22RenderPartnersDialog(showForm=false,item=null,prefill=null){
+  const supplier=state.partnerType==='suppliers';const type=state.partnerType;const rows=v22PartnerList(type,state.partnerCompanyId);state.partnerRows=rows;
+  const company=state.companies.find(x=>x.id===state.partnerCompanyId)||{name:state.profile?.company_name||'l’empresa'};const title=supplier?'Proveïdors':'Clients';
+  const body=rows.length?`<div class="v22-partner-table"><table><thead><tr><th>Nom</th><th>NIF / CIF</th><th>País</th><th>Concepte habitual</th><th>IVA</th><th>IRPF</th><th></th></tr></thead><tbody>${rows.map(p=>`<tr><td><b>${esc(p.name)}</b><small>${esc(p.email||p.address||'')}</small></td><td>${esc(p.tax_id||'—')}</td><td>${esc(p.country||'')}</td><td>${esc(p.usual_concept||'—')}</td><td>${p.default_vat_rate??'—'}%</td><td>${p.default_irpf_rate??'—'}%</td><td><div class="row-actions"><button type="button" class="btn ghost" data-act="partnerEdit" data-id="${esc(p.id)}">Edita</button><button type="button" class="btn danger" data-act="partnerDelete" data-id="${esc(p.id)}">Elimina</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">Encara no hi ha ${supplier?'proveïdors':'clients'} donats d’alta per a aquesta empresa.</div>`;
+  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>${title} de ${esc(company?.name||'la empresa')}</h2><p class="sub">Cada empresa té el seu propi llistat de ${supplier?'proveïdors':'clients'}.</p></div><button type="button" class="btn ghost" data-act="partnerClose">Tancar</button></div><div class="partner-toolbar"><button type="button" class="btn ${supplier?'primary':''}" data-act="manageSuppliers" data-company-id="${esc(state.partnerCompanyId)}">Proveïdors</button><button type="button" class="btn ${!supplier?'primary':''}" data-act="manageCustomers" data-company-id="${esc(state.partnerCompanyId)}">Clients</button><button type="button" class="btn primary" data-act="partnerNew">+ Afegir ${supplier?'proveïdor':'client'}</button></div>${showForm?v22PartnerFormHTML(item,prefill):''}<div class="v22-partner-count">${rows.length} ${supplier?'proveïdors':'clients'}</div>${body}`;
+  if(!$('#dlg').open)$('#dlg').showModal();
+  applyLanguage($('#dlgBody'));
+}
+function v22ReadPartnerForm(){const o={};$('#dlgBody').querySelectorAll('[data-pk]').forEach(el=>{o[el.dataset.pk]=String(el.value||'').trim()||null;});['default_vat_rate','default_irpf_rate'].forEach(k=>{if(o[k]!==null){const n=Number(o[k]);o[k]=Number.isFinite(n)?n:null;}});return o;}
+async function v22SavePartner(){
+  const err=$('#partnerErr'),btn=$('[data-act="savePartner"]'),supplier=state.partnerType==='suppliers',table=supplier?'suppliers':'customers';
+  const d=v22ReadPartnerForm();if(!d.name){if(err)err.textContent='El nombre es obligatorio.';return;}
+  const tid=v22NormalizeTaxId(d.tax_id);if(tid){const dupe=v22PartnerList(state.partnerType,state.partnerCompanyId).find(x=>x.id!==state.partnerEditing?.id&&v22NormalizeTaxId(x.tax_id)===tid);if(dupe){if(err)err.textContent=`Ese NIF ya está registrado a nombre de ${dupe.name}.`;return;}}
+  d.company_id=state.partnerCompanyId;d.updated_at=new Date().toISOString();
+  if(btn){btn.disabled=true;btn.textContent='Guardando…';}
+  let result;
+  if(state.partnerEditing) result=await sb.from(table).update(d).eq('id',state.partnerEditing.id).eq('company_id',state.partnerCompanyId).select().single();
+  else result=await sb.from(table).insert(d).select().single();
+  if(result.error){if(err)err.textContent=result.error.message;if(btn){btn.disabled=false;btn.textContent='Guardar';}return;}
+  const shouldReturn=state.partnerReturnToEntry&&supplier;
+  const cid=state.partnerCompanyId;
+  toast(`${supplier?'Proveedor':'Cliente'} guardado correctamente`);
+  state.partnerEditing=null;state.partnerPrefill=null;state.partnerReturnToEntry=false;
+  await v22LoadPartners(cid);
+  if(shouldReturn){$('#dlg').close();const note=$('#manualErr');if(note)note.textContent='Proveedor dado de alta. Revisa los datos y vuelve a pulsar «Desar registre».';window.updateManualFormMode();return;}
+  v22RenderPartnersDialog(false);
+}
+function v22OpenPartnerEdit(id){const item=v22PartnerList(state.partnerType,state.partnerCompanyId).find(x=>x.id===id);if(!item)return;state.partnerEditing=item;state.partnerPrefill=null;v22RenderPartnersDialog(true,item);}
+async function v22DeletePartner(id){
+  const supplier=state.partnerType==='suppliers',table=supplier?'suppliers':'customers',item=v22PartnerList(state.partnerType,state.partnerCompanyId).find(x=>x.id===id);
+  if(!item||!confirm(`¿Eliminar ${supplier?'el proveedor':'el cliente'} «${item.name}» del listado? Los registros históricos se conservarán.`))return;
+  const {error}=await sb.from(table).delete().eq('id',id).eq('company_id',state.partnerCompanyId);
+  if(error){toast(error.message,true);return;}toast('Registro eliminado del listado');await v22LoadPartners(state.partnerCompanyId);v22RenderPartnersDialog(false);
+}
+window.openDetail = async function(id){
+  const inv=state.invoices.find(x=>x.id===id);if(!inv)return;state.current=inv;
+  try{await v22LoadPartners(inv.company_id);}catch(e){toast('No se han podido cargar los listados de terceros: '+(e.message||e),true);}
+  const manager=state.profile.role==='manager',own=manager||inv.company_id===state.profile.company_id,hasFile=!!inv.file_path;
+  $('#dlgBody').innerHTML=`<div class="dhead"><div><h2>${esc(inv.supplier_name||inv.concept||'Registro')}</h2>${statusChip(inv.status)}</div><button class="btn ghost" data-act="close">Tancar</button></div><div class="dgrid"><div><div class="imgwrap" id="detailPreview">${hasFile?'Carregant…':'Sense fitxer original adjunt'}</div><p class="fname">${esc(inv.file_name||'')}</p></div><div><div id="detailForm" class="fields" data-company-id="${esc(inv.company_id)}">${fieldsHTML({...inv,income_kind:inv.income_kind||'factura'},own)}</div>${manager?`<div class="fields" style="margin-top:14px"><label class="field"><span>Estat</span><select id="detailStatus"><option value="pendiente" ${inv.status==='pendiente'?'selected':''}>Pendent</option><option value="revisada" ${inv.status==='revisada'?'selected':''}>Revisada</option></select></label><label class="field wide"><span>Nota del gestor</span><textarea id="detailNote">${esc(inv.note||'')}</textarea></label></div>`:(inv.note?`<div class="notice" style="margin-top:14px"><b>Nota del gestor:</b> ${esc(inv.note)}</div>`:'')}<p class="err" id="detailErr"></p><div class="actions">${own?'<button class="btn primary" data-act="saveDetail">Desar canvis</button>':''}${hasFile?'<button class="btn" data-act="download">Descarregar original</button>':''}${own?'<button class="btn danger" data-act="delete">Eliminar</button>':''}</div><p class="meta">Pujada el ${esc(fmtStamp(inv.created_at))}${hasFile?'':' · Sense fitxer original adjunt'}</p></div></div>`;
+  if(!$('#dlg').open)$('#dlg').showModal();
+  const root=$('#detailForm');v22UpdateFormMode(root);v22CalculateTotals(root);applyLanguage($('#dlgBody'));
+  if(!hasFile)return;
+  const {data:signed,error}=await sb.storage.from('invoices').createSignedUrl(inv.file_path,300);const p=$('#detailPreview');if(signed?.signedUrl){if(inv.file_type==='application/pdf')p.innerHTML=`<iframe src="${esc(signed.signedUrl)}" style="width:100%;height:68vh;border:0" title="PDF"></iframe>`;else p.innerHTML=`<img src="${esc(signed.signedUrl)}" alt="Factura">`;}else p.textContent='Vista prèvia no disponible';if(error)$('#detailErr').textContent=error.message;
+};
+window.saveDetail = async function(){
+  const inv=state.current,err=$('#detailErr'),root=$('#detailForm');if(!inv||!root)return;const v=readFields(root);
+  if(v.record_type==='factura'&&!v.invoice_type){err.textContent='Selecciona el tipus de factura.';return;}
+  if(v.invoice_type==='emitida'&&v.income_kind!=='caja_dia'&&!v.customer_id){err.textContent='Selecciona un client donat d’alta.';return;}
+  if((v.record_type==='gasto'||v.invoice_type==='recibuda')&&!v.supplier_name){err.textContent='Indica el proveïdor o beneficiari.';return;}
+  const patch={...v};delete patch.company_id;
+  if(state.profile.role==='manager'){patch.status=$('#detailStatus').value;patch.note=$('#detailNote').value.trim()||null;}
+  const {error}=await sb.from('invoices').update(patch).eq('id',inv.id);if(error){err.textContent=error.message;return;}toast(t('Canvis desats'));$('#dlg').close();await loadData();
+};
+window.exportExcel = async function(){
+  try{
+    const list=filteredInvoices();if(!list.length){toast(t('No hi ha factures per exportar'),true);return;}
+    if(!window.XLSX){toast('No s’ha pogut carregar el mòdul Excel. Torna-ho a provar.',true);return;}
+    const companyId=state.filters.company||currentManagerCompany()?.id||'';
+    const company=state.companies.find(c=>c.id===companyId);
+    const langLabel=x=>x==='emitida'?'Factura emesa':x==='recibida'?'Factura rebuda':x==='gasto'?'Despesa / rebut':x;
+    const recRow=x=>{
+      const c=state.companies.find(y=>y.id===x.company_id);
+      const incomeKind=x.income_kind==='caja_dia'?'Caja del día':(x.invoice_type==='emitida'?'Factura emesa':'');
+      return {'Empresa':c?.name||x.company_id,'NIF empresa':c?.tax_id||'','Tipo de registro':langLabel(x.record_type==='gasto'?'gasto':x.invoice_type),'Tipo de ingreso':incomeKind,'Fecha factura':x.invoice_date||'','Cliente / Proveedor':x.supplier_name||'', 'NIF cliente / proveedor':x.supplier_tax_id||'', 'N.º factura':x.invoice_number||'', 'Concepto':x.concept||'', 'Base imponible':x.base==null?'':Number(x.base), '% IVA':x.vat_rate==null?'':Number(x.vat_rate), 'Cuota IVA':x.vat_amount==null?'':Number(x.vat_amount), '% IRPF':x.irpf_rate==null?'':Number(x.irpf_rate), 'Cuota IRPF':x.irpf_amount==null?'':Number(x.irpf_amount), 'Total factura':x.total==null?'':Number(x.total), 'Gasto computable':Number(x.expense_total||0), 'Estado':x.status==='revisada'?'Revisada':'Pendiente', 'Fecha de subida':x.created_at||'', 'Archivo original':x.file_name||'', 'Nota del gestor':x.note||''};
+    };
+    const wb=XLSX.utils.book_new();
+    const fullRows=list.map(recRow);
+    const addSheet=(name,rows)=>{const ws=XLSX.utils.json_to_sheet(rows);const keys=rows.length?Object.keys(rows[0]):[];ws['!cols']=keys.map(k=>({wch:Math.max(13,Math.min(38,k.length+4))}));XLSX.utils.book_append_sheet(wb,ws,name);};
+    addSheet('Registros',fullRows);
+    addSheet('Libro ingresos',list.filter(x=>x.invoice_type==='emitida').map(x=>({'Fecha':x.invoice_date||'','Tipo de ingreso':x.income_kind==='caja_dia'?'Caja del día':'Factura emitida','Cliente':x.income_kind==='caja_dia'?'Caja del día':(x.supplier_name||''),'NIF cliente':x.supplier_tax_id||'','N.º factura':x.invoice_number||'','Concepto':x.concept||'','Base imponible':x.base==null?'':Number(x.base),'% IVA':x.vat_rate==null?'':Number(x.vat_rate),'Cuota IVA':x.vat_amount==null?'':Number(x.vat_amount),'% IRPF':x.irpf_rate==null?'':Number(x.irpf_rate),'Cuota IRPF':x.irpf_amount==null?'':Number(x.irpf_amount),'Total factura':x.total==null?'':Number(x.total),'Estado':x.status==='revisada'?'Revisada':'Pendiente'})));
+    addSheet('Libro gastos',list.filter(x=>x.record_type==='gasto'||x.invoice_type==='recibida').map(x=>({'Fecha':x.invoice_date||'','Tipo':x.record_type==='gasto'?'Gasto / recibo':'Factura recibida','Proveedor':x.supplier_name||'','NIF proveedor':x.supplier_tax_id||'','N.º factura':x.invoice_number||'','Concepto fiscal':x.concept||'','Base imponible':x.base==null?'':Number(x.base),'% IVA':x.vat_rate==null?'':Number(x.vat_rate),'Cuota IVA':x.vat_amount==null?'':Number(x.vat_amount),'% IRPF':x.irpf_rate==null?'':Number(x.irpf_rate),'Cuota IRPF':x.irpf_amount==null?'':Number(x.irpf_amount),'Total factura':x.total==null?'':Number(x.total),'Gasto computable':Number(x.expense_total||0),'Estado':x.status==='revisada'?'Revisada':'Pendiente'})));
+    if(companyId){
+      const [sr,cr]=await Promise.all([sb.from('suppliers').select('*').eq('company_id',companyId).order('name'),sb.from('customers').select('*').eq('company_id',companyId).order('name')]);
+      if(!sr.error)addSheet('Proveedores',(sr.data||[]).map(p=>({'Nombre':p.name||'','NIF/CIF':p.tax_id||'','País':p.country||'','Dirección':p.address||'','Código postal':p.postal_code||'','Concepto habitual':p.usual_concept||'','% IVA habitual':p.default_vat_rate??'','% IRPF habitual':p.default_irpf_rate??'','Email':p.email||'','Teléfono':p.phone||''})));
+      if(!cr.error)addSheet('Clientes',(cr.data||[]).map(p=>({'Nombre':p.name||'','NIF/CIF':p.tax_id||'','País':p.country||'','Dirección':p.address||'','Código postal':p.postal_code||'','% IVA habitual':p.default_vat_rate??'','% IRPF habitual':p.default_irpf_rate??'','Email':p.email||'','Teléfono':p.phone||''})));
+    }
+    const suffix=company?.name?safeName(company.name):'todas_las_empresas';
+    XLSX.writeFile(wb,`libros_contables_${suffix}_${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast(`${list.length} registros exportados a Excel`);
+  }catch(e){toast(e.message||'No se ha podido generar el Excel.',true);}
+};
+
+// Delegación adicional de interacción para los formularios y listados de terceros.
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act;
+  try{
+    if(a==='manageSuppliers')await v22OpenPartners('suppliers',el.dataset.companyId||state.partnerCompanyId||state.profile?.company_id||currentManagerCompany()?.id);
+    else if(a==='manageCustomers')await v22OpenPartners('customers',el.dataset.companyId||state.partnerCompanyId||state.profile?.company_id||currentManagerCompany()?.id);
+    else if(a==='partnerClose'){state.partnerReturnToEntry=false;$('#dlg').close();}
+    else if(a==='partnerNew'){state.partnerEditing=null;state.partnerPrefill=state.partnerPrefill||null;v22RenderPartnersDialog(true,null,state.partnerPrefill);}
+    else if(a==='partnerEdit')v22OpenPartnerEdit(el.dataset.id);
+    else if(a==='partnerCancelForm')v22RenderPartnersDialog(false);
+    else if(a==='savePartner')await v22SavePartner();
+    else if(a==='partnerDelete')await v22DeletePartner(el.dataset.id);
+    else if(a==='unknownAdd'){
+      const d=state.unknownSupplierDraft||{};const cid=state.profile?.company_id||state.partnerCompanyId;
+      await v22OpenPartners('suppliers',cid,{tax_id:d.supplier_tax_id||'',name:d.supplier_name||'',default_vat_rate:d.vat_rate??'',default_irpf_rate:d.irpf_rate??'',usual_concept:d.concept||'',fromUnknown:true});
+      v22RenderPartnersDialog(true,null,state.partnerPrefill);
+    }
+    else if(a==='unknownContinue'){$('#dlg').close();window.saveManual(true);}
+  }catch(err){toast(err.message||'S’ha produït un error.',true);}
+});
+document.addEventListener('change',e=>{
+  const root=e.target.closest('#manualForm,#uploadForm,#detailForm');if(!root)return;
+  if(e.target.matches('[data-k="record_type"],[data-k="invoice_type"],[data-k="income_kind"]'))v22UpdateFormMode(root);
+  if(e.target.matches('[data-k="customer_id"]'))v22PopulateCustomer(root);
+  if(e.target.matches('[data-k="supplier_tax_id"]'))v22ResolveSupplier(root);
+  if(e.target.matches('[data-k="concept"]'))v22CalculateTotals(root);
+  if(e.target.matches('[data-k="base"],[data-k="vat_rate"],[data-k="irpf_rate"]'))v22CalculateTotals(root);
+});
+document.addEventListener('input',e=>{
+  const root=e.target.closest('#manualForm,#uploadForm,#detailForm');if(!root)return;
+  if(e.target.matches('[data-k="supplier_tax_id"]'))v22ResolveSupplier(root);
+  if(e.target.matches('[data-k="supplier_name"]')&&root.querySelector('[data-counterparty="supplier"]'))v22ResolveSupplier(root);
+  if(e.target.matches('[data-k="base"],[data-k="vat_rate"],[data-k="irpf_rate"]'))v22CalculateTotals(root);
+});
+
+Object.assign(I18N.es,{
+  'Gestionar proveedores':'Gestionar proveedores','Gestionar clientes':'Gestionar clientes','Proveedores de la empresa':'Proveedores de la empresa','Clientes de la empresa':'Clientes de la empresa','Añadir proveedor':'Añadir proveedor','Añadir cliente':'Añadir cliente','Proveedores':'Proveedores','Clientes':'Clientes','Guardar':'Guardar','Nombre':'Nombre','País':'País','Código postal':'Código postal','Dirección':'Dirección','Correo electrónico':'Correo electrónico','Teléfono':'Teléfono','Concepto habitual':'Concepto habitual','% IVA habitual':'% IVA habitual','% IRPF habitual':'% IRPF habitual','NIF / CIF del proveedor':'NIF / CIF del proveedor','Nom del proveïdor / beneficiari':'Nombre del proveedor / beneficiario','Tipus d’ingrés':'Tipo de ingreso','Factura emesa a un client':'Factura emitida a un cliente','Caja del día / venda de caixa':'Caja del día / venta de caja','Client (alta prèvia)':'Cliente (alta previa)','Per emetre una factura, primer cal donar d’alta el client.':'Para emitir una factura, primero hay que dar de alta al cliente.','Gestionar clients':'Gestionar clientes','No hi ha clients. Fes servir «Gestionar clients» abans de registrar la factura.':'No hay clientes dados de alta. Usa «Gestionar clientes» antes de registrar la factura.','Concepte':'Concepto','Base imposable':'Base imponible','Quota d’IVA':'Cuota de IVA','IRPF (%)':'IRPF (%)','Quota d’IRPF':'Cuota de IRPF','Total factura':'Total factura','Data de la factura':'Fecha de la factura','Desar registre':'Guardar registro','Proveïdor reconegut:':'Proveedor reconocido:','Aquest NIF no consta als proveïdors d’aquesta empresa. En desar podràs donar-lo d’alta o continuar.':'Este NIF no consta en los proveedores de esta empresa. Al guardar podrás darlo de alta o continuar.','Proveïdor no donat d’alta':'Proveedor no dado de alta','No s’ha trobat cap proveïdor amb aquest NIF o nom. Decideix com vols continuar.':'No se ha encontrado ningún proveedor con ese NIF o nombre. Decide cómo quieres continuar.','Donar d’alta proveïdor':'Dar de alta proveedor','Continuar sense donar-lo d’alta':'Continuar sin darlo de alta','Caja del día':'Caja del día','Venta de mercaderías':'Venta de mercancías','Prestación de servicios':'Prestación de servicios','Otros ingresos':'Otros ingresos','Els registres guardats':'Los registros guardados','Exportar libros a Excel':'Exportar libros a Excel','Libro ingresos':'Libro de ingresos','Libro gastos':'Libro de gastos','Registros':'Registros','Proveedores de':'Proveedores de','Clientes de':'Clientes de','Cada empresa tiene su propio listado de':'Cada empresa tiene su propio listado de','Aún no hay':'Aún no hay','dados de alta para esta empresa.':'dados de alta para esta empresa.','Guardar cambios':'Guardar cambios','Proveedor guardado correctamente':'Proveedor guardado correctamente','Cliente guardado correctamente':'Cliente guardado correctamente','Registro eliminado del listado':'Registro eliminado del listado','Editar':'Editar','Eliminar':'Eliminar','Cerrar':'Cerrar','Añadir':'Añadir','Cancelar':'Cancelar','Registro guardado correctamente':'Registro guardado correctamente','Nom':'Nombre','Codi postal':'Código postal','Adreça':'Dirección','Correu electrònic':'Correo electrónico','Telèfon':'Teléfono','Concepte habitual':'Concepto habitual','Sense concepte habitual':'Sin concepto habitual','Edita':'Editar','Elimina':'Eliminar','Afegir proveïdor':'Añadir proveedor','Afegir client':'Añadir cliente','Proveïdors':'Proveedores','Clients':'Clientes','Tancar':'Cerrar','Desar':'Guardar','Cancel·lar':'Cancelar','Tipus d’ingrés':'Tipo de ingreso','Factura emesa / ingrés':'Factura emitida / ingreso','Despesa / rebut':'Gasto / recibo','Client':'Cliente','Proveïdor / beneficiari':'Proveedor / beneficiario','Base imposable':'Base imponible','Quota d’IVA':'Cuota de IVA','Quota d’IRPF':'Cuota de IRPF','Total factura':'Total factura','Caja del día / venda de caixa':'Caja del día / venta de caja','Les factures rebudes i les factures emeses a un client requereixen fitxer original. Les despeses i la caixa del dia poden guardar-se sense adjunt.':'Las facturas recibidas y las emitidas a un cliente requieren archivo original. Los gastos y la caja del día pueden guardarse sin adjunto.'
+});
+Object.assign(I18N.en,{
+  'Gestionar proveedores':'Manage suppliers','Gestionar clientes':'Manage customers','Proveedores de la empresa':'Company suppliers','Clientes de la empresa':'Company customers','Añadir proveedor':'Add supplier','Añadir cliente':'Add customer','Proveedores':'Suppliers','Clientes':'Customers','Guardar':'Save','Nombre':'Name','País':'Country','Código postal':'Postal code','Dirección':'Address','Correo electrónico':'Email','Teléfono':'Phone','Concepto habitual':'Usual concept','% IVA habitual':'Usual VAT %','% IRPF habitual':'Usual IRPF %','NIF / CIF del proveedor':'Supplier tax ID','Nom del proveïdor / beneficiari':'Supplier / beneficiary name','Tipus d’ingrés':'Income type','Factura emesa a un client':'Invoice issued to a customer','Caja del día / venda de caixa':'Cash register daily sales','Client (alta prèvia)':'Customer (must be registered)','Per emetre una factura, primer cal donar d’alta el client.':'To issue an invoice, register the customer first.','Gestionar clients':'Manage customers','Concepte':'Concept','Base imposable':'Taxable base','Quota d’IVA':'VAT amount','IRPF (%)':'IRPF (%)','Quota d’IRPF':'IRPF amount','Total factura':'Invoice total','Data de la factura':'Invoice date','Desar registre':'Save record','Proveïdor reconegut:':'Supplier recognized:','Aquest NIF no consta als proveïdors d’aquesta empresa. En desar podràs donar-lo d’alta o continuar.':'This tax ID is not in this company’s supplier list. When saving, you can add it or continue.','Proveïdor no donat d’alta':'Supplier not registered','No s’ha trobat cap proveïdor amb aquest NIF o nom. Decideix com vols continuar.':'No supplier with this tax ID or name was found. Choose how to continue.','Donar d’alta proveïdor':'Add supplier','Continuar sense donar-lo d’alta':'Continue without adding','Caja del día':'Cash register daily sales','Venta de mercaderías':'Goods sales','Prestación de servicios':'Services provided','Otros ingresos':'Other income','Exportar libros a Excel':'Export accounting books to Excel','Libro ingresos':'Income ledger','Libro gastos':'Expense ledger','Registros':'Records','Proveedor guardado correctamente':'Supplier saved successfully','Cliente guardado correctamente':'Customer saved successfully','Registro eliminado del listado':'Entry removed from list','Editar':'Edit','Eliminar':'Delete','Cerrar':'Close','Añadir':'Add','Cancelar':'Cancel','Registro guardado correctamente':'Record saved successfully','Nom':'Name','Codi postal':'Postal code','Adreça':'Address','Correu electrònic':'Email','Telèfon':'Phone','Concepte habitual':'Usual concept','Sense concepte habitual':'No usual concept','Edita':'Edit','Elimina':'Delete','Afegir proveïdor':'Add supplier','Afegir client':'Add customer','Proveïdors':'Suppliers','Clients':'Customers','Tancar':'Close','Desar':'Save','Cancel·lar':'Cancel','Tipus d’ingrés':'Income type','Factura emesa / ingrés':'Issued invoice / income','Despesa / rebut':'Expense / receipt','Client':'Customer','Proveïdor / beneficiari':'Supplier / beneficiary','Base imposable':'Taxable base','Quota d’IVA':'VAT amount','Quota d’IRPF':'IRPF amount','Total factura':'Invoice total','Les factures rebudes i les factures emeses a un client requereixen fitxer original. Les despeses i la caixa del dia poden guardar-se sense adjunt.':'Received invoices and issued invoices to a customer require an original file. Expenses and cash register daily sales can be saved without an attachment.'
+});
+
 </script>
 </body>
 </html>
