@@ -6402,6 +6402,295 @@ Object.assign(I18N.en, {
 }
 </style>
 
+
+<style id="v28-accounting-overrides">
+:root{--income:#16734a;--income-bg:#e7f5ed;--expense:#a33b35;--expense-bg:#fff0ee;--navy:#17283d}
+.manager-welcome{background:#f7f9fc!important;color:var(--ink)!important;border:1px solid var(--line);box-shadow:0 8px 24px rgba(16,36,58,.06)!important}
+.manager-welcome .eyebrow{color:#53657b!important}.manager-welcome h2{color:#17283d!important}.manager-welcome p{color:#53657b!important}
+.v28-flow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 18px}
+.v28-flow button{border:2px solid var(--line);border-radius:14px;padding:15px;text-align:left;background:var(--surface);cursor:pointer}
+.v28-flow button strong{display:block;font-size:1.05rem}.v28-flow button small{display:block;color:var(--ink2);margin-top:4px}
+.v28-flow button[data-active="income"]{border-color:var(--income);background:var(--income-bg);color:#145b3d}
+.v28-flow button[data-active="expense"]{border-color:var(--expense);background:var(--expense-bg);color:#8c2d28}
+.v28-group{border:1px solid var(--line);border-radius:13px;padding:14px;margin:12px 0;background:var(--surface)}
+.v28-group.income{border-left:5px solid var(--income)}.v28-group.expense{border-left:5px solid var(--expense)}
+.v28-group h3{margin:0 0 8px;font-size:1rem}
+.v28-tax-lines{grid-column:1/-1;border:1px solid var(--line);border-radius:12px;padding:13px;background:var(--paper)}
+.v28-tax-line{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(90px,.8fr) minmax(90px,.7fr) auto;gap:8px;align-items:end;margin:8px 0}
+.v28-tax-line input,.v28-tax-line select{width:100%;min-height:42px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.v28-totals{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:.9rem}
+.v28-totals b{font-variant-numeric:tabular-nums}
+.v28-entry-date{background:var(--paper)!important}
+.v28-retailline{display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:#fff8e7;border:1px solid #ecd9a7}
+.v28-muted{color:var(--ink2);font-size:.83rem}
+.v28-quickadd{margin-top:7px}
+html[data-theme="dark"] .v28-flow button[data-active="income"]{background:#17392d;color:#9ce0b9}
+html[data-theme="dark"] .v28-flow button[data-active="expense"]{background:#452323;color:#ffaaa4}
+html[data-theme="dark"] .manager-welcome{background:#182536!important;color:#eff4f9!important;border-color:#34465a}
+html[data-theme="dark"] .manager-welcome h2,html[data-theme="dark"] .manager-welcome p{color:#eff4f9!important}
+html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;color:#f1d48b}
+@media(max-width:650px){.v28-flow{grid-template-columns:1fr}.v28-tax-line{grid-template-columns:1fr 1fr}.v28-tax-line .v28-line-concept{grid-column:1/-1}}
+</style>
+<script>
+/* v28 — diferenciación ingresos/gastos, desglose fiscal multi-IVA y recargo de equivalencia. */
+(()=>{
+ const V28_RECARGO={4:0.5,10:1.4,21:5.2};
+ const money=n=>(Math.round((Number(n)||0)*100)/100).toFixed(2);
+ const esc28=x=>typeof esc==='function'?esc(x):String(x??'');
+ const isExpense28=v=>v.record_type==='gasto'||v.invoice_type==='recibida';
+ const today28=()=>new Date().toISOString().slice(0,10);
+ const originalFields=window.fieldsHTML;
+ const originalRead=window.readFields;
+ const originalSave=window.saveManual;
+
+ function taxLinesHTML(v={},editable=true){
+   const old=v.expense_breakdown||{};
+   const rows=Array.isArray(old.v28_tax_lines)?old.v28_tax_lines:[];
+   const source=rows.length?rows:[{concept:v.concept||'',base:v.base||'',vat_rate:[4,10,21].includes(Number(v.vat_rate))?Number(v.vat_rate):21}];
+   return `<div class="v28-tax-lines" data-v28-tax-lines>
+     <h3>Desglose de bases e IVA</h3>
+     <p class="v28-muted">Añade una línea por cada tipo de IVA de la factura. Solo se permiten los tipos del 4 %, 10 % y 21 %.</p>
+     <div data-v28-lines>${source.map((r,i)=>lineHTML28(r,editable)).join('')}</div>
+     ${editable?'<button type="button" class="btn v28-add-line" data-v28-add-line>+ Añadir línea de IVA</button>':''}
+     <div class="v28-totals"><span>Base: <b data-v28-base>0,00 €</b></span><span>IVA: <b data-v28-vat>0,00 €</b></span><span>Recargo: <b data-v28-re>0,00 €</b></span></div>
+   </div>`;
+ }
+ function lineHTML28(r={},editable=true){
+   return `<div class="v28-tax-line" data-v28-line>
+    <label class="field v28-line-concept"><span>Concepto / base</span><input data-v28-line-name value="${esc28(r.concept||'')}" placeholder="Concepto"></label>
+    <label class="field"><span>Base (€)</span><input type="number" min="0" step="0.01" data-v28-line-base value="${esc28(r.base??'')}" ${editable?'':'readonly'}></label>
+    <label class="field"><span>IVA</span><select data-v28-line-vat ${editable?'':'disabled'}>${[4,10,21].map(x=>`<option value="${x}" ${Number(r.vat_rate||21)===x?'selected':''}>${x} %</option>`).join('')}</select></label>
+    ${editable?'<button type="button" class="btn danger" data-v28-remove-line aria-label="Eliminar línea">Eliminar</button>':''}
+   </div>`;
+ }
+ function recalc28(root){
+   if(!root)return;
+   const lines=[...root.querySelectorAll('[data-v28-line]')];
+   let base=0,vat=0,re=0;
+   lines.forEach(row=>{
+     const b=Math.max(0,Number(row.querySelector('[data-v28-line-base]')?.value)||0);
+     const rate=Number(row.querySelector('[data-v28-line-vat]')?.value)||0;
+     base+=b;vat+=b*rate/100;
+     if(root.querySelector('[data-k="equivalence_surcharge"]')?.checked)re+=b*(V28_RECARGO[rate]||0)/100;
+   });
+   const set=(k,val)=>{const el=root.querySelector(`[data-k="${k}"]`);if(el)el.value=money(val);};
+   set('base',base);set('vat_amount',vat);set('equivalence_surcharge_amount',re);
+   const irpfRate=Number(root.querySelector('[data-k="irpf_rate"]')?.value)||0,irpf=base*irpfRate/100;
+   set('irpf_amount',irpf);set('total',base+vat+re-irpf);
+   const fmt=n=>money(n).replace('.',',')+' €';
+   const b=root.querySelector('[data-v28-base]'),v=root.querySelector('[data-v28-vat]'),e=root.querySelector('[data-v28-re]');
+   if(b)b.textContent=fmt(base);if(v)v.textContent=fmt(vat);if(e)e.textContent=fmt(re);
+ }
+ window.fieldsHTML=function(v={},editable=true){
+   const rt=v.record_type==='gasto'?'gasto':'factura',typ=v.invoice_type||'',expense=isExpense28(v),companyId=v22CompanyForForm(v);
+   const old=v.expense_breakdown||{};
+   const retail=!!old.v28_retail_total_only;
+   const lines=taxLinesHTML(v,editable);
+   const baseFields=`
+    ${v22Field(v,'irpf_rate','IRPF (%)','number',false,editable)}
+    ${v22Field(v,'irpf_amount','Cuota de IRPF','number',false,editable,true)}
+    <label class="field"><span>Recargo de equivalencia</span><span style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-k="equivalence_surcharge" ${old.v28_equivalence_surcharge?'checked':''} ${editable?'':'disabled'} style="width:auto;min-height:0"> Aplicar recargo</span></label>
+    ${v22Field(v,'equivalence_surcharge_amount','Cuota de recargo','number',false,editable,false)}
+    ${v22Field(v,'total','Total factura (€)','number',false,editable,true)}
+   `;
+   return `
+    <div class="v28-flow" aria-label="Tipo de operación">
+      <button type="button" data-v28-flow="expense" data-active="${expense?'expense':''}"><strong>↓ GASTOS / COMPRAS</strong><small>Facturas recibidas y gastos de la empresa</small></button>
+      <button type="button" data-v28-flow="income" data-active="${!expense?'income':''}"><strong>↑ INGRESOS / VENTAS</strong><small>Facturas emitidas y ventas de caja</small></button>
+    </div>
+    <input type="hidden" data-k="record_type" value="${rt}">
+    <input type="hidden" data-k="invoice_type" value="${typ}">
+    ${expense?`<div class="v28-group expense"><h3>GASTO · Documento recibido</h3>${v22SupplierFields(v,editable)}</div>`:`<div class="v28-group income"><h3>INGRESO · Venta / factura emitida</h3>${v22IncomeKindField(v,editable)}${v22CustomerField(v,editable,companyId)}<button type="button" class="btn v28-quickadd" data-v28-quickadd="customers">+ Crear cliente nuevo</button></div>`}
+    ${v22Field(v,'invoice_number','Número de factura','text',false,editable)}
+    ${v22Field(v,'invoice_date','Fecha de emisión de la factura','date',false,editable)}
+    <label class="field"><span>Fecha de registro contable</span><input class="v28-entry-date" type="date" data-k="v28_entry_date" value="${esc28(old.v28_entry_date||today28())}" ${editable?'':'readonly'}></label>
+    ${v22ConceptOptions(v,editable)}
+    ${retail?'':lines}
+    <label class="field wide v28-retailline"><input type="checkbox" data-k="v28_retail_total_only" ${retail?'checked':''} ${editable?'':'disabled'} style="width:auto;min-height:0"> <span><b>Cliente comercio minorista</b><br><small>Registrar únicamente el total de factura, sin desglose fiscal por tipos de IVA.</small></span></label>
+    <div class="v28-retail-total" ${retail?'':'hidden'}>${v22Field(v,'total','Total factura (€)','number',false,editable)}</div>
+    <div class="v28-fiscal-fields" ${retail?'hidden':''}>${baseFields}</div>
+    <input type="hidden" data-k="currency" value="EUR">
+    <input type="hidden" data-k="vat_rate" value="${esc28(v.vat_rate??21)}">
+    <input type="hidden" data-k="vat_amount" value="${esc28(v.vat_amount??0)}">
+    <input type="hidden" data-k="legacy_expense_breakdown" value="${esc28(JSON.stringify(old))}">
+    <input type="hidden" data-k="expense_total_legacy" value="${esc28(v.expense_total??'')}">
+   `;
+ };
+ window.readFields=function(root){
+   const o=originalRead(root);
+   const lines=[...root.querySelectorAll('[data-v28-line]')].map(row=>({
+     concept:row.querySelector('[data-v28-line-name]')?.value?.trim()||'',
+     base:Number(row.querySelector('[data-v28-line-base]')?.value)||0,
+     vat_rate:Number(row.querySelector('[data-v28-line-vat]')?.value)||0
+   })).filter(x=>x.base>0);
+   const old=o.expense_breakdown||{};
+   o.expense_breakdown={...old,v28_tax_lines:lines,v28_entry_date:root.querySelector('[data-k="v28_entry_date"]')?.value||today28(),v28_retail_total_only:!!root.querySelector('[data-k="v28_retail_total_only"]')?.checked,v28_equivalence_surcharge:!!root.querySelector('[data-k="equivalence_surcharge"]')?.checked};
+   o.currency='EUR';
+   if(lines.length){
+     const base=lines.reduce((s,x)=>s+x.base,0),vat=lines.reduce((s,x)=>s+x.base*x.vat_rate/100,0);
+     const re=o.expense_breakdown.v28_equivalence_surcharge?lines.reduce((s,x)=>s+x.base*(V28_RECARGO[x.vat_rate]||0)/100,0):0;
+     const irpf=base*(Number(o.irpf_rate)||0)/100;
+     o.base=base;o.vat_amount=vat;o.equivalence_surcharge_amount=re;o.total=base+vat+re-irpf;
+     o.vat_rate=base?lines.reduce((s,x)=>s+x.base*x.vat_rate,0)/base:0;
+   }
+   return o;
+ };
+ window.v22CalculateTotals=function(root){recalc28(root);};
+ const originalUpdate=v22UpdateFormMode;
+ v22UpdateFormMode=function(root){originalUpdate(root);recalc28(root);};
+ window.updateManualFormMode=window.updateManualFormMode||function(){};
+
+ // Delegated interactions for the new line editor and flow selector.
+ document.addEventListener('click',async e=>{
+   const add=e.target.closest('[data-v28-add-line]');
+   if(add){const holder=add.parentElement.querySelector('[data-v28-lines]');holder.insertAdjacentHTML('beforeend',lineHTML28({vat_rate:21},true));recalc28(add.closest('#manualForm'));return;}
+   const remove=e.target.closest('[data-v28-remove-line]');
+   if(remove){const root=remove.closest('#manualForm');const all=root.querySelectorAll('[data-v28-line]');if(all.length>1)remove.closest('[data-v28-line]').remove();recalc28(root);return;}
+   const flow=e.target.closest('[data-v28-flow]');
+   if(flow){
+     const root=flow.closest('#manualForm'),expense=flow.dataset.v28Flow==='expense';
+     const rt=root.querySelector('[data-k="record_type"]'),it=root.querySelector('[data-k="invoice_type"]');
+     if(rt)rt.value=expense?'gasto':'factura';if(it)it.value=expense?'recibida':'emitida';
+     window.renderManualFormForFlow?.(expense?'expense':'income');
+     return;
+   }
+   const quick=e.target.closest('[data-v28-quickadd]');
+   if(quick){openQuickPartner28(quick.dataset.v28Quickadd);return;}
+ });
+ document.addEventListener('input',e=>{if(e.target.matches('[data-v28-line-base],[data-v28-line-vat],[data-k="irpf_rate"]'))recalc28(e.target.closest('#manualForm'));});
+ document.addEventListener('change',e=>{
+   if(e.target.matches('[data-v28-line-vat],[data-k="equivalence_surcharge"]'))recalc28(e.target.closest('#manualForm'));
+   if(e.target.matches('[data-k="v28_retail_total_only"]')){
+     const root=e.target.closest('#manualForm'),box=root.querySelector('.v28-tax-lines'),fiscal=root.querySelector('.v28-fiscal-fields'),ret=root.querySelector('.v28-retail-total');
+     if(box)box.hidden=e.target.checked;if(fiscal)fiscal.hidden=e.target.checked;if(ret)ret.hidden=!e.target.checked;
+   }
+ });
+
+ async function openQuickPartner28(type){
+   const customer=type==='customers',title=customer?'cliente':'proveedor';
+   const body=`<div class="dhead"><div><h2>Crear ${title}</h2><p class="sub">Se añadirá al directorio de esta empresa y quedará seleccionado en el registro.</p></div><button class="btn ghost" data-act="partnerClose">Cerrar</button></div>
+    <div class="fields" id="v28QuickPartner">
+     <label class="field"><span>Nombre *</span><input data-qpk="name" required></label>
+     <label class="field"><span>NIF / CIF *</span><input data-qpk="tax_id" required></label>
+     <label class="field"><span>Código postal *</span><input data-qpk="postal_code" required></label>
+     <label class="field"><span>País *</span><input data-qpk="country" value="España" required></label>
+     <label class="field wide"><span>Dirección</span><input data-qpk="address"></label>
+    </div><p class="err" id="v28QuickErr"></p><div class="actions"><button type="button" class="btn primary" id="v28QuickSave">Guardar y seleccionar</button><button type="button" class="btn" data-act="partnerClose">Cancelar</button></div>`;
+   $('#dlgBody').innerHTML=body;if(!$('#dlg').open)$('#dlg').showModal();
+   $('#v28QuickSave').onclick=async()=>{
+     const root=$('#v28QuickPartner'),d={};root.querySelectorAll('[data-qpk]').forEach(x=>d[x.dataset.qpk]=x.value.trim());
+     const err=$('#v28QuickErr');if(!d.name||!d.tax_id||!d.postal_code){err.textContent='Nombre, NIF/CIF y código postal son obligatorios.';return;}
+     d.company_id=state.profile.company_id;
+     const {data,error}=await sb.from(customer?'customers':'suppliers').insert(d).select().single();
+     if(error){err.textContent=error.message;return;}
+     await v22LoadPartners(state.profile.company_id);
+     const form=$('#manualForm');
+     if(customer){
+       const sel=form.querySelector('[data-k="customer_id"]');if(sel){sel.insertAdjacentHTML('beforeend',`<option value="${esc28(data.id)}">${esc28(data.name)} · ${esc28(data.tax_id)}</option>`);sel.value=data.id;}
+       v22PopulateCustomer(form);
+     }else{
+       const n=form.querySelector('[data-k="supplier_name"]'),tax=form.querySelector('[data-k="supplier_tax_id"]'),id=form.querySelector('[data-k="supplier_id"]');
+       if(n)n.value=data.name;if(tax)tax.value=data.tax_id;if(id)id.value=data.id;
+     }
+     $('#dlg').close();toast('Registro creado y seleccionado');
+   };
+ }
+
+ // Mandatory tax ID and postal code on directory forms.
+ const oldPartnerForm=v22PartnerFormHTML;
+ v22PartnerFormHTML=function(item=null,prefill=null){
+   let html=oldPartnerForm(item,prefill);
+   html=html.replace('<span>NIF / CIF</span>','<span>NIF / CIF <b aria-hidden="true">*</b></span>').replace('data-pk="tax_id" value=','data-pk="tax_id" required value=');
+   html=html.replace('<span>Codi postal</span>','<span>Código postal <b aria-hidden="true">*</b></span>').replace('data-pk="postal_code" value=','data-pk="postal_code" required value=');
+   html=html.replace('Només cal indicar el nom; la resta de camps són opcionals.','Nombre, NIF/CIF y código postal son obligatorios.');
+   return html;
+ };
+ const oldSavePartner=v22SavePartner;
+ v22SavePartner=async function(){
+   const d=v22ReadPartnerForm(),err=$('#partnerErr');
+   if(!d.name||!d.tax_id||!d.postal_code){if(err)err.textContent='Nombre, NIF/CIF y código postal son obligatorios.';return;}
+   return oldSavePartner();
+ };
+
+ // Separate the entry landing into clearly differentiated income and expense actions.
+ const oldRenderCapture=window.renderCapture;
+ window.renderCapture=function(){
+   oldRenderCapture();
+   const page=$('#capture');if(!page)return;
+   const cards=page.querySelector('.v24-capture-grid');
+   if(cards){
+     const first=cards.querySelector('.v24-action-card');
+     if(first){
+       first.classList.add('v28-income-card');
+       first.querySelector('h2').textContent='INGRESOS · Ventas y facturas emitidas';
+       first.querySelector('p').textContent='Registra ventas, facturas emitidas a clientes y caja diaria.';
+       first.querySelector('[data-act="manualMode"]').textContent='Registrar un ingreso';
+       first.querySelector('[data-act="manualMode"]').dataset.v28Start='income';
+       const second=document.createElement('article');second.className='v24-action-card v28-expense-card';
+       second.innerHTML='<div class="v24-card-mark" aria-hidden="true">↓</div><div class="v24-card-content"><h2>GASTOS · Compras y facturas recibidas</h2><p>Registra facturas de proveedores, compras y otros gastos de la empresa.</p><button class="btn" data-act="manualMode" data-v28-start="expense">Registrar un gasto</button></div>';
+       cards.insertBefore(second,cards.children[1]||null);
+     }
+   }
+ };
+ const oldManual=window.renderManualForm;
+ window.renderManualForm=async function(){
+   await oldManual();
+   const root=$('#manualForm');if(!root)return;
+   // Initial screen is deliberately neutral; the two explicit actions choose the operation.
+   root.dataset.v28Ready='1';recalc28(root);
+ };
+ // Preserve selection when the user starts from the income/expense landing card.
+ document.addEventListener('click',e=>{
+   const start=e.target.closest('[data-v28-start]');
+   if(start){
+     state.v28Start=start.dataset.v28Start;
+     const run=window.renderManualForm;
+     setTimeout(()=>{const root=$('#manualForm');if(!root)return;const expense=state.v28Start==='expense';root.querySelector('[data-k="record_type"]').value=expense?'gasto':'factura';root.querySelector('[data-k="invoice_type"]').value=expense?'recibida':'emitida';v22UpdateFormMode(root);recalc28(root);},0);
+   }
+ });
+
+ // Save the extra breakdown in the existing JSON field to avoid requiring a DB migration.
+ window.saveManual=async function(){
+   const form=$('#manualForm'),err=$('#manualErr');if(!form||!err)return;
+   const d=window.readFields(form),expense=d.record_type==='gasto'||d.invoice_type==='recibida',cash=d.record_type==='factura'&&d.invoice_type==='emitida'&&d.income_kind==='caja_dia';
+   if(!d.record_type||(!d.invoice_type&&d.record_type==='factura')){err.textContent='Selecciona ingresos o gastos.';return;}
+   if(!d.concept){err.textContent='Selecciona un concepto.';return;}
+   const retail=!!d.expense_breakdown.v28_retail_total_only;
+   const lines=d.expense_breakdown.v28_tax_lines||[];
+   if(!retail&&(!lines.length||lines.some(x=>x.base<=0))){err.textContent='Añade al menos una línea con una base imponible superior a cero.';return;}
+   if(retail&&!(Number(d.total)>0)){err.textContent='Introduce el total de la factura.';return;}
+   if(expense&&!d.supplier_name){err.textContent='Indica el proveedor o beneficiario.';return;}
+   if(d.invoice_type==='emitida'&&!cash&&!d.customer_id){err.textContent='Selecciona un cliente registrado o créalo ahora.';return;}
+   const file=$('#manualFile')?.files?.[0]||null;
+   if(d.record_type==='factura'&&!cash&&!file){err.textContent='Adjunta el PDF o la imagen de la factura.';return;}
+   if(file&&file.size>25*1024*1024){err.textContent='El archivo supera 25 MB.';return;}
+   if(expense&&!d.supplier_id){
+     const hit=v22FindSupplier(d.company_id,d.supplier_tax_id,d.supplier_name);
+     if(hit){d.supplier_id=hit.id;d.supplier_name=hit.name;d.supplier_tax_id=hit.tax_id;}
+     else{v22OpenUnknownSupplier(d);return;}
+   }
+   const btn=$('[data-act="saveManual"]');if(btn){btn.disabled=true;btn.textContent='Guardando…';}
+   const linesBase=lines.reduce((s,x)=>s+x.base,0),linesVat=lines.reduce((s,x)=>s+x.base*x.vat_rate/100,0);
+   const reOn=!!d.expense_breakdown.v28_equivalence_surcharge;
+   const reAmt=reOn?lines.reduce((s,x)=>s+x.base*(V28_RECARGO[x.vat_rate]||0)/100,0):0;
+   const irpf=linesBase*(Number(d.irpf_rate)||0)/100;
+   if(!retail){d.base=linesBase;d.vat_amount=linesVat;d.equivalence_surcharge_amount=reAmt;d.total=linesBase+linesVat+reAmt-irpf;d.vat_rate=linesBase?lines.reduce((s,x)=>s+x.base*x.vat_rate,0)/linesBase:0;}
+   d.expense_breakdown={...(d.expense_breakdown||{}),v28_tax_lines:lines,v28_entry_date:d.expense_breakdown.v28_entry_date||today28(),v28_retail_total_only:retail,v28_equivalence_surcharge:reOn,v28_equivalence_surcharge_amount:reAmt};
+   const record={company_id:d.company_id,record_type:d.record_type,invoice_type:d.record_type==='gasto'?null:d.invoice_type,income_kind:cash?'caja_dia':'factura',supplier_id:expense?(d.supplier_id||null):null,customer_id:!expense&&!cash?(d.customer_id||null):null,supplier_name:cash?'Caja del día':d.supplier_name,supplier_tax_id:cash?null:d.supplier_tax_id,invoice_number:d.invoice_number,invoice_date:d.invoice_date,currency:'EUR',concept:cash?'Caja del día':d.concept,base:retail?Number(d.total):d.base,vat_rate:retail?0:d.vat_rate,vat_amount:retail?0:d.vat_amount,irpf_rate:retail?0:d.irpf_rate,irpf_amount:retail?0:d.irpf_amount,total:retail?Number(d.total):d.total,expense_breakdown:d.expense_breakdown,expense_total:expense?Number(d.base||0):0,status:'pendiente',file_name:file?.name||null,file_type:file?.type||null};
+   const {data:ins,error}=await sb.from('invoices').insert(record).select().single();
+   if(error){err.textContent=error.message;if(btn){btn.disabled=false;btn.textContent='Guardar registro';}return;}
+   if(file){
+     const path=`${state.profile.company_id}/${ins.id}/${safeName(file.name)}`;
+     const {error:up}=await sb.storage.from('invoices').upload(path,file,{upsert:false});
+     if(up){await sb.from('invoices').delete().eq('id',ins.id);err.textContent='No se pudo guardar el archivo: '+up.message;if(btn){btn.disabled=false;btn.textContent='Guardar registro';}return;}
+     const {error:patch}=await sb.from('invoices').update({file_path:path}).eq('id',ins.id);
+     if(patch){await sb.storage.from('invoices').remove([path]);await sb.from('invoices').delete().eq('id',ins.id);err.textContent=patch.message;if(btn){btn.disabled=false;btn.textContent='Guardar registro';}return;}
+   }
+   toast('Registro guardado correctamente');state.pendingFile=null;state.view='mine';await loadData();renderCompanyShell();
+ };
+})();
+</script>
+
 </body>
 </html>
 
