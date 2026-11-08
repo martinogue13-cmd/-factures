@@ -7355,3 +7355,101 @@ html[data-theme="dark"] .v31-is-empty{background:#1d2d3b!important;color:#d4e0e9
  const obs=new MutationObserver(run);obs.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="v36-supplier-panel-clean">
+/* Panel de proveedor: eliminar alta manual y hacer más clara la validación automática */
+#manualForm [data-v28-section="expense"] [data-v28-quickadd="suppliers"],
+#manualForm [data-v28-section="expense"] .v28-quickadd[data-v28-quickadd="suppliers"]{
+ display:none!important;
+}
+#manualForm [data-v28-section="expense"]{
+ border-left:4px solid var(--expense,#b83c38)!important;
+ background:var(--card,#fff)!important;
+ padding:16px!important;
+ border-radius:13px!important;
+ box-shadow:0 3px 12px rgba(20,40,60,.045)!important;
+}
+#manualForm [data-v28-section="expense"] h3{
+ margin:0 0 13px!important;font-size:14px!important;font-weight:750!important;
+ letter-spacing:.01em!important;line-height:1.35!important;
+}
+#manualForm [data-counterparty="supplier"]{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:10px 12px!important;align-items:end!important;
+}
+#manualForm [data-counterparty="supplier"] .field>span{
+ min-height:0!important;display:block!important;margin-bottom:5px!important;
+ font-size:12px!important;font-weight:650!important;line-height:1.35!important;
+ color:var(--muted,#607080)!important;
+}
+#manualForm [data-counterparty="supplier"] input{
+ min-height:44px!important;height:44px!important;border-radius:9px!important;
+ padding:9px 11px!important;font-size:13px!important;
+}
+#manualForm [data-counterparty="supplier"] .v22-supplier-match,
+#manualForm [data-counterparty="supplier"] .v31-status,
+#manualForm [data-counterparty="supplier"] .v31-customer-status{
+ grid-column:1/-1!important;margin:0!important;
+}
+#manualForm [data-v28-section="expense"] .v22-supplier-match,
+#manualForm [data-v28-section="expense"] .v31-status{
+ padding:10px 12px!important;border-radius:9px!important;
+ font-size:12px!important;line-height:1.45!important;
+}
+#manualForm [data-v28-section="expense"] .v22-supplier-match:empty,
+#manualForm [data-v28-section="expense"] .v31-status:empty{display:none!important}
+#manualForm [data-v28-section="expense"] .v22-supplier-match:not(:empty),
+#manualForm [data-v28-section="expense"] .v31-status:not(:empty){
+ background:#edf8f1!important;border:1px solid #c9e8d3!important;color:#17643a!important;
+}
+#manualForm [data-v28-section="expense"] .v22-supplier-match:not(:empty)::before,
+#manualForm [data-v28-section="expense"] .v31-status:not(:empty)::before{
+ content:"✓  ";font-weight:800;
+}
+#manualForm [data-v28-section="expense"] .v22-no-customer,
+#manualForm [data-v28-section="expense"] .v31-missing,
+#manualForm [data-v28-section="expense"] .v31-not-found{
+ background:#fff5e8!important;border:1px solid #f1d5aa!important;color:#80500c!important;
+ padding:10px 12px!important;border-radius:9px!important;font-size:12px!important;line-height:1.45!important;
+}
+#manualForm [data-v28-section="expense"] .v22-no-customer:not(:empty)::before,
+#manualForm [data-v28-section="expense"] .v31-missing:not(:empty)::before,
+#manualForm [data-v28-section="expense"] .v31-not-found:not(:empty)::before{
+ content:"ⓘ  ";font-weight:800;
+}
+@media(max-width:620px){
+ #manualForm [data-counterparty="supplier"]{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
+<script id="v36-supplier-panel-clean-js">
+(()=>{
+ const clean=()=>{
+  const root=document.querySelector('#manualForm');if(!root)return;
+  root.querySelectorAll('[data-v28-section="expense"] [data-v28-quickadd="suppliers"],[data-v28-section="expense"] .v28-quickadd').forEach(b=>b.remove());
+ };
+ document.addEventListener('DOMContentLoaded',clean);
+ const old=window.renderManualForm;
+ if(typeof old==='function')window.renderManualForm=async function(){const result=await old();clean();return result};
+ new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+<style id="v37-remove-redundant-directory">
+/* El directorio ya está accesible desde navegación y acciones contextuales. */
+.v24-capture-grid{grid-template-columns:minmax(0,1fr)!important}
+.v24-manual-layout{grid-template-columns:minmax(0,1fr)!important}
+.v24-directory-card,.v24-directory-panel{display:none!important}
+</style>
+<script id="v37-remove-redundant-directory-js">
+(()=>{
+ const prune=()=>{
+  document.querySelectorAll('.v24-directory-card,.v24-directory-panel').forEach(el=>el.remove());
+  document.querySelectorAll('.v24-capture-grid,.v24-manual-layout').forEach(el=>{
+   el.style.gridTemplateColumns='minmax(0,1fr)';
+  });
+ };
+ document.addEventListener('DOMContentLoaded',prune);
+ const observer=new MutationObserver(prune);
+ observer.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
