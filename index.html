@@ -7433,23 +7433,3 @@ html[data-theme="dark"] .v31-is-empty{background:#1d2d3b!important;color:#d4e0e9
  new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
-
-<style id="v37-remove-redundant-directory">
-/* El directorio ya está accesible desde navegación y acciones contextuales. */
-.v24-capture-grid{grid-template-columns:minmax(0,1fr)!important}
-.v24-manual-layout{grid-template-columns:minmax(0,1fr)!important}
-.v24-directory-card,.v24-directory-panel{display:none!important}
-</style>
-<script id="v37-remove-redundant-directory-js">
-(()=>{
- const prune=()=>{
-  document.querySelectorAll('.v24-directory-card,.v24-directory-panel').forEach(el=>el.remove());
-  document.querySelectorAll('.v24-capture-grid,.v24-manual-layout').forEach(el=>{
-   el.style.gridTemplateColumns='minmax(0,1fr)';
-  });
- };
- document.addEventListener('DOMContentLoaded',prune);
- const observer=new MutationObserver(prune);
- observer.observe(document.body,{childList:true,subtree:true});
-})();
-</script>
