@@ -1109,7 +1109,7 @@ html[data-theme="dark"] .v28-directory-card .btn{background:#1e3040!important;co
     <strong data-i18n="__footer_name__">Joan Nogué Trabal</strong>
     <span data-i18n="__footer_role__">Assessor fiscal i comptable</span>
     <a href="tel:+34646174898" data-i18n="__footer_phone__">📞 Telèfon: 646 174 898</a>
-    <a href="mailto:jNogué1971@gmail.com" data-i18n="__footer_email__">✉️ Correu electrònic: jNogué1971@gmail.com</a>
+    <a href="mailto:jNogue1971@gmail.com" data-i18n="__footer_email__">✉️ Correu electrònic: jNogue1971@gmail.com</a>
   </div>
 </footer>
 <dialog id="dlg"><div class="dpad" id="dlgBody"></div></dialog>
@@ -1239,7 +1239,7 @@ const I18N = {
     '__footer_name__':'Joan Nogué Trabal',
     '__footer_role__':'Assessor fiscal i comptable',
     '__footer_phone__':'📞 Telèfon: 646 174 898',
-    '__footer_email__':'✉️ Correu electrònic: jNogué1971@gmail.com',
+    '__footer_email__':'✉️ Correu electrònic: jNogue1971@gmail.com',
     'Bústia de factures':'Bústia de factures',
     'Joan Nogué · Gestió documental':'Joan Nogué · Gestió documental',
     'Gestió documental i facturació':'Gestió documental i facturació',
@@ -1348,7 +1348,7 @@ const I18N = {
     '__footer_name__':'Joan Nogué Trabal',
     '__footer_role__':'Asesor fiscal y contable',
     '__footer_phone__':'📞 Teléfono: 646 174 898',
-    '__footer_email__':'✉️ Correo electrónico: jNogué1971@gmail.com',
+    '__footer_email__':'✉️ Correo electrónico: jNogue1971@gmail.com',
     'Bústia de factures':'Buzón de facturas','Joan Nogué · Gestió documental':'Joan Nogué · Gestión documental','Gestió documental i facturació':'Gestión documental y facturación','Entorn segur per a la gestió de factures':'Entorno seguro para la gestión de facturas','Carregant…':'Cargando…',
     'Gestor':'Gestor','Empresa':'Empresa','Gestió de factures':'Gestión de facturas','Sortir':'Salir','Entra a la teva bústia de factures':'Entra en tu buzón de facturas',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'Un espacio corporativo para recibir, revisar y gestionar las facturas de cada empresa de forma ordenada y segura.',
@@ -1423,7 +1423,7 @@ const I18N = {
     '__footer_name__':'Joan Nogué Trabal',
     '__footer_role__':'Tax and accounting advisor',
     '__footer_phone__':'📞 Phone: 646 174 898',
-    '__footer_email__':'✉️ Email: jNogué1971@gmail.com',
+    '__footer_email__':'✉️ Email: jNogue1971@gmail.com',
     'Bústia de factures':'Invoice Inbox','Joan Nogué · Gestió documental':'Joan Nogué · Document management','Gestió documental i facturació':'Document management and invoicing','Entorn segur per a la gestió de factures':'Secure invoice management environment','Carregant…':'Loading…',
     'Gestor':'Manager','Empresa':'Company','Gestió de factures':'Invoice management','Sortir':'Sign out','Entra a la teva bústia de factures':'Sign in to your invoice inbox',
     'Un espai corporatiu per rebre, revisar i gestionar les factures de cada empresa de manera ordenada i segura.':'A corporate space to receive, review and manage each company’s invoices in an organized and secure way.',
@@ -6520,7 +6520,7 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
  window.fieldsHTML=function(v={},editable=true){
    const rt=v.record_type==='gasto'?'gasto':'factura',typ=v.invoice_type||'',expense=isExpense28(v),companyId=v22CompanyForForm(v);
    const old=v.expense_breakdown||{};
-   const retail=!!old.v28_retail_total_only;
+   const retail=!!state.company?.retail_mode;
    const lines=taxLinesHTML(v,editable);
    const baseFields=`
     ${v22Field(v,'irpf_rate','IRPF (%)','number',false,editable)}
@@ -6543,7 +6543,6 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
     <label class="field"><span>Fecha de registro contable</span><input class="v28-entry-date" type="date" data-k="v28_entry_date" value="${esc28(old.v28_entry_date||today28())}" ${editable?'':'readonly'}></label>
     ${v22ConceptOptions(v,editable)}
     ${retail?'':lines}
-    <label class="field wide v28-retailline"><input type="checkbox" data-k="v28_retail_total_only" ${retail?'checked':''} ${editable?'':'disabled'} style="width:auto;min-height:0"> <span><b>Cliente comercio minorista</b><br><small>Registrar únicamente el total de factura, sin desglose fiscal por tipos de IVA.</small></span></label>
     <div class="v28-retail-total" ${retail?'':'hidden'}>${v22Field(v,'total','Total factura (€)','number',false,editable)}</div>
     <div class="v28-fiscal-fields" ${retail?'hidden':''}>${baseFields}</div>
     <input type="hidden" data-k="currency" value="EUR">
@@ -6561,7 +6560,7 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
      vat_rate:Number(row.querySelector('[data-v28-line-vat]')?.value)||0
    })).filter(x=>x.base>0);
    const old=o.expense_breakdown||{};
-   o.expense_breakdown={...old,v28_tax_lines:lines,v28_entry_date:root.querySelector('[data-k="v28_entry_date"]')?.value||today28(),v28_retail_total_only:!!root.querySelector('[data-k="v28_retail_total_only"]')?.checked,v28_equivalence_surcharge:!!root.querySelector('[data-k="equivalence_surcharge"]')?.checked};
+   o.expense_breakdown={...old,v28_tax_lines:lines,v28_entry_date:root.querySelector('[data-k="v28_entry_date"]')?.value||today28(),v28_retail_total_only:!!state.company?.retail_mode,v28_equivalence_surcharge:!!root.querySelector('[data-k="equivalence_surcharge"]')?.checked};
    o.currency='EUR';
    if(lines.length){
      const base=lines.reduce((s,x)=>s+x.base,0),vat=lines.reduce((s,x)=>s+x.base*x.vat_rate/100,0);
@@ -6939,7 +6938,334 @@ html[data-theme="dark"] .v30-concept-option:hover,html[data-theme="dark"] .v30-c
 })();
 </script>
 
+
+<style id="v31-counterparty-lookup">
+/* NIF/CIF i estat del contacte: camps separats, sense solapaments i amb estat visible. */
+#manualForm .v22-counterparty{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;width:100%;min-width:0}
+#manualForm .v22-counterparty .field{display:flex;flex-direction:column;gap:7px;min-width:0;width:100%;margin:0}
+#manualForm .v22-counterparty .field>span{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.35;font-weight:650}
+#manualForm .v22-counterparty input,#manualForm .v22-counterparty select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;height:46px;padding:10px 12px;line-height:1.25}
+#manualForm .v22-supplier-match,#manualForm .v31-customer-status{display:flex;align-items:flex-start;gap:9px;width:100%;min-width:0;box-sizing:border-box;padding:11px 13px;border:1px solid #d8e1e8;border-radius:10px;background:#f5f8fa;color:#43576a;line-height:1.45;font-size:.88rem;overflow-wrap:anywhere}
+.v31-status-mark{flex:0 0 22px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.8rem;background:#e5ebef;color:#40566b}
+.v31-status-copy{min-width:0;flex:1}
+.v31-status-title{font-weight:750;display:block;margin-bottom:2px}
+.v31-status-detail{display:block}
+.v31-is-found{background:#edf8f1!important;border-color:#a8d8ba!important;color:#185b36!important}
+.v31-is-missing{background:#fff7e9!important;border-color:#edcf91!important;color:#765019!important}
+.v31-is-empty{background:#f5f8fa!important;border-color:#d8e1e8!important;color:#526579!important}
+.v31-status-action{margin-top:8px!important;min-height:34px!important;padding:6px 11px!important;font-size:.82rem!important}
+#manualForm [data-counterparty="supplier"]{grid-template-columns:minmax(0,1fr)}
+#manualForm [data-counterparty="customer"]{grid-template-columns:minmax(0,1fr)}
+#manualForm .v28-quickadd{width:max-content;max-width:100%;white-space:normal}
+@media(min-width:700px){
+ #manualForm [data-counterparty="supplier"]{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ #manualForm [data-counterparty="supplier"] .v22-supplier-match{grid-column:1/-1}
+ #manualForm [data-counterparty="customer"]{grid-template-columns:minmax(0,1fr)}
+}
+html[data-theme="dark"] #manualForm .v22-supplier-match,html[data-theme="dark"] #manualForm .v31-customer-status{background:#1d2d3b;color:#d4e0e9;border-color:#405365}
+html[data-theme="dark"] .v31-is-found{background:#173629!important;color:#a9e4bd!important;border-color:#356d4b!important}
+html[data-theme="dark"] .v31-is-missing{background:#3a2e1b!important;color:#f1d49a!important;border-color:#70562a!important}
+html[data-theme="dark"] .v31-is-empty{background:#1d2d3b!important;color:#d4e0e9!important;border-color:#405365!important}
+</style>
+<script>
+(()=>{
+ const words={
+ ca:{
+  'NIF / CIF del proveïdor':'NIF / CIF del proveïdor','Introdueix el NIF/CIF':'Introdueix el NIF/CIF',
+  'Comprovant el directori…':'Comprovant el directori…','Contacte trobat':'Contacte trobat',
+  'Aquest proveïdor ja està donat d’alta.':'Aquest proveïdor ja està donat d’alta.',
+  'Les dades del proveïdor s’han carregat automàticament.':'Les dades del proveïdor s’han carregat automàticament.',
+  'Proveïdor no registrat':'Proveïdor no registrat','Aquest NIF/CIF encara no consta al directori d’aquesta empresa.':'Aquest NIF/CIF encara no consta al directori d’aquesta empresa.',
+  'Crear proveïdor':'Crear proveïdor','Selecciona un client per comprovar si ja està registrat.':'Selecciona un client per comprovar si ja està registrat.',
+  'Client ja registrat':'Client ja registrat','Aquest client forma part del directori de l’empresa.':'Aquest client forma part del directori de l’empresa.',
+  'No hi ha cap client seleccionat.':'No hi ha cap client seleccionat.','Client no registrat':'Client no registrat',
+  'NIF/CIF':'NIF/CIF','Nom del proveïdor / beneficiari':'Nom del proveïdor / beneficiari'
+ },
+ es:{
+  'NIF / CIF del proveïdor':'NIF / CIF del proveedor','Introdueix el NIF/CIF':'Introduce el NIF/CIF',
+  'Comprovant el directori…':'Comprobando el directorio…','Contacte trobat':'Contacto encontrado',
+  'Aquest proveïdor ja està donat d’alta.':'Este proveedor ya está registrado.',
+  'Les dades del proveïdor s’han carregat automàticament.':'Los datos del proveedor se han cargado automáticamente.',
+  'Proveïdor no registrat':'Proveedor no registrado','Aquest NIF/CIF encara no consta al directori d’aquesta empresa.':'Este NIF/CIF todavía no consta en el directorio de esta empresa.',
+  'Crear proveïdor':'Crear proveedor','Selecciona un client per comprovar si ja està registrat.':'Selecciona un cliente para comprobar si ya está registrado.',
+  'Client ja registrat':'Cliente ya registrado','Aquest client forma part del directori de l’empresa.':'Este cliente forma parte del directorio de la empresa.',
+  'No hi ha cap client seleccionat.':'No hay ningún cliente seleccionado.','Client no registrat':'Cliente no registrado',
+  'NIF/CIF':'NIF/CIF','Nom del proveïdor / beneficiari':'Nombre del proveedor / beneficiario'
+ },
+ en:{
+  'NIF / CIF del proveïdor':'Supplier tax ID','Introdueix el NIF/CIF':'Enter tax ID',
+  'Comprovant el directori…':'Checking directory…','Contacte trobat':'Contact found',
+  'Aquest proveïdor ja està donat d’alta.':'This supplier is already registered.',
+  'Les dades del proveïdor s’han carregat automàticament.':'Supplier details have been filled in automatically.',
+  'Proveïdor no registrat':'Supplier not registered','Aquest NIF/CIF encara no consta al directori d’aquesta empresa.':'This tax ID is not yet in this company directory.',
+  'Crear proveïdor':'Create supplier','Selecciona un client per comprovar si ja està registrat.':'Select a customer to check whether they are registered.',
+  'Client ja registrat':'Customer registered','Aquest client forma part del directori de l’empresa.':'This customer is in the company directory.',
+  'No hi ha cap client seleccionat.':'No customer selected.','Client no registrat':'Customer not registered',
+  'NIF/CIF':'Tax ID','Nom del proveïdor / beneficiari':'Supplier / beneficiary name'
+ }};
+ Object.keys(words).forEach(k=>Object.assign(I18N[k],words[k]));
+ const $=(root,sel)=>root.querySelector(sel);
+ const makeStatus=(cls,title,detail,actionLabel,action)=>{
+  const box=document.createElement('div');box.className='v31-status '+cls;
+  const mark=document.createElement('span');mark.className='v31-status-mark';mark.textContent=cls==='v31-is-found'?'✓':cls==='v31-is-missing'?'!':'i';
+  const copy=document.createElement('div');copy.className='v31-status-copy';
+  const h=document.createElement('span');h.className='v31-status-title';h.textContent=t(title);
+  const d=document.createElement('span');d.className='v31-status-detail';d.textContent=t(detail);
+  copy.append(h,d);
+  if(actionLabel){const b=document.createElement('button');b.type='button';b.className='btn v31-status-action';b.textContent=t(actionLabel);b.addEventListener('click',action);copy.append(b);}
+  box.append(mark,copy);return box;
+ };
+ function supplierStatus(root){
+  const wrap=$(root,'[data-counterparty="supplier"]');if(!wrap)return;
+  const input=$(wrap,'[data-k="supplier_tax_id"]'),name=$(wrap,'[data-k="supplier_name"]');
+  const cid=v22CompanyForForm({company_id:root.dataset.companyId||''});
+  const tax=(input?.value||'').trim(),nm=(name?.value||'').trim();
+  const found=tax?v22FindSupplier(cid,tax,''):null;
+  const existing=wrap.querySelector('.v31-status');
+  if(existing)existing.remove();
+  const old=$(wrap,'.v22-supplier-match');if(old)old.textContent='';
+  if(found){
+    const box=makeStatus('v31-is-found','Contacte trobat','Aquest proveïdor ja està donat d’alta. Les dades del proveïdor s’han carregat automàticament.');
+    wrap.append(box);
+  }else if(tax.length>=5){
+    const box=makeStatus('v31-is-missing','Proveïdor no registrat','Aquest NIF/CIF encara no consta al directori d’aquesta empresa.','Crear proveïdor',()=>openQuickPartner28('suppliers'));
+    wrap.append(box);
+  }else if(nm){
+    const match=v22FindSupplier(cid,'',nm);
+    if(match){const box=makeStatus('v31-is-found','Contacte trobat','Aquest proveïdor ja està donat d’alta.');wrap.append(box);}
+    else wrap.append(makeStatus('v31-is-empty','Introdueix el NIF/CIF','Comprovant el directori…'));
+  }else wrap.append(makeStatus('v31-is-empty','Introdueix el NIF/CIF','Comprovant el directori…'));
+ }
+ function customerStatus(root){
+  const wrap=$(root,'[data-counterparty="customer"]');if(!wrap)return;
+  let box=$(wrap,'.v31-customer-status');if(!box){box=document.createElement('div');box.className='v31-customer-status';const select=$(wrap,'[data-k="customer_id"]');select?.closest('label')?.after(box);}
+  box.replaceChildren();
+  const cid=v22CompanyForForm({company_id:root.dataset.companyId||''});
+  const id=$(wrap,'[data-k="customer_id"]')?.value;
+  const customer=v22PartnerList('customers',cid).find(x=>x.id===id);
+  const replacement=customer?makeStatus('v31-is-found','Client ja registrat','Aquest client forma part del directori de l’empresa.'):makeStatus('v31-is-empty','No hi ha cap client seleccionat.','Selecciona un client per comprovar si ja està registrat.');
+  box.className='v31-customer-status '+replacement.className;box.append(...replacement.childNodes);
+ }
+ // Redissenya el text del camp per evitar que l'etiqueta i l'input comparteixin espai.
+ function improve(root=document){
+  root.querySelectorAll?.('#manualForm [data-counterparty="supplier"]').forEach(w=>{
+   const label=$(w,'label.field');const span=label&&$('span',label);
+   if(span)span.textContent=t('NIF / CIF del proveïdor');
+   const tax=$(w,'[data-k="supplier_tax_id"]');if(tax){tax.placeholder=t('Introdueix el NIF/CIF');tax.autocomplete='off';}
+   supplierStatus(root);
+  });
+  root.querySelectorAll?.('#manualForm [data-counterparty="customer"]').forEach(w=>customerStatus(root));
+ }
+ // Existing resolver fills name and defaults. Run status refresh after its work.
+ const previousResolver=window.v22ResolveSupplier;
+ if(typeof previousResolver==='function'){
+  window.v22ResolveSupplier=function(root){previousResolver(root);supplierStatus(root);};
+ }
+ const previousCustomer=window.v22PopulateCustomer;
+ if(typeof previousCustomer==='function'){
+  window.v22PopulateCustomer=function(root){previousCustomer(root);customerStatus(root);};
+ }
+ document.addEventListener('input',ev=>{
+  if(ev.target.matches('#manualForm [data-k="supplier_tax_id"],#manualForm [data-k="supplier_name"]')){
+   const root=ev.target.closest('#manualForm');if(root){supplierStatus(root);}
+  }
+ });
+ document.addEventListener('change',ev=>{
+  if(ev.target.matches('#manualForm [data-k="customer_id"]'))customerStatus(ev.target.closest('#manualForm'));
+ });
+ const priorManual=window.renderManualForm;
+ if(typeof priorManual==='function')window.renderManualForm=async function(){await priorManual();improve(document);};
+ document.addEventListener('DOMContentLoaded',()=>improve(document));
+ const langObserver=new MutationObserver(()=>improve(document));
+ langObserver.observe(document.documentElement,{attributes:true,attributeFilter:['lang','data-lang','data-language']});
+})();
+</script>
+
+
+<script id="v32-company-retail-mode">
+/* El modo minorista és una configuració de l'empresa a Supabase (companies.retail_mode).
+   No és una opció que l'usuari pugui activar per factura. */
+(()=>{
+ const oldLoad=window.loadProfile;
+ // loadProfile already loads the complete companies row into state.company.
+ // Re-rendering after company settings are loaded ensures the mode is always company-scoped.
+ const oldFields=window.fieldsHTML;
+ window.fieldsHTML=function(v={},editable=true){
+   if(state.company?.retail_mode){
+     v={...v,expense_breakdown:{...(v.expense_breakdown||{}),v28_retail_total_only:true}};
+   }else{
+     v={...v,expense_breakdown:{...(v.expense_breakdown||{}),v28_retail_total_only:false}};
+   }
+   return oldFields(v,editable);
+ };
+})();
+</script>
+
 </body>
 </html>
 
 <!-- v48: language selector fixed; supported UI languages are Catalan and Spanish only. -->
+
+<style id="v33-contact-autocomplete">
+/* Alineación consistente y autocompletado bidireccional por nombre y NIF/CIF */
+#manualForm [data-counterparty]{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:14px 16px!important;align-items:start!important;width:100%;min-width:0;
+}
+#manualForm [data-counterparty]>.field,
+#manualForm [data-counterparty] label.field{
+ display:flex!important;flex-direction:column!important;gap:7px!important;
+ width:100%!important;min-width:0!important;margin:0!important;
+}
+#manualForm [data-counterparty] .field>span{
+ min-height:2.6em;display:flex;align-items:flex-end;line-height:1.3;
+ white-space:normal;overflow-wrap:anywhere;
+}
+#manualForm [data-counterparty] input:not([type=hidden]),
+#manualForm [data-counterparty] select{
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ height:46px!important;box-sizing:border-box!important;
+}
+#manualForm [data-counterparty] .v22-supplier-match,
+#manualForm [data-counterparty] .v31-status,
+#manualForm [data-counterparty] .v31-customer-status,
+#manualForm [data-counterparty] .v22-no-customer,
+#manualForm [data-counterparty] [data-act="manageCustomers"]{
+ grid-column:1/-1!important;
+}
+#manualForm [data-counterparty] .v33-customer-search{grid-column:1/-1}
+#manualForm [data-counterparty] [data-k="customer_id"].v33-hidden-select{
+ position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;
+ pointer-events:none!important;clip-path:inset(50%)!important;
+}
+#manualForm [data-counterparty] .v33-hint{
+ grid-column:1/-1;color:var(--muted,#64748b);font-size:12px;line-height:1.4;margin-top:-5px;
+}
+@media(max-width:620px){
+ #manualForm [data-counterparty]{grid-template-columns:minmax(0,1fr)!important}
+ #manualForm [data-counterparty] .field>span{min-height:0}
+}
+</style>
+<script id="v33-contact-autocomplete-js">
+(()=>{
+ const norm=s=>(s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const list=(type,cid)=>{try{return v22PartnerList(type,cid)||[]}catch(e){return []}};
+ const options=(items,needle)=>items.filter(x=>{
+   const q=norm(needle);return !q||norm(x.name).includes(q)||norm(x.tax_id).includes(q)
+ }).sort((a,b)=>{
+   const q=norm(needle),as=norm(a.name),bs=norm(b.name),at=norm(a.tax_id),bt=norm(b.tax_id);
+   const rank=x=>x.startsWith(q)?0:1;
+   return Math.min(rank(as),rank(at))-Math.min(rank(bs),rank(bt)) || (a.name||'').localeCompare(b.name||'');
+ }).slice(0,12);
+ function datalist(input,id,items,needle){
+   let dl=document.getElementById(id);if(!dl){dl=document.createElement('datalist');dl.id=id;document.body.append(dl)}
+   dl.replaceChildren(...options(items,needle).map(x=>{const o=document.createElement('option');o.value=x.name||'';o.label=(x.name||'')+' · '+(x.tax_id||'');return o}));
+   input.setAttribute('list',id);
+ }
+ function enhanceSupplier(root){
+   const w=root.querySelector('[data-counterparty="supplier"]');if(!w||w.dataset.v33Ready)return;
+   const name=w.querySelector('[data-k="supplier_name"]'),tax=w.querySelector('[data-k="supplier_tax_id"]'),id=w.querySelector('[data-k="supplier_id"]');
+   if(!name||!tax)return;
+   name.required=true;tax.required=true;name.autocomplete='off';tax.autocomplete='off';
+   name.placeholder='Escribe el nombre del proveedor';tax.placeholder='Escribe el NIF/CIF';
+   const cid=v22CompanyForForm({company_id:root.dataset.companyId||''});
+   const items=list('suppliers',cid);
+   datalist(name,'v33-supplier-names',items,name.value);
+   datalist(tax,'v33-supplier-taxids',items,tax.value);
+   function match(field){
+     const q=norm(field.value);if(!q)return null;
+     const exact=items.find(x=>norm(x.name)===q||norm(x.tax_id)===q);
+     return exact||options(items,field.value)[0]||null;
+   }
+   name.addEventListener('input',()=>{
+     datalist(name,'v33-supplier-names',items,name.value);
+     const hit=items.find(x=>norm(x.name)===norm(name.value));
+     if(hit){tax.value=hit.tax_id||'';id.value=hit.id||'';}
+     else if(id.value){id.value='';if(tax.dataset.v33Auto==='1')tax.value='';}
+     tax.dataset.v33Auto=hit?'1':'0';
+     supplierStatus(root);
+   });
+   tax.addEventListener('input',()=>{
+     datalist(tax,'v33-supplier-taxids',items,tax.value);
+     const hit=items.find(x=>norm(x.tax_id)===norm(tax.value));
+     if(hit){name.value=hit.name||'';id.value=hit.id||'';}
+     else {id.value='';if(name.dataset.v33Auto==='1')name.value='';}
+     name.dataset.v33Auto=hit?'1':'0';
+     supplierStatus(root);
+   });
+   for(const el of [name,tax])el.addEventListener('change',()=>{
+     const hit=match(el);if(hit){name.value=hit.name||'';tax.value=hit.tax_id||'';id.value=hit.id||'';}
+     supplierStatus(root);
+   });
+   w.dataset.v33Ready='1';
+ }
+ function enhanceCustomer(root){
+   const w=root.querySelector('[data-counterparty="customer"]');if(!w||w.dataset.v33Ready)return;
+   const select=w.querySelector('[data-k="customer_id"]');if(!select)return;
+   const cid=v22CompanyForForm({company_id:root.dataset.companyId||''}),items=list('customers',cid);
+   const label=select.closest('label');if(!label)return;
+   const search=document.createElement('label');search.className='field v33-customer-search';
+   const span=document.createElement('span');span.textContent='Buscar cliente por nombre o NIF/CIF *';
+   const input=document.createElement('input');input.type='text';input.required=true;input.autocomplete='off';
+   input.placeholder='Empieza a escribir para ver clientes registrados';
+   input.value=items.find(x=>x.id===select.value)?.name||'';
+   search.append(span,input);label.after(search);
+   select.classList.add('v33-hidden-select');select.required=false;
+   datalist(input,'v33-customer-options',items,'');
+   const update=()=>{
+     datalist(input,'v33-customer-options',items,input.value);
+     const q=norm(input.value);
+     const hit=items.find(x=>norm(x.name)===q||norm(x.tax_id)===q);
+     if(hit){select.value=hit.id;input.value=hit.name||'';v22PopulateCustomer(root);}
+     else select.value='';
+     customerStatus(root);
+   };
+   input.addEventListener('input',update);input.addEventListener('change',update);
+   select.addEventListener('change',()=>{const hit=items.find(x=>x.id===select.value);input.value=hit?.name||'';customerStatus(root)});
+   input.addEventListener('blur',()=>{if(input.value.trim()&&!select.value)input.setCustomValidity('Selecciona un cliente registrado o completa el alta en el directorio.');else input.setCustomValidity('')});
+   input.addEventListener('input',()=>input.setCustomValidity(''));
+   w.dataset.v33Ready='1';
+ }
+ function enhance(root=document){
+   const form=root.querySelector?.('#manualForm')|| (root.id==='manualForm'?root:null);
+   if(!form)return;enhanceSupplier(form);enhanceCustomer(form);
+ }
+ const prior=window.renderManualForm;
+ if(typeof prior==='function')window.renderManualForm=async function(){await prior();enhance(document)};
+ document.addEventListener('DOMContentLoaded',()=>enhance(document));
+ const observer=new MutationObserver(()=>enhance(document));
+ observer.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+<style id="v34-hide-retail-toggle">
+/* El régimen minorista procede exclusivamente de companies.retail_mode en Supabase. */
+#manualForm [data-k="v28_retail_total_only"],
+#manualForm [data-retail-toggle],
+#manualForm .v28-retail-toggle,
+#manualForm .v28-retail-option { display:none!important; }
+</style>
+<script id="v34-hide-retail-toggle-js">
+(()=>{
+ const clean=()=>{
+  const root=document.querySelector('#manualForm');
+  if(!root)return;
+  root.querySelectorAll('[data-k="v28_retail_total_only"],[data-retail-toggle],.v28-retail-toggle,.v28-retail-option').forEach(el=>{
+   const wrap=el.closest('label,.field,.form-group,.checkbox-row')||el;
+   wrap.remove();
+  });
+  root.querySelectorAll('label,div,p,section').forEach(el=>{
+   if(el.children.length>5)return;
+   const t=(el.innerText||'').trim().toLocaleLowerCase();
+   if(t.startsWith('cliente comercio minorista')||t.startsWith('client comerç minorista')||
+      t.startsWith('retail customer')||t.startsWith('client commerce de détail')){
+     if(el.querySelector('input[type="checkbox"]'))el.remove();
+   }
+  });
+ };
+ const prior=window.renderManualForm;
+ if(typeof prior==='function')window.renderManualForm=async function(){const r=await prior();clean();return r};
+ document.addEventListener('DOMContentLoaded',clean);
+ new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
