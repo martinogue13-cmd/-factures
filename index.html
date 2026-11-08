@@ -7269,3 +7269,89 @@ html[data-theme="dark"] .v31-is-empty{background:#1d2d3b!important;color:#d4e0e9
  new MutationObserver(clean).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="v35-manual-polish">
+#manualForm .v35-top-layout{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(280px,2fr)!important;
+ gap:12px!important;align-items:stretch!important;grid-column:1/-1!important;width:100%;margin:0 0 18px;
+}
+#manualForm .v35-top-layout>.v28-flow-button,
+#manualForm .v35-top-layout>.v28-group{
+ min-width:0!important;width:100%!important;min-height:230px!important;height:100%!important;
+ box-sizing:border-box!important;margin:0!important;align-self:stretch!important;
+}
+#manualForm .v35-top-layout>.v28-flow-button{
+ display:flex;flex-direction:column;justify-content:center;padding:18px!important;
+ border-radius:14px!important;transition:box-shadow .18s ease,transform .18s ease;
+}
+#manualForm .v35-top-layout>.v28-flow-button:hover{box-shadow:0 8px 20px rgba(20,40,60,.09);transform:translateY(-1px)}
+#manualForm .v35-top-layout>.v28-group{display:flex;flex-direction:column;justify-content:flex-start;padding:16px!important;border-radius:14px!important}
+#manualForm .v35-top-layout>.v28-group[hidden]{display:none!important}
+#manualForm [data-counterparty="supplier"]{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:end}
+#manualForm [data-counterparty="supplier"] .field{min-width:0!important;margin:0!important}
+#manualForm [data-counterparty="supplier"] .field>span{min-height:2.2em;display:flex;align-items:flex-end;line-height:1.25}
+#manualForm [data-counterparty="supplier"] input{width:100%!important;min-width:0!important;box-sizing:border-box!important;min-height:44px}
+#manualForm .v35-clear{height:36px;min-width:36px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink2);cursor:pointer;font-size:18px}
+#manualForm .v35-clear:hover{background:var(--expense-bg);color:var(--expense);border-color:var(--expense)}
+#manualForm .v35-search-wrap{display:flex;gap:7px;align-items:center;min-width:0}
+#manualForm .v35-search-wrap input{width:100%;min-width:0;box-sizing:border-box}
+#manualForm .v35-select-search{font-size:.82rem!important;min-height:36px!important;padding:7px 10px!important;margin:0 0 6px!important;border:1px solid var(--line)!important;border-radius:9px!important;background:var(--surface)!important}
+#manualForm .v35-select-tools{display:flex;gap:6px;align-items:center;min-width:0;margin-bottom:6px}
+#manualForm .v35-select-tools .v35-select-search{flex:1;margin:0!important}
+#manualForm .v35-select-clear{white-space:nowrap;border:1px solid var(--line);border-radius:8px;padding:7px 9px;background:var(--surface);color:var(--ink2);cursor:pointer}
+@media(max-width:760px){
+ #manualForm .v35-top-layout{grid-template-columns:minmax(0,1fr)!important}
+ #manualForm .v35-top-layout>.v28-flow-button,#manualForm .v35-top-layout>.v28-group{min-height:0!important}
+ #manualForm [data-counterparty="supplier"]{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
+<script id="v35-manual-polish-js">
+(()=>{
+ const root=()=>document.querySelector('#manualForm');
+ function layout(){
+  const r=root();if(!r)return;
+  const flow=r.querySelector('.v28-flow');if(!flow)return;
+  const group=r.querySelector('.v28-group[data-v28-section="expense"]:not([hidden]),.v28-group[data-v28-section="income"]:not([hidden])');
+  if(!group)return;
+  let wrap=r.querySelector('.v35-top-layout');
+  if(!wrap){wrap=document.createElement('div');wrap.className='v35-top-layout';flow.before(wrap);}
+  [...flow.querySelectorAll('button[data-v28-flow]')].forEach(b=>{b.classList.add('v28-flow-button');wrap.append(b)});
+  wrap.append(group);
+  flow.remove();
+ }
+ function addClearSupplier(){
+  const r=root(),w=r?.querySelector('[data-counterparty="supplier"]');if(!w||w.querySelector('.v35-clear'))return;
+  const name=w.querySelector('[data-k="supplier_name"]'),tax=w.querySelector('[data-k="supplier_tax_id"]'),id=w.querySelector('[data-k="supplier_id"]');
+  if(!name||!tax)return;
+  const button=document.createElement('button');button.type='button';button.className='v35-clear';button.title='Limpiar proveedor y NIF/CIF';button.setAttribute('aria-label','Limpiar proveedor y NIF/CIF');button.textContent='×';
+  const holder=document.createElement('div');holder.className='v35-search-wrap';name.after(holder);holder.append(name,button);
+  button.addEventListener('click',()=>{name.value='';tax.value='';if(id)id.value='';name.dataset.v33Auto='0';tax.dataset.v33Auto='0';name.dispatchEvent(new Event('input',{bubbles:true}));tax.dispatchEvent(new Event('input',{bubbles:true}));name.focus();});
+ }
+ function searchableSelects(){
+  const r=root();if(!r)return;
+  r.querySelectorAll('select').forEach((sel)=>{
+   if(sel.dataset.v35SearchReady||sel.disabled||sel.multiple||sel.options.length<5)return;
+   // Omit tax-rate selectors: their short fixed option sets do not benefit from search.
+   if(sel.matches('[data-v28-line-vat]'))return;
+   const tools=document.createElement('div');tools.className='v35-select-tools';
+   const input=document.createElement('input');input.type='search';input.className='v35-select-search';input.placeholder='Buscar en opciones…';input.setAttribute('aria-label','Buscar en opciones del desplegable');
+   const clear=document.createElement('button');clear.type='button';clear.className='v35-select-clear';clear.textContent='Limpiar';clear.title='Limpiar selección';
+   sel.before(tools);tools.append(input,clear);
+   const original=[...sel.options].map(o=>({value:o.value,text:o.text,disabled:o.disabled,selected:o.selected}));
+   input.addEventListener('input',()=>{
+    const q=input.value.trim().toLocaleLowerCase();
+    [...sel.options].forEach(o=>{o.hidden=!!q&&!o.text.toLocaleLowerCase().includes(q)});
+    if(q&&sel.selectedOptions[0]?.hidden)sel.value='';
+   });
+   clear.addEventListener('click',()=>{input.value='';[...sel.options].forEach(o=>o.hidden=false);sel.value='';sel.dispatchEvent(new Event('change',{bubbles:true}));});
+   sel.addEventListener('change',()=>{if(sel.value){input.value='';[...sel.options].forEach(o=>o.hidden=false)}});
+   sel.dataset.v35SearchReady='1';
+  });
+ }
+ function run(){layout();addClearSupplier();searchableSelects();}
+ const old=window.renderManualForm;
+ if(typeof old==='function')window.renderManualForm=async function(){const x=await old();run();return x};
+ document.addEventListener('DOMContentLoaded',run);
+ const obs=new MutationObserver(run);obs.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
