@@ -6536,7 +6536,8 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
     </div>
     <input type="hidden" data-k="record_type" value="${rt}">
     <input type="hidden" data-k="invoice_type" value="${typ}">
-    ${expense?`<div class="v28-group expense"><h3>GASTO · Documento recibido</h3>${v22SupplierFields(v,editable)}</div>`:`<div class="v28-group income"><h3>INGRESO · Venta / factura emitida</h3>${v22IncomeKindField(v,editable)}${v22CustomerField(v,editable,companyId)}<button type="button" class="btn v28-quickadd" data-v28-quickadd="customers">+ Crear cliente nuevo</button></div>`}
+    <div class="v28-group expense" data-v28-section="expense" ${expense?'':'hidden'}><h3>DESPESA · Document rebut</h3>${v22SupplierFields(v,editable)}<button type="button" class="btn v28-quickadd" data-v28-quickadd="suppliers">+ Crear proveïdor nou</button></div>
+    <div class="v28-group income" data-v28-section="income" ${expense?'hidden':''}><h3>INGRÉS · Venda / factura emesa</h3>${v22IncomeKindField(v,editable)}${v22CustomerField(v,editable,companyId)}<button type="button" class="btn v28-quickadd" data-v28-quickadd="customers">+ Crear client nou</button></div>
     ${v22Field(v,'invoice_number','Número de factura','text',false,editable)}
     ${v22Field(v,'invoice_date','Fecha de emisión de la factura','date',false,editable)}
     <label class="field"><span>Fecha de registro contable</span><input class="v28-entry-date" type="date" data-k="v28_entry_date" value="${esc28(old.v28_entry_date||today28())}" ${editable?'':'readonly'}></label>
@@ -6587,7 +6588,12 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
      const root=flow.closest('#manualForm'),expense=flow.dataset.v28Flow==='expense';
      const rt=root.querySelector('[data-k="record_type"]'),it=root.querySelector('[data-k="invoice_type"]');
      if(rt)rt.value=expense?'gasto':'factura';if(it)it.value=expense?'recibida':'emitida';
-     window.renderManualFormForFlow?.(expense?'expense':'income');
+     root.querySelectorAll('[data-v28-flow]').forEach(b=>b.dataset.active=b.dataset.v28Flow===(expense?'expense':'income')?(expense?'expense':'income'):'');
+     root.querySelectorAll('[data-v28-section]').forEach(sec=>sec.hidden=sec.dataset.v28Section!==(expense?'expense':'income'));
+     v22UpdateFormMode(root);
+     window.updateManualFormMode();
+     recalc28(root);
+     applyLanguage(root);
      return;
    }
    const quick=e.target.closest('[data-v28-quickadd]');
@@ -6612,7 +6618,7 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
      <label class="field"><span>País *</span><input data-qpk="country" value="España" required></label>
      <label class="field wide"><span>Dirección</span><input data-qpk="address"></label>
     </div><p class="err" id="v28QuickErr"></p><div class="actions"><button type="button" class="btn primary" id="v28QuickSave">Guardar y seleccionar</button><button type="button" class="btn" data-act="partnerClose">Cancelar</button></div>`;
-   $('#dlgBody').innerHTML=body;if(!$('#dlg').open)$('#dlg').showModal();
+   $('#dlgBody').innerHTML=body;applyLanguage($('#dlgBody'));if(!$('#dlg').open)$('#dlg').showModal();
    $('#v28QuickSave').onclick=async()=>{
      const root=$('#v28QuickPartner'),d={};root.querySelectorAll('[data-qpk]').forEach(x=>d[x.dataset.qpk]=x.value.trim());
      const err=$('#v28QuickErr');if(!d.name||!d.tax_id||!d.postal_code){err.textContent='Nombre, NIF/CIF y código postal son obligatorios.';return;}
@@ -6726,6 +6732,210 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
    }
    toast('Registro guardado correctamente');state.pendingFile=null;state.view='mine';await loadData();renderCompanyShell();
  };
+})();
+</script>
+
+
+<style id="v30-dropdown-and-language">
+/* El buscador vive dentro del desplegable; no ocupa espacio permanente en el formulario. */
+.v30-concept-select{position:relative;width:100%}
+.v30-concept-trigger{width:100%;min-height:44px;text-align:left;display:flex;justify-content:space-between;align-items:center;background:var(--surface,#fff);color:var(--ink,#17283d);border:1px solid var(--line,#ccd7df);border-radius:9px;padding:9px 12px;cursor:pointer}
+.v30-concept-panel{position:absolute;z-index:80;left:0;right:0;top:calc(100% + 5px);background:var(--surface,#fff);border:1px solid var(--line,#ccd7df);border-radius:11px;box-shadow:0 14px 34px rgba(15,35,55,.18);padding:9px;max-height:300px;overflow:auto}
+.v30-concept-panel[hidden]{display:none!important}
+.v30-concept-search{width:100%;min-height:40px;border:1px solid var(--line,#ccd7df);border-radius:8px;padding:8px 10px;margin-bottom:7px;background:var(--paper,#f7f9fb);color:var(--ink,#17283d)}
+.v30-concept-options{display:grid;gap:3px}
+.v30-concept-option{width:100%;text-align:left;border:0;background:transparent;color:var(--ink,#17283d);padding:9px 10px;border-radius:7px;cursor:pointer}
+.v30-concept-option:hover,.v30-concept-option[aria-selected="true"]{background:#e8f2f3;color:#075b65}
+.v30-concept-native{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.v28-group[hidden],.v28-tax-lines[hidden],.v28-fiscal-fields[hidden],.v28-retail-total[hidden]{display:none!important}
+html[data-theme="dark"] .v30-concept-trigger,html[data-theme="dark"] .v30-concept-panel{background:#172432;color:#edf4f8;border-color:#42586b}
+html[data-theme="dark"] .v30-concept-search{background:#203344;color:#edf4f8;border-color:#42586b}
+html[data-theme="dark"] .v30-concept-option{color:#edf4f8}
+html[data-theme="dark"] .v30-concept-option:hover,html[data-theme="dark"] .v30-concept-option[aria-selected="true"]{background:#24464a;color:#b9eceb}
+</style>
+<script>
+(()=>{
+ const maps={
+ ca:{
+ 'DESPESA · Document rebut':'DESPESA · Document rebut','INGRÉS · Venda / factura emesa':'INGRÉS · Venda / factura emesa',
+ 'GASTOS / COMPRAS':'DESPESES / COMPRES','INGRESOS / VENTAS':'INGRESSOS / VENDES',
+ 'Factures rebudes i despeses de l’empresa':'Factures rebudes i despeses de l’empresa',
+ 'Factures emeses i vendes de caixa':'Factures emeses i vendes de caixa',
+ 'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.':'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.',
+ 'Data de registre comptable':'Data de registre comptable','Data d’emissió de la factura':'Data d’emissió de la factura',
+ 'Desglossament de bases i IVA':'Desglossament de bases i IVA',
+ 'Afegeix una línia per cada tipus d’IVA de la factura. Només es permeten els tipus del 4 %, 10 % i 21 %.':'Afegeix una línia per cada tipus d’IVA de la factura. Només es permeten els tipus del 4 %, 10 % i 21 %.',
+ 'Concepte / base':'Concepte / base','Base (€)':'Base (€)','Afegir línia d’IVA':'Afegir línia d’IVA',
+ 'Recàrrec d’equivalència':'Recàrrec d’equivalència','Aplicar recàrrec':'Aplicar recàrrec',
+ 'Client comerç minorista':'Client comerç minorista','Registrar únicament el total de la factura, sense desglossament fiscal per tipus d’IVA.':'Registrar únicament el total de la factura, sense desglossament fiscal per tipus d’IVA.',
+ 'Cercar un concepte…':'Cercar un concepte…','No s’han trobat conceptes.':'No s’han trobat conceptes.',
+ 'Selecciona un concepte…':'Selecciona un concepte…','Crear proveïdor nou':'Crear proveïdor nou','Crear client nou':'Crear client nou',
+ 'Selecciona una despesa o un ingrés':'Selecciona una despesa o un ingrés'
+ },
+ es:{
+ 'DESPESA · Document rebut':'GASTO · Documento recibido','INGRÉS · Venda / factura emesa':'INGRESO · Venta / factura emitida',
+ 'GASTOS / COMPRAS':'GASTOS / COMPRAS','INGRESOS / VENTAS':'INGRESOS / VENTAS',
+ 'Factures rebudes i despeses de l’empresa':'Facturas recibidas y gastos de la empresa',
+ 'Factures emeses i vendes de caixa':'Facturas emitidas y ventas de caja',
+ 'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.':'Sube facturas recibidas o emitidas y registra ingresos, gastos y ventas de caja.',
+ 'Data de registre comptable':'Fecha de registro contable','Data d’emissió de la factura':'Fecha de emisión de la factura',
+ 'Desglossament de bases i IVA':'Desglose de bases e IVA',
+ 'Afegeix una línia per cada tipus d’IVA de la factura. Només es permeten els tipus del 4 %, 10 % i 21 %.':'Añade una línea por cada tipo de IVA de la factura. Solo se permiten los tipos del 4 %, 10 % y 21 %.',
+ 'Concepte / base':'Concepto / base','Base (€)':'Base (€)','Afegir línia d’IVA':'Añadir línea de IVA',
+ 'Recàrrec d’equivalència':'Recargo de equivalencia','Aplicar recàrrec':'Aplicar recargo',
+ 'Client comerç minorista':'Cliente comercio minorista','Registrar únicament el total de la factura, sense desglossament fiscal per tipus d’IVA.':'Registrar únicamente el total de la factura, sin desglose fiscal por tipos de IVA.',
+ 'Cercar un concepte…':'Buscar un concepto…','No s’han trobat conceptes.':'No se han encontrado conceptos.',
+ 'Selecciona un concepte…':'Selecciona un concepto…','Crear proveïdor nou':'Crear proveedor nuevo','Crear client nou':'Crear cliente nuevo',
+ 'Selecciona una despesa o un ingrés':'Selecciona un gasto o un ingreso'
+ },
+ en:{
+ 'DESPESA · Document rebut':'EXPENSE · Received document','INGRÉS · Venda / factura emesa':'INCOME · Sale / issued invoice',
+ 'GASTOS / COMPRAS':'EXPENSES / PURCHASES','INGRESOS / VENTAS':'INCOME / SALES',
+ 'Factures rebudes i despeses de l’empresa':'Received invoices and company expenses',
+ 'Factures emeses i vendes de caixa':'Issued invoices and cash sales',
+ 'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.':'Upload received or issued invoices and record income, expenses and cash sales.',
+ 'Data de registre comptable':'Accounting entry date','Data d’emissió de la factura':'Invoice issue date',
+ 'Desglossament de bases i IVA':'Taxable bases and VAT breakdown',
+ 'Afegeix una línia per cada tipus d’IVA de la factura. Només es permeten els tipus del 4 %, 10 % i 21 %.':'Add one line for each VAT rate on the invoice. Only 4%, 10% and 21% are available.',
+ 'Concepte / base':'Description / base','Base (€)':'Base (€)','Afegir línia d’IVA':'Add VAT line',
+ 'Recàrrec d’equivalència':'Equivalence surcharge','Aplicar recàrrec':'Apply surcharge',
+ 'Client comerç minorista':'Retail customer','Registrar únicament el total de la factura, sense desglossament fiscal per tipus d’IVA.':'Enter only the invoice total, without a tax breakdown by VAT rate.',
+ 'Cercar un concepte…':'Search concepts…','No s’han trobat conceptes.':'No concepts found.',
+ 'Selecciona un concepte…':'Select a concept…','Crear proveïdor nou':'Create supplier','Crear client nou':'Create customer',
+ 'Selecciona una despesa o un ingrés':'Select an expense or income'
+ }};
+ Object.keys(maps).forEach(lang=>Object.assign(I18N[lang],maps[lang]));
+
+
+
+ Object.assign(I18N.ca,{
+  'Crear cliente':'Crear client','Crear proveedor':'Crear proveïdor',
+  'Se añadirá al directorio de esta empresa y quedará seleccionado en el registro.':'S’afegirà al directori d’aquesta empresa i quedarà seleccionat al registre.',
+  'Guardar y seleccionar':'Desar i seleccionar','Nombre *':'Nom *','NIF / CIF *':'NIF / CIF *','Código postal *':'Codi postal *',
+  'Dirección':'Adreça','País':'País','Cerrar':'Tancar','Cancelar':'Cancel·lar',
+  'Nombre, NIF/CIF y código postal son obligatorios.':'El nom, el NIF/CIF i el codi postal són obligatoris.',
+  'Registro creado y seleccionado':'Registre creat i seleccionat'
+ });
+ Object.assign(I18N.es,{
+  'Crear cliente':'Crear cliente','Crear proveedor':'Crear proveedor',
+  'Se añadirá al directorio de esta empresa y quedará seleccionado en el registro.':'Se añadirá al directorio de esta empresa y quedará seleccionado en el registro.',
+  'Guardar y seleccionar':'Guardar y seleccionar','Nombre *':'Nombre *','NIF / CIF *':'NIF / CIF *','Código postal *':'Código postal *',
+  'Dirección':'Dirección','País':'País','Cerrar':'Cerrar','Cancelar':'Cancelar',
+  'Nombre, NIF/CIF y código postal son obligatorios.':'Nombre, NIF/CIF y código postal son obligatorios.',
+  'Registro creado y seleccionado':'Registro creado y seleccionado'
+ });
+ Object.assign(I18N.en,{
+  'Crear cliente':'Create customer','Crear proveedor':'Create supplier',
+  'Se añadirá al directorio de esta empresa y quedará seleccionado en el registro.':'It will be added to this company directory and selected in the entry.',
+  'Guardar y seleccionar':'Save and select','Nombre *':'Name *','NIF / CIF *':'Tax ID *','Código postal *':'Postal code *',
+  'Dirección':'Address','País':'Country','Cerrar':'Close','Cancelar':'Cancel',
+  'Nombre, NIF/CIF y código postal son obligatorios.':'Name, tax ID and postal code are required.',
+  'Registro creado y seleccionado':'Record created and selected'
+ });
+ // Claus originals en castellà utilitzades pels formularis antics i nous.
+ Object.assign(I18N.ca,{
+  'Desglose de bases e IVA':'Desglossament de bases i IVA',
+  'Añade una línea por cada tipo de IVA de la factura. Solo se permiten los tipos del 4 %, 10 % y 21 %.':'Afegeix una línia per cada tipus d’IVA de la factura. Només es permeten els tipus del 4 %, 10 % i 21 %.',
+  'Concepto / base':'Concepte / base','Añadir línea de IVA':'Afegir línia d’IVA',
+  'Recargo de equivalencia':'Recàrrec d’equivalència','Aplicar recargo':'Aplicar recàrrec',
+  'Cliente comercio minorista':'Client comerç minorista',
+  'Registrar únicamente el total de factura, sin desglose fiscal por tipos de IVA.':'Registrar únicament el total de la factura, sense desglossament fiscal per tipus d’IVA.',
+  'Fecha de emisión de la factura':'Data d’emissió de la factura','Fecha de registro contable':'Data de registre comptable',
+  'GASTO · Documento recibido':'DESPESA · Document rebut','INGRESO · Venta / factura emitida':'INGRÉS · Venda / factura emesa',
+  'GASTOS / COMPRAS':'DESPESES / COMPRES','INGRESOS / VENTAS':'INGRESSOS / VENDES',
+  'Facturas recibidas y gastos de la empresa':'Factures rebudes i despeses de l’empresa',
+  'Facturas emitidas y ventas de caja':'Factures emeses i vendes de caixa',
+  'Crear proveedor nuevo':'Crear proveïdor nou','Crear cliente nuevo':'Crear client nou',
+  'Buscar un concepto…':'Cercar un concepte…','Select a concept…':'Selecciona un concepte…',
+  'Invoice issue date':'Data d’emissió de la factura','Accounting entry date':'Data de registre comptable'
+ });
+ Object.assign(I18N.es,{
+  'Desglose de bases e IVA':'Desglose de bases e IVA',
+  'Añade una línea por cada tipo de IVA de la factura. Solo se permiten los tipos del 4 %, 10 % y 21 %.':'Añade una línea por cada tipo de IVA de la factura. Solo se permiten los tipos del 4 %, 10 % y 21 %.',
+  'Concepto / base':'Concepto / base','Añadir línea de IVA':'Añadir línea de IVA',
+  'Recargo de equivalencia':'Recargo de equivalencia','Aplicar recargo':'Aplicar recargo',
+  'Cliente comercio minorista':'Cliente comercio minorista',
+  'Registrar únicamente el total de factura, sin desglose fiscal por tipos de IVA.':'Registrar únicamente el total de factura, sin desglose fiscal por tipos de IVA.',
+  'Fecha de emisión de la factura':'Fecha de emisión de la factura','Fecha de registro contable':'Fecha de registro contable',
+  'GASTO · Documento recibido':'GASTO · Documento recibido','INGRESO · Venta / factura emitida':'INGRESO · Venta / factura emitida',
+  'GASTOS / COMPRAS':'GASTOS / COMPRAS','INGRESOS / VENTAS':'INGRESOS / VENTAS',
+  'Facturas recibidas y gastos de la empresa':'Facturas recibidas y gastos de la empresa',
+  'Facturas emitidas y ventas de caja':'Facturas emitidas y ventas de caja',
+  'Crear proveedor nuevo':'Crear proveedor nuevo','Crear cliente nuevo':'Crear cliente nuevo',
+  'Buscar un concepto…':'Buscar un concepto…','Selecciona un concepto…':'Selecciona un concepto…'
+ });
+ Object.assign(I18N.en,{
+  'Desglose de bases e IVA':'Taxable bases and VAT breakdown',
+  'Añade una línea por cada tipo de IVA de la factura. Solo se permiten los tipos del 4 %, 10 % y 21 %.':'Add one line for each VAT rate on the invoice. Only 4%, 10% and 21% are available.',
+  'Concepto / base':'Description / base','Añadir línea de IVA':'Add VAT line',
+  'Recargo de equivalencia':'Equivalence surcharge','Aplicar recargo':'Apply surcharge',
+  'Cliente comercio minorista':'Retail customer',
+  'Registrar únicamente el total de factura, sin desglose fiscal por tipos de IVA.':'Enter only the invoice total, without a tax breakdown by VAT rate.',
+  'Fecha de emisión de la factura':'Invoice issue date','Fecha de registro contable':'Accounting entry date',
+  'GASTO · Documento recibido':'EXPENSE · Received document','INGRESO · Venta / factura emitida':'INCOME · Sale / issued invoice',
+  'GASTOS / COMPRAS':'EXPENSES / PURCHASES','INGRESOS / VENTAS':'INCOME / SALES',
+  'Facturas recibidas y gastos de la empresa':'Received invoices and company expenses',
+  'Facturas emitidas y ventas de caja':'Issued invoices and cash sales',
+  'Crear proveedor nuevo':'Create supplier','Crear cliente nuevo':'Create customer',
+  'Buscar un concepto…':'Search concepts…','Selecciona un concepto…':'Select a concept…'
+ });
+ // Reemplaça el cercador separat per un desplegable únic amb la cerca a l'interior.
+ window.v24EnhanceConceptSearch=function(root=document){
+   root.querySelectorAll?.('#manualForm [data-k="concept"],#detailForm [data-k="concept"],#uploadForm [data-k="concept"],[data-pk="usual_concept"]').forEach(sel=>{
+     const label=sel.closest('label.field');if(!label)return;
+     let wrap=label.querySelector('.v30-concept-select');
+     if(!wrap){
+       wrap=document.createElement('div');wrap.className='v30-concept-select';
+       sel.parentNode.insertBefore(wrap,sel);wrap.appendChild(sel);sel.classList.add('v30-concept-native');
+       const trigger=document.createElement('button');trigger.type='button';trigger.className='v30-concept-trigger';trigger.innerHTML='<span data-v30-selected></span><span aria-hidden="true">▾</span>';
+       const panel=document.createElement('div');panel.className='v30-concept-panel';panel.hidden=true;
+       const search=document.createElement('input');search.type='search';search.className='v30-concept-search';search.placeholder=t('Cercar un concepte…');search.setAttribute('aria-label',search.placeholder);
+       const options=document.createElement('div');options.className='v30-concept-options';
+       panel.append(search,options);wrap.append(trigger,panel);
+       trigger.addEventListener('click',()=>{panel.hidden=!panel.hidden;if(!panel.hidden){search.value='';render();search.focus();}});
+       search.addEventListener('input',render);
+       document.addEventListener('click',ev=>{if(!wrap.contains(ev.target))panel.hidden=true;});
+       function render(){
+         const q=search.value.trim().toLocaleLowerCase();
+         options.replaceChildren();
+         [...sel.options].filter(o=>!o.disabled&&(!q||o.textContent.toLocaleLowerCase().includes(q))).forEach(o=>{
+           const b=document.createElement('button');b.type='button';b.className='v30-concept-option';b.textContent=o.textContent;b.setAttribute('aria-selected',String(sel.value===o.value));
+           b.addEventListener('click',()=>{sel.value=o.value;sel.dispatchEvent(new Event('change',{bubbles:true}));panel.hidden=true;refresh();});
+           options.appendChild(b);
+         });
+         if(!options.children.length){const empty=document.createElement('div');empty.className='v30-concept-option';empty.textContent=t('No s’han trobat conceptes.');options.appendChild(empty);}
+       }
+       function refresh(){const selected=sel.selectedOptions[0];wrap.querySelector('[data-v30-selected]').textContent=selected?.textContent||t('Selecciona un concepte…');render();}
+       sel.addEventListener('change',refresh);wrap.__v30Refresh=refresh;refresh();
+     }else{wrap.__v30Refresh?.();}
+   });
+ };
+
+ // Quan canvia el tipus, actualitza els dos panells sense perdre el contingut introduït.
+ document.addEventListener('click',ev=>{
+   const button=ev.target.closest('[data-v28-flow]');if(!button)return;
+   const root=button.closest('#manualForm');if(!root)return;
+   const expense=button.dataset.v28Flow==='expense';
+   root.querySelector('[data-k="record_type"]').value=expense?'gasto':'factura';
+   root.querySelector('[data-k="invoice_type"]').value=expense?'recibida':'emitida';
+   root.querySelectorAll('[data-v28-flow]').forEach(b=>b.dataset.active=b===button?(expense?'expense':'income'):'');
+   root.querySelectorAll('[data-v28-section]').forEach(x=>x.hidden=x.dataset.v28Section!==(expense?'expense':'income'));
+   v22UpdateFormMode(root);window.updateManualFormMode();v28Noop=0;
+   applyLanguage(root);
+ },true);
+
+ // Reaplica traduccions a la vista actual després del canvi d'idioma superior.
+ const priorSetLanguage=window.setLanguage;
+ if(priorSetLanguage)window.setLanguage=function(lang){priorSetLanguage(lang);setTimeout(()=>{applyLanguage(document);window.v24EnhanceConceptSearch(document);},0);};
+ document.addEventListener('change',ev=>{
+   if(ev.target.matches('#langSelect'))setTimeout(()=>{applyLanguage(document);window.v24EnhanceConceptSearch(document);},0);
+ });
+ document.addEventListener('change',ev=>{
+   if(ev.target.matches('[data-k="record_type"],[data-k="invoice_type"],[data-k="income_kind"]')){
+     const root=ev.target.closest('#manualForm');if(root)window.v24EnhanceConceptSearch(root);
+   }
+ });
+ document.addEventListener('DOMContentLoaded',()=>{applyLanguage(document);window.v24EnhanceConceptSearch(document);});
 })();
 </script>
 
