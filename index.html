@@ -1059,6 +1059,28 @@ html[data-theme="dark"] .pnl-table table,html[data-theme="dark"] .tablewrap tabl
   .hero.bulk-upload { padding:19px 13px; }
 }
 </style>
+
+<style id="v29-capture-layout">
+.v24-capture-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:18px!important;align-items:stretch!important}
+.v28-upload-card,.v28-directory-card{
+ background:#fff!important;color:#17283d!important;border:1px solid #d5e0e8!important;
+ border-radius:18px!important;box-shadow:0 10px 26px rgba(25,48,67,.07)!important;
+ min-height:205px;padding:24px!important
+}
+.v28-upload-card h2,.v28-directory-card h2{color:#142b43!important;font-weight:750!important}
+.v28-upload-card p,.v28-directory-card p{color:#53677c!important}
+.v28-upload-card .v24-card-mark,.v28-directory-card .v24-card-mark{background:#e8f2f3!important;color:#075b65!important}
+.v28-upload-card .btn.primary{background:#126b70!important;border-color:#126b70!important;color:#fff!important;box-shadow:0 5px 12px rgba(18,107,112,.16)!important}
+.v28-upload-card .btn.primary:hover{background:#0d555a!important}
+.v28-directory-card .btn{background:#fff!important;color:#17364b!important;border-color:#cbd9e3!important}
+.v28-directory-card .btn:hover{background:#f2f7f9!important;border-color:#8ba7b7!important}
+html[data-theme="dark"] .v28-upload-card,html[data-theme="dark"] .v28-directory-card{background:#172432!important;color:#edf4f8!important;border-color:#34495b!important}
+html[data-theme="dark"] .v28-upload-card h2,html[data-theme="dark"] .v28-directory-card h2{color:#f1f6fa!important}
+html[data-theme="dark"] .v28-upload-card p,html[data-theme="dark"] .v28-directory-card p{color:#b9c8d5!important}
+html[data-theme="dark"] .v28-directory-card .btn{background:#1e3040!important;color:#edf4f8!important;border-color:#42586b!important}
+@media(max-width:760px){.v24-capture-grid{grid-template-columns:1fr!important}.v28-upload-card,.v28-directory-card{min-height:0;padding:19px!important}}
+</style>
+
 </head>
 <body>
 <header class="top"><div class="top-in">
@@ -5125,6 +5147,20 @@ document.head.appendChild(v31BulkStyle);
     @media(max-width:540px){.v34-customer-document-filters .field{min-width:0;max-width:100%}}
   `;
   document.head.appendChild(v34CustomerFilterStyle);
+
+ // Traduccions dels textos de la pantalla inicial: es resolen amb l'idioma actiu.
+ Object.assign(I18N.ca,{
+  'Pujar factures i registrar ingressos i despeses':'Pujar factures i registrar ingressos i despeses',
+  'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.':'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.'
+ });
+ Object.assign(I18N.es,{
+  'Pujar factures i registrar ingressos i despeses':'Subir facturas y registrar ingresos y gastos',
+  'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.':'Sube facturas recibidas o emitidas y registra ingresos, gastos y ventas de caja.'
+ });
+ Object.assign(I18N.en,{
+  'Pujar factures i registrar ingressos i despeses':'Upload invoices and record income and expenses',
+  'Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.':'Upload received or issued invoices and record income, expenses and cash sales.'
+ });
 })();
 </script>
 
@@ -6617,20 +6653,22 @@ html[data-theme="dark"] .v28-retailline{background:#342b19;border-color:#65512a;
  window.renderCapture=function(){
    oldRenderCapture();
    const page=$('#capture');if(!page)return;
-   const cards=page.querySelector('.v24-capture-grid');
-   if(cards){
-     const first=cards.querySelector('.v24-action-card');
-     if(first){
-       first.classList.add('v28-income-card');
-       first.querySelector('h2').textContent='INGRESOS · Ventas y facturas emitidas';
-       first.querySelector('p').textContent='Registra ventas, facturas emitidas a clientes y caja diaria.';
-       first.querySelector('[data-act="manualMode"]').textContent='Registrar un ingreso';
-       first.querySelector('[data-act="manualMode"]').dataset.v28Start='income';
-       const second=document.createElement('article');second.className='v24-action-card v28-expense-card';
-       second.innerHTML='<div class="v24-card-mark" aria-hidden="true">↓</div><div class="v24-card-content"><h2>GASTOS · Compras y facturas recibidas</h2><p>Registra facturas de proveedores, compras y otros gastos de la empresa.</p><button class="btn" data-act="manualMode" data-v28-start="expense">Registrar un gasto</button></div>';
-       cards.insertBefore(second,cards.children[1]||null);
-     }
+   const cards=page.querySelector('.v24-capture-grid');if(!cards)return;
+   const first=cards.querySelector('.v24-action-card:not(.v24-directory-card)');
+   const directory=cards.querySelector('.v24-directory-card');
+   // Una sola fila: registro documental a la izquierda y directorio a la derecha.
+   cards.querySelectorAll('.v28-expense-card').forEach(x=>x.remove());
+   cards.style.gridTemplateColumns='minmax(0,1fr) minmax(0,1fr)';
+   cards.style.alignItems='stretch';
+   if(first){
+     first.classList.remove('v24-action-primary','v28-income-card');
+     first.classList.add('v28-upload-card');
+     const h=first.querySelector('h2'),p=first.querySelector('p'),b=first.querySelector('button');
+     if(h)h.textContent=t('Pujar factures i registrar ingressos i despeses');
+     if(p)p.textContent=t('Puja factures rebudes o emeses i registra ingressos, despeses i vendes de caixa.');
+     if(b){b.textContent=t('Introduir les dades');b.dataset.v28Start='';}
    }
+   if(directory)directory.classList.add('v28-directory-card');
  };
  const oldManual=window.renderManualForm;
  window.renderManualForm=async function(){
